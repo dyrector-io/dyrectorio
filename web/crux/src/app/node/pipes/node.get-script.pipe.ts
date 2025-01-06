@@ -27,7 +27,7 @@ export default class NodeGetScriptValidationPipe implements PipeTransform {
       }
     }
 
-    // throwing intentionally ambigous exceptions, so an attacker can not guess node ids
+    // throwing intentionally ambiguous exceptions, so an attacker can not guess node ids
     throw new CruxUnauthorizedException()
   }
 }

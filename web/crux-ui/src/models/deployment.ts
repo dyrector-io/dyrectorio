@@ -1,7 +1,8 @@
 import { Audit } from './audit'
-import { DeploymentStatus, DyoApiError, slugify } from './common'
-import { ContainerIdentifier, ContainerState, InstanceContainerConfigData, UniqueKeyValue } from './container'
-import { ImageConfigProperty, ImageDeletedMessage } from './image'
+import { DeploymentStatus, DyoApiError, PaginatedList, PaginationQuery, slugify } from './common'
+import { ConfigBundleDetails } from './config-bundle'
+import { ConcreteContainerConfig, ContainerState } from './container'
+import { ImageDeletedMessage, VersionImage } from './image'
 import { Instance } from './instance'
 import { DyoNode } from './node'
 import { BasicProject, ProjectDetails } from './project'
@@ -29,6 +30,15 @@ export type Deployment = {
   version: BasicVersion
 }
 
+export type DeploymentQuery = PaginationQuery & {
+  nodeId?: string
+  filter?: string
+  status?: DeploymentStatus
+  configBundleId?: string
+}
+
+export type DeploymentList = PaginatedList<Deployment>
+
 export type DeploymentToken = {
   id: string
   name: string
@@ -46,12 +56,15 @@ export type DeploymentTokenCreated = DeploymentToken & {
   curl: string
 }
 
-export type DeploymentDetails = Deployment & {
-  environment: UniqueKeyValue[]
-  configBundleEnvironment: EnvironmentToConfigBundleNameMap
+export type DeploymentWithConfig = Deployment & {
+  config: ConcreteContainerConfig
   publicKey?: string
-  configBundleIds?: string[]
-  token: DeploymentToken
+  configBundles: ConfigBundleDetails[]
+}
+
+export type DeploymentDetails = DeploymentWithConfig & {
+  token?: DeploymentToken
+  lastTry: number
   instances: Instance[]
 }
 
@@ -105,12 +118,11 @@ export type CreateDeployment = {
   note?: string | undefined
 }
 
-export type PatchDeployment = {
-  id: string
-  prefix?: string
+export type UpdateDeployment = {
   note?: string
+  prefix?: string
   protected?: boolean
-  environment?: UniqueKeyValue[]
+  configBundles?: string[]
 }
 
 export type CopyDeployment = {
@@ -137,30 +149,10 @@ export type StartDeployment = {
 }
 
 // ws
-
-export const WS_TYPE_PATCH_DEPLOYMENT_ENV = 'patch-deployment-env'
-export type PatchDeploymentEnvMessage = {
-  environment?: UniqueKeyValue[]
-  configBundleIds?: string[]
-}
-
-export const WS_TYPE_DEPLOYMENT_ENV_UPDATED = 'deployment-env-updated'
-export type DeploymentEnvUpdatedMessage = {
-  environment?: UniqueKeyValue[]
-  configBundleIds?: string[]
-  configBundleEnvironment: EnvironmentToConfigBundleNameMap
-}
-
-export const WS_TYPE_PATCH_INSTANCE = 'patch-instance'
-export type PatchInstanceMessage = {
-  instanceId: string
-  config?: Partial<InstanceContainerConfigData>
-  resetSection?: ImageConfigProperty
-}
-
-export const WS_TYPE_INSTANCE_UPDATED = 'instance-updated'
-export type InstanceUpdatedMessage = InstanceContainerConfigData & {
-  instanceId: string
+// TODO (@m8vago): move this to the container-config ws endpoint
+export const WS_TYPE_DEPLOYMENT_BUNDLES_UPDATED = 'deployment-bundles-updated'
+export type DeploymentBundlesUpdatedMessage = {
+  bundles: ConfigBundleDetails[]
 }
 
 export const WS_TYPE_GET_INSTANCE = 'get-instance'
@@ -168,11 +160,19 @@ export type GetInstanceMessage = {
   id: string
 }
 
-export const WS_TYPE_INSTANCE = 'instance'
-export type InstanceMessage = Instance & {}
-
 export const WS_TYPE_INSTANCES_ADDED = 'instances-added'
-export type InstancesAddedMessage = Instance[]
+type InstanceCreatedMessage = {
+  id: string
+  configId: string
+  image: VersionImage
+}
+export type InstancesAddedMessage = InstanceCreatedMessage[]
+
+export const WS_TYPE_INSTANCE_DELETED = 'instance-deleted'
+export type InstanceDeletedMessage = {
+  instanceId: string
+  configId: string
+}
 
 export type DeploymentEditEventMessage = InstancesAddedMessage | ImageDeletedMessage
 
@@ -186,25 +186,6 @@ export const WS_TYPE_DEPLOYMENT_EVENT_LIST = 'deployment-event-list'
 export type DeploymentEventMessage = DeploymentEvent
 
 export const WS_TYPE_DEPLOYMENT_FINISHED = 'deployment-finished'
-
-export const WS_TYPE_GET_INSTANCE_SECRETS = 'get-instance-secrets'
-export type GetInstanceSecretsMessage = {
-  id: string
-}
-
-export type InstanceSecrets = {
-  container: ContainerIdentifier
-
-  publicKey: string
-
-  keys?: string[]
-}
-
-export const WS_TYPE_INSTANCE_SECRETS = 'instance-secrets'
-export type InstanceSecretsMessage = {
-  instanceId: string
-  keys: string[]
-}
 
 export const deploymentIsMutable = (status: DeploymentStatus, type: VersionType): boolean => {
   switch (status) {
@@ -247,3 +228,11 @@ export const lastDeploymentStatusOfEvents = (events: DeploymentEvent[]): Deploym
 
 export const deploymentHasError = (dto: DyoApiError): boolean =>
   dto.error === 'rollingVersionDeployment' || dto.error === 'alreadyHavePreparing'
+
+export const instanceCreatedMessageToInstance = (it: InstanceCreatedMessage): Instance => ({
+  ...it,
+  config: {
+    id: it.configId,
+    type: 'instance',
+  },
+})

@@ -13,6 +13,7 @@ import {
   containerPrefixNameOf,
   ContainersStateListMessage,
   DeploymentRoot,
+  nameOfInstance,
   WatchContainerStatusMessage,
   WS_TYPE_CONTAINERS_STATE_LIST,
   WS_TYPE_WATCH_CONTAINERS_STATE,
@@ -26,14 +27,14 @@ export type ContainerProgress = {
   progress: number
 }
 
-interface DeploymentContainerStatusListProps {
+type DeploymentContainerStatusListProps = {
   className?: string
   deployment: DeploymentRoot
   progress: Record<string, ContainerProgress>
 }
 
-type ContainerWithInstance = Container & {
-  instanceId: string
+type ContainerWithConfigId = Container & {
+  configId: string
 }
 
 const DeploymentContainerStatusList = (props: DeploymentContainerStatusListProps) => {
@@ -44,12 +45,12 @@ const DeploymentContainerStatusList = (props: DeploymentContainerStatusListProps
 
   const now = utcNow()
 
-  const [containers, setContainers] = useState<ContainerWithInstance[]>(() =>
+  const [containers, setContainers] = useState<ContainerWithConfigId[]>(() =>
     deployment.instances.map(it => ({
-      instanceId: it.id,
+      configId: it.config.id,
       id: {
         prefix: deployment.prefix,
-        name: it.config?.name ?? it.image.config.name,
+        name: nameOfInstance(it),
       },
       createdAt: null,
       state: null,
@@ -73,7 +74,7 @@ const DeploymentContainerStatusList = (props: DeploymentContainerStatusListProps
       } as WatchContainerStatusMessage),
   })
 
-  const merge = (weak: ContainerWithInstance[], strong: Container[]): ContainerWithInstance[] => {
+  const merge = (weak: ContainerWithConfigId[], strong: Container[]): ContainerWithConfigId[] => {
     if (!strong || strong.length === 0) {
       return weak
     }
@@ -88,14 +89,14 @@ const DeploymentContainerStatusList = (props: DeploymentContainerStatusListProps
         ? it
         : {
             ...strong[index],
-            instanceId: it.instanceId,
+            configId: it.configId,
           }
     })
   }
 
-  sock.on(WS_TYPE_CONTAINERS_STATE_LIST, (message: ContainersStateListMessage) =>
-    setContainers(it => merge(it, message.containers)),
-  )
+  sock.on(WS_TYPE_CONTAINERS_STATE_LIST, (message: ContainersStateListMessage) => {
+    setContainers(it => merge(it, message.containers))
+  })
 
   const formatContainerTime = (container: Container) => {
     if (!container.createdAt) {
@@ -109,7 +110,7 @@ const DeploymentContainerStatusList = (props: DeploymentContainerStatusListProps
   }
 
   return !containers ? null : (
-    <DyoTable className={className} headless dataKey="instanceId" data={containers}>
+    <DyoTable className={className} headless dataKey="configId" data={containers}>
       <DyoColumn
         className="w-2/12"
         body={(it: Container) => (
@@ -121,9 +122,9 @@ const DeploymentContainerStatusList = (props: DeploymentContainerStatusListProps
       />
       <DyoColumn
         className="w-4/12"
-        body={(it: ContainerWithInstance) =>
-          progress[it.instanceId]?.progress < 1 ? (
-            <DyoProgress progress={progress[it.instanceId].progress} text={`${it.imageName}:${it.imageTag}`} />
+        body={(it: ContainerWithConfigId) =>
+          progress[it.configId]?.progress < 1 ? (
+            <DyoProgress progress={progress[it.configId].progress} text={`${it.imageName}:${it.imageTag}`} />
           ) : (
             <span>{`${it.imageName}:${it.imageTag}`}</span>
           )
@@ -136,7 +137,7 @@ const DeploymentContainerStatusList = (props: DeploymentContainerStatusListProps
       />
       <DyoColumn
         className="w-24 text-center"
-        body={(it: ContainerWithInstance) => (
+        body={(it: ContainerWithConfigId) => (
           <>
             {it.state && (
               <div className="inline-block mr-2">
@@ -149,11 +150,8 @@ const DeploymentContainerStatusList = (props: DeploymentContainerStatusListProps
               </div>
             )}
 
-            <DyoLink
-              href={routes.deployment.instanceDetails(deployment.id, it.instanceId)}
-              qaLabel="container-status-instance-config-icon"
-            >
-              <DyoIcon src="/instance_config_icon.svg" alt={t('common:instanceConfig')} size="md" />
+            <DyoLink href={routes.containerConfig.details(it.configId)} qaLabel="container-status-instance-config-icon">
+              <DyoIcon src="/concrete_container_config.svg" alt={t('common:instanceConfig')} size="md" />
             </DyoLink>
           </>
         )}

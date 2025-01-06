@@ -1,8 +1,9 @@
 import { Project } from '.prisma/client'
 import { Inject, Injectable, forwardRef } from '@nestjs/common'
+import { VersionWithChildren } from 'src/domain/version'
 import { BasicProperties } from 'src/shared/dtos/shared.dto'
 import AuditMapper from '../audit/audit.mapper'
-import VersionMapper, { VersionWithChildren } from '../version/version.mapper'
+import VersionMapper from '../version/version.mapper'
 import { BasicProjectDto, ProjectDetailsDto, ProjectDto, ProjectListItemDto } from './project.dto'
 
 @Injectable()
@@ -52,7 +53,7 @@ type ProjectWithVersions = Project & {
   deletable: boolean
 }
 
-export type ProjectWithCount = Project & {
+type ProjectWithCount = Project & {
   _count: {
     versions: number
   }

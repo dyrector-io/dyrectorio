@@ -78,6 +78,7 @@ type ClientLoop struct {
 
 type (
 	DeployFunc               func(context.Context, *dogger.DeploymentLogger, *v1.DeployImageRequest, *v1.VersionData) error
+	DeploySharedSecretsFunc  func(context.Context, string, map[string]string) error
 	WatchContainerStatusFunc func(context.Context, string, bool) (*ContainerStatusStream, error)
 	DeleteFunc               func(context.Context, string, string) error
 	SecretListFunc           func(context.Context, string, string) ([]string, error)
@@ -94,6 +95,7 @@ type (
 
 type WorkerFunctions struct {
 	Deploy               DeployFunc
+	DeploySharedSecrets  DeploySharedSecretsFunc
 	WatchContainerStatus WatchContainerStatusFunc
 	Delete               DeleteFunc
 	SecretList           SecretListFunc
@@ -186,7 +188,13 @@ func fetchCertificatesFromURL(ctx context.Context, addr string) (*x509.CertPool,
 func (cl *ClientLoop) grpcProcessCommand(command *agent.AgentCommand) {
 	switch {
 	case command.GetDeploy() != nil:
-		go executeVersionDeployRequest(cl.Ctx, command.GetDeploy(), cl.WorkerFuncs.Deploy, cl.AppConfig)
+		go executeDeployRequest(
+			cl.Ctx,
+			command.GetDeploy(),
+			cl.WorkerFuncs.Deploy,
+			cl.WorkerFuncs.DeploySharedSecrets,
+			cl.AppConfig,
+		)
 	case command.GetContainerState() != nil:
 		go executeWatchContainerStatus(cl.Ctx, command.GetContainerState(), cl.WorkerFuncs.WatchContainerStatus)
 	case command.GetContainerDelete() != nil:
@@ -455,9 +463,9 @@ func (cl *ClientLoop) handleGrpcTokenError(err error, token *config.ValidJWT) {
 	}
 }
 
-func executeVersionDeployRequest(
-	ctx context.Context, req *agent.VersionDeployRequest,
-	deploy DeployFunc, appConfig *config.CommonConfiguration,
+func executeDeployRequest(
+	ctx context.Context, req *agent.DeployRequest,
+	deploy DeployFunc, deploySecrets DeploySharedSecretsFunc, appConfig *config.CommonConfiguration,
 ) {
 	if deploy == nil {
 		log.Error().Msg("Deploy function not implemented")
@@ -486,10 +494,27 @@ func executeVersionDeployRequest(
 		return
 	}
 
-	failed := false
-	var deployStatus common.DeploymentStatus
+	deployStatus := common.DeploymentStatus_FAILED
+	defer func() {
+		dog.WriteDeploymentStatus(deployStatus)
+
+		err = statusStream.CloseSend()
+		if err != nil {
+			log.Error().Stack().Err(err).Str("deployment", req.Id).Msg("Status close error")
+		}
+	}()
+
+	if len(req.Secrets) > 0 {
+		dog.WriteInfo("Deploying secrets")
+		err = deploySecrets(ctx, req.Prefix, req.Secrets)
+		if err != nil {
+			dog.WriteError(err.Error())
+			return
+		}
+	}
+
 	for i := range req.Requests {
-		imageReq := mapper.MapDeployImage(req.Requests[i], appConfig)
+		imageReq := mapper.MapDeployImage(req.Prefix, req.Requests[i], appConfig)
 		dog.SetRequestID(imageReq.RequestID)
 
 		var versionData *v1.VersionData
@@ -498,24 +523,12 @@ func executeVersionDeployRequest(
 		}
 
 		if err = deploy(ctx, dog, imageReq, versionData); err != nil {
-			failed = true
 			dog.WriteError(err.Error())
+			return
 		}
 	}
 
-	if failed {
-		deployStatus = common.DeploymentStatus_FAILED
-	} else {
-		deployStatus = common.DeploymentStatus_SUCCESSFUL
-	}
-
-	dog.WriteDeploymentStatus(deployStatus)
-
-	err = statusStream.CloseSend()
-	if err != nil {
-		log.Error().Stack().Err(err).Str("deployment", req.Id).Msg("Status close error")
-		return
-	}
+	deployStatus = common.DeploymentStatus_SUCCESSFUL
 }
 
 func streamContainerStatus(
@@ -636,13 +649,10 @@ func executeDeleteMultipleContainers(
 	req *common.DeleteContainersRequest,
 	deleteFn DeleteContainersFunc,
 ) *AgentGrpcError {
-	var prefix, name string
-	if req.GetContainer() != nil {
-		prefix = req.GetContainer().Prefix
-		name = req.GetContainer().Name
-	} else {
-		prefix = req.GetPrefix()
-		name = ""
+	prefix, name, err := mapper.MapContainerOrPrefixToPrefixName(req.Target)
+	if err != nil {
+		log.Error().Err(err).Msg("Failed to delete multiple containers")
+		return agentError(ctx, err)
 	}
 
 	ctx = metadata.AppendToOutgoingContext(ctx, "dyo-container-prefix", prefix, "dyo-container-name", name)
@@ -653,7 +663,7 @@ func executeDeleteMultipleContainers(
 
 	log.Info().Msg("Deleting multiple containers")
 
-	err := deleteFn(ctx, req)
+	err = deleteFn(ctx, req)
 	if err != nil {
 		log.Error().Stack().Err(err).Msg("Failed to delete multiple containers")
 		return agentError(ctx, err)
@@ -741,8 +751,15 @@ func executeSecretList(
 	listFunc SecretListFunc,
 	appConfig *config.CommonConfiguration,
 ) *AgentGrpcError {
-	prefix := command.Container.Prefix
-	name := command.Container.Name
+	var prefix string
+	name := ""
+
+	if command.Target.GetContainer() != nil {
+		prefix = command.Target.GetContainer().Prefix
+		name = command.Target.GetContainer().Name
+	} else {
+		prefix = command.Target.GetPrefix()
+	}
 
 	ctx = metadata.AppendToOutgoingContext(ctx, "dyo-container-prefix", prefix, "dyo-container-name", name)
 
@@ -765,10 +782,8 @@ func executeSecretList(
 	}
 
 	resp := &common.ListSecretsResponse{
-		Prefix:    prefix,
-		Name:      name,
+		Target:    command.Target,
 		PublicKey: publicKey,
-		HasKeys:   keys != nil,
 		Keys:      keys,
 	}
 

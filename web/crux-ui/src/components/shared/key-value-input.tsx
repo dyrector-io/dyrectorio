@@ -1,16 +1,16 @@
 import { MessageType } from '@app/elements/dyo-input'
 import useRepatch from '@app/hooks/use-repatch'
 
+import DyoMessage from '@app/elements/dyo-message'
 import { UniqueKeyValue } from '@app/models'
+import { ErrorWithPath } from '@app/validations'
 import clsx from 'clsx'
 import useTranslation from 'next-translate/useTranslation'
 import { Fragment, HTMLInputTypeAttribute, useEffect } from 'react'
 import { v4 as uuid } from 'uuid'
+import ConfigSectionLabel from '../container-configs/config-section-label'
 import MultiInput from '../editor/multi-input'
 import { ItemEditorState } from '../editor/use-item-editor-state'
-import ConfigSectionLabel from '../projects/versions/images/config/config-section-label'
-import { ErrorWithPath } from '@app/validations'
-import DyoMessage from '@app/elements/dyo-message'
 
 const EMPTY_KEY_VALUE_PAIR = {
   id: uuid(),
@@ -65,7 +65,7 @@ const mergeItems =
     return result
   }
 
-interface KeyValueInputProps {
+type KeyValueInputProps = {
   disabled?: boolean
   valueDisabled?: boolean
   className?: string
@@ -80,7 +80,7 @@ interface KeyValueInputProps {
   messageType?: MessageType
   onChange: (items: UniqueKeyValue[]) => void
   onResetSection?: VoidFunction
-  hint?: (key: string) => string | undefined
+  errors?: Record<string, string>
   findErrorMessage?: (index: number) => ErrorWithPath
 }
 
@@ -100,7 +100,7 @@ const KeyValueInput = (props: KeyValueInputProps) => {
     messageType,
     onChange: propsOnChange,
     onResetSection: propsOnResetSection,
-    hint,
+    errors = {},
     findErrorMessage,
   } = props
 
@@ -114,11 +114,11 @@ const KeyValueInput = (props: KeyValueInputProps) => {
     keyValues.forEach((item, index) => {
       const error = findErrorMessage?.call(null, index)
       const keyUniqueErr = result.find(it => it.key === item.key) ? t('keyMustUnique') : null
-      const hintErr = !keyUniqueErr && hint ? hint(item.key) : null
+      const itemError = (!keyUniqueErr && errors[item.key]) ?? null
       result.push({
         ...item,
-        message: keyUniqueErr ?? hintErr ?? error?.message,
-        messageType: (keyUniqueErr || error ? 'error' : 'info') as MessageType,
+        message: keyUniqueErr ?? itemError ?? error?.message,
+        messageType: 'error' as MessageType,
       })
     })
 
@@ -145,8 +145,6 @@ const KeyValueInput = (props: KeyValueInputProps) => {
   }
 
   const onResetSection = () => {
-    dispatch(mergeItems([]))
-
     propsOnResetSection()
   }
 

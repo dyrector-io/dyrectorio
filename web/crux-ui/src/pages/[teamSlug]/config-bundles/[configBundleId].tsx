@@ -1,26 +1,39 @@
-import { ConfigBundlePageMenu } from '@app/components/config-bundles/config-bundle-page-menu'
-import { useConfigBundleDetailsState } from '@app/components/config-bundles/use-config-bundle-details-state'
-import MultiInput from '@app/components/editor/multi-input'
-import MultiTextArea from '@app/components/editor/multi-textarea'
+import ConfigBundleCard from '@app/components/config-bundles/config-bundle-card'
+import EditConfigBundleCard from '@app/components/config-bundles/edit-config-bundle-card'
+import DeploymentStatusTag from '@app/components/deployments/deployment-status-tag'
 import { Layout } from '@app/components/layout'
 import { BreadcrumbLink } from '@app/components/shared/breadcrumb'
-import KeyValueInput from '@app/components/shared/key-value-input'
 import PageHeading from '@app/components/shared/page-heading'
+import { DetailsPageMenu } from '@app/components/shared/page-menu'
+import { PaginationSettings } from '@app/components/shared/paginator'
 import { DyoCard } from '@app/elements/dyo-card'
-import { DyoHeading } from '@app/elements/dyo-heading'
-import { DyoLabel } from '@app/elements/dyo-label'
-import WebSocketSaveIndicator from '@app/elements/web-socket-save-indicator'
+import DyoIcon from '@app/elements/dyo-icon'
+import DyoLink from '@app/elements/dyo-link'
+import DyoTable, { DyoColumn, sortDate, sortEnum, sortString } from '@app/elements/dyo-table'
 import { defaultApiErrorHandler } from '@app/errors'
+import usePagination from '@app/hooks/use-pagination'
+import useSubmit from '@app/hooks/use-submit'
 import useTeamRoutes from '@app/hooks/use-team-routes'
-import { ConfigBundleDetails } from '@app/models'
+import {
+  ConfigBundleDetails,
+  Deployment,
+  DEPLOYMENT_STATUS_VALUES,
+  DeploymentQuery,
+  detailsToConfigBundle,
+  PaginatedList,
+  PaginationQuery,
+} from '@app/models'
 import { TeamRoutes } from '@app/routes'
-import { withContextAuthorization } from '@app/utils'
+import { auditToLocaleDate, withContextAuthorization } from '@app/utils'
 import { getCruxFromContext } from '@server/crux-api'
 import { GetServerSidePropsContext } from 'next'
 import useTranslation from 'next-translate/useTranslation'
-import toast from 'react-hot-toast'
+import { useRouter } from 'next/router'
+import { useCallback, useState } from 'react'
 
-interface ConfigBundleDetailsPageProps {
+const defaultPagination: PaginationSettings = { pageNumber: 0, pageSize: 10 }
+
+type ConfigBundleDetailsPageProps = {
   configBundle: ConfigBundleDetails
 }
 
@@ -28,24 +41,51 @@ const ConfigBundleDetailsPage = (props: ConfigBundleDetailsPageProps) => {
   const { configBundle: propsConfigBundle } = props
 
   const { t } = useTranslation('config-bundles')
+  const router = useRouter()
   const routes = useTeamRoutes()
-
-  const onWsError = (error: Error) => {
-    // eslint-disable-next-line
-    console.error('ws', 'edit-config-bundle', error)
-    toast(t('errors:connectionLost'))
-  }
 
   const onApiError = defaultApiErrorHandler(t)
 
-  const [state, actions] = useConfigBundleDetailsState({
-    configBundle: propsConfigBundle,
-    onWsError,
-    onApiError,
+  const [configBundle, setConfigBundle] = useState<ConfigBundleDetails>(propsConfigBundle)
+  const [editing, setEditing] = useState(false)
+
+  const submit = useSubmit()
+
+  const fetchData = useCallback(
+    async (paginationQuery: PaginationQuery): Promise<PaginatedList<Deployment>> => {
+      const query: DeploymentQuery = {
+        ...paginationQuery,
+        configBundleId: propsConfigBundle.id,
+      }
+
+      const res = await fetch(routes.deployment.api.list(query))
+
+      if (!res.ok) {
+        await onApiError(res)
+        return null
+      }
+
+      return (await res.json()) as PaginatedList<Deployment>
+    },
+    [routes, onApiError],
+  )
+
+  const [pagination, setPagination] = usePagination({
+    defaultSettings: defaultPagination,
+    fetchData,
   })
 
-  const { configBundle, editing, saveState, editorState, fieldErrors, topBarContent } = state
-  const { setEditing, onDelete, onEditEnv, onEditName, onEditDescription } = actions
+  const onDelete = async () => {
+    const res = await fetch(routes.configBundle.api.details(configBundle.id), {
+      method: 'DELETE',
+    })
+
+    if (res.ok) {
+      await router.replace(routes.configBundle.list())
+    } else {
+      await onApiError(res)
+    }
+  }
 
   const pageLink: BreadcrumbLink = {
     name: t('common:configBundles'),
@@ -53,7 +93,7 @@ const ConfigBundleDetailsPage = (props: ConfigBundleDetailsPageProps) => {
   }
 
   return (
-    <Layout title={t('configBundleName', configBundle)} topBarContent={topBarContent}>
+    <Layout title={t('configBundleName', configBundle)}>
       <PageHeading
         pageLink={pageLink}
         sublinks={[
@@ -63,9 +103,8 @@ const ConfigBundleDetailsPage = (props: ConfigBundleDetailsPageProps) => {
           },
         ]}
       >
-        <WebSocketSaveIndicator className="mx-3" state={saveState} />
-
-        <ConfigBundlePageMenu
+        <DetailsPageMenu
+          submit={submit}
           onDelete={onDelete}
           editing={editing}
           setEditing={setEditing}
@@ -75,61 +114,57 @@ const ConfigBundleDetailsPage = (props: ConfigBundleDetailsPageProps) => {
           })}
         />
       </PageHeading>
-
-      <DyoCard>
-        <DyoHeading element="h4" className="text-lg text-bright">
-          {t(editing ? 'common:editName' : 'view', configBundle)}
-        </DyoHeading>
-
-        <DyoLabel textColor="text-bright-muted">{t('tips')}</DyoLabel>
-
-        <div className="flex flex-col gap-2">
-          {editing && (
-            <div className="w-full flex flex-row gap-2">
-              <div className="flex-1 flex flex-col gap-2">
-                <DyoLabel className="text-bright font-semibold tracking-wide mb-2 mt-8">{t('common:name')}</DyoLabel>
-
-                <MultiInput
-                  id="name"
-                  name="name"
-                  containerClassName="px-2"
-                  onPatch={it => onEditName(it)}
-                  value={configBundle.name}
-                  editorOptions={editorState}
-                  message={fieldErrors.find(it => it.path?.startsWith('name'))?.message}
-                  required
-                  grow
-                />
-              </div>
-
-              <div className="flex-1 flex flex-col gap-2">
-                <DyoLabel className="text-bright font-semibold tracking-wide mb-2 mt-8">
-                  {t('common:description')}
-                </DyoLabel>
-
-                <MultiTextArea
-                  id="description"
-                  name="description"
-                  onPatch={it => onEditDescription(it)}
-                  value={configBundle.description}
-                  editorOptions={editorState}
-                  message={fieldErrors.find(it => it.path?.startsWith('description'))?.message}
-                  required
-                  grow
-                />
-              </div>
-            </div>
-          )}
-
-          <KeyValueInput
-            className="max-h-128 overflow-y-auto mt-8"
-            disabled={!editing}
-            label={t('environment')}
-            items={configBundle.environment ?? []}
-            onChange={onEditEnv}
-            editorOptions={editorState}
+      {editing ? (
+        <EditConfigBundleCard submit={submit} configBundle={configBundle} onConfigBundleEdited={setConfigBundle} />
+      ) : (
+        <ConfigBundleCard configBundle={detailsToConfigBundle(configBundle)} />
+      )}
+      <DyoCard className="relative mt-4">
+        <DyoTable
+          data={pagination.data ?? []}
+          dataKey="id"
+          pagination="server"
+          paginationTotal={pagination.total}
+          onServerPagination={setPagination}
+          initialSortColumn={4}
+          initialSortDirection="desc"
+        >
+          <DyoColumn header={t('common:project')} field="project.name" className="w-2/12" sortable sort={sortString} />
+          <DyoColumn header={t('common:version')} field="version.name" className="w-2/12" sortable sort={sortString} />
+          <DyoColumn header={t('common:node')} field="node.name" className="w-2/12" sortable sort={sortString} />
+          <DyoColumn header={t('common:prefix')} field="prefix" className="w-2/12" sortable sort={sortString} />
+          <DyoColumn
+            header={t('common:updatedAt')}
+            className="w-2/12"
+            suppressHydrationWarning
+            sortable
+            sortField={(it: Deployment) => it.audit.updatedAt ?? it.audit.createdAt}
+            sort={sortDate}
+            body={(it: Deployment) => auditToLocaleDate(it.audit)}
           />
-        </div>
+          <DyoColumn
+            header={t('common:status')}
+            className="w-2/12 text-center"
+            sortable
+            sortField="status"
+            sort={sortEnum(DEPLOYMENT_STATUS_VALUES)}
+            body={(it: Deployment) => <DeploymentStatusTag status={it.status} className="w-fit mx-auto" />}
+          />
+          <DyoColumn
+            header={t('common:actions')}
+            className="w-40 text-center"
+            preventClickThrough
+            body={(it: Deployment) => (
+              <DyoLink
+                className="inline-block mr-2"
+                href={routes.deployment.details(it.id)}
+                qaLabel="deployment-list-view-icon"
+              >
+                <DyoIcon src="/eye.svg" alt={t('common:view')} size="md" />
+              </DyoLink>
+            )}
+          />
+        </DyoTable>
       </DyoCard>
     </Layout>
   )

@@ -54,6 +54,10 @@ func GetSecretsList(ctx context.Context, prefix, name string) ([]string, error) 
 	cfg := grpc.GetConfigFromContext(ctx).(*config.Configuration)
 	secretHandler := k8s.NewSecret(ctx, k8s.NewClient(cfg))
 
+	if name == "" {
+		name = prefix + "-shared"
+	}
+
 	return secretHandler.ListSecrets(prefix, name)
 }
 

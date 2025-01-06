@@ -1,5 +1,6 @@
 import { SubscribeMessage, WebSocketGateway } from '@nestjs/websockets'
 import { Identity } from '@ory/kratos-client'
+import { takeUntil } from 'rxjs'
 import { AuditLogLevel } from 'src/decorators/audit-logger.decorator'
 import { WsAuthorize, WsClient, WsMessage, WsSubscribe, WsSubscription, WsUnsubscribe } from 'src/websockets/common'
 import SocketClient from 'src/websockets/decorators/ws.client.decorator'
@@ -11,6 +12,7 @@ import {
 import WsParam from 'src/websockets/decorators/ws.param.decorator'
 import SocketMessage from 'src/websockets/decorators/ws.socket-message.decorator'
 import SocketSubscription from 'src/websockets/decorators/ws.subscription.decorator'
+import { WS_TYPE_PATCH_RECEIVED } from '../container/container-config.message'
 import {
   EditorInitMessage,
   EditorLeftMessage,
@@ -25,7 +27,6 @@ import {
   WS_TYPE_INPUT_FOCUSED,
 } from '../editor/editor.message'
 import EditorServiceProvider from '../editor/editor.service.provider'
-import { PatchImageDto } from '../image/image.dto'
 import ImageService from '../image/image.service'
 import { IdentityFromSocket } from '../token/jwt-auth.guard'
 import {
@@ -34,23 +35,22 @@ import {
   GetImageMessage,
   ImageDeletedMessage,
   ImageMessage,
-  ImagesAddedMessage,
+  ImageTagMessage,
   OrderImagesMessage,
-  PatchImageMessage,
+  WS_TYPE_ADD_IMAGES,
+  WS_TYPE_DELETE_IMAGE,
+  WS_TYPE_GET_IMAGE,
   WS_TYPE_IMAGE,
-  WS_TYPE_IMAGES_ADDED,
   WS_TYPE_IMAGES_WERE_REORDERED,
   WS_TYPE_IMAGE_DELETED,
-  WS_TYPE_IMAGE_UPDATED,
-  WS_TYPE_PATCH_RECEIVED,
+  WS_TYPE_IMAGE_TAG_UPDATED,
+  WS_TYPE_ORDER_IMAGES,
+  WS_TYPE_SET_IMAGE_TAG,
 } from './version.message'
 import VersionService from './version.service'
 
 const VersionId = () => WsParam('versionId')
 const TeamSlug = () => WsParam('teamSlug')
-
-// TODO(@m8vago): make an event aggregator for image updates patches etc
-// so subscribers will be notified of the changes regardless of the transport platform
 
 @WebSocketGateway({
   namespace: ':teamSlug/projects/:projectId/versions/:versionId',
@@ -87,6 +87,11 @@ export default class VersionWebSocketGateway {
       data: me,
     })
 
+    this.service
+      .subscribeToDomainEvents(versionId)
+      .pipe(takeUntil(subscription.getCompleter(client.token)))
+      .subscribe(message => subscription.sendToAll(message))
+
     return {
       type: WS_TYPE_EDITOR_INIT,
       data: {
@@ -111,7 +116,7 @@ export default class VersionWebSocketGateway {
   }
 
   @AuditLogLevel('disabled')
-  @SubscribeMessage('get-image')
+  @SubscribeMessage(WS_TYPE_GET_IMAGE)
   async getImage(@SocketMessage() message: GetImageMessage): Promise<WsMessage<ImageMessage>> {
     const data = await this.imageService.getImageDetails(message.id)
 
@@ -121,27 +126,17 @@ export default class VersionWebSocketGateway {
     } as WsMessage<ImageMessage>
   }
 
-  @SubscribeMessage('add-images')
+  @SubscribeMessage(WS_TYPE_ADD_IMAGES)
   async addImages(
     @TeamSlug() teamSlug: string,
     @VersionId() versionId: string,
     @SocketMessage() message: AddImagesMessage,
     @IdentityFromSocket() identity: Identity,
-    @SocketSubscription() subscription: WsSubscription,
   ): Promise<void> {
-    const images = await this.imageService.addImagesToVersion(teamSlug, versionId, message.registryImages, identity)
-
-    const res: WsMessage<ImagesAddedMessage> = {
-      type: WS_TYPE_IMAGES_ADDED,
-      data: {
-        images,
-      },
-    }
-
-    subscription.sendToAll(res)
+    await this.imageService.addImagesToVersion(teamSlug, versionId, message.registryImages, identity)
   }
 
-  @SubscribeMessage('delete-image')
+  @SubscribeMessage(WS_TYPE_DELETE_IMAGE)
   async deleteImage(
     @SocketMessage() message: DeleteImageMessage,
     @SocketSubscription() subscription: WsSubscription,
@@ -156,31 +151,26 @@ export default class VersionWebSocketGateway {
     subscription.sendToAll(res)
   }
 
-  @SubscribeMessage('patch-image')
-  async patchImage(
+  @SubscribeMessage(WS_TYPE_SET_IMAGE_TAG)
+  async setImageTag(
     @TeamSlug() teamSlug,
     @SocketClient() client: WsClient,
-    @SocketMessage() message: PatchImageMessage,
+    @SocketMessage() message: ImageTagMessage,
     @IdentityFromSocket() identity: Identity,
     @SocketSubscription() subscription: WsSubscription,
   ): Promise<WsMessage<null>> {
-    let cruxReq: Pick<PatchImageDto, 'tag' | 'config'> = {}
-
-    if (message.resetSection) {
-      cruxReq.config = {}
-      cruxReq.config[message.resetSection as string] = null
-    } else {
-      cruxReq = message
-    }
-
-    await this.imageService.patchImage(teamSlug, message.id, cruxReq, identity)
-
-    const res: WsMessage<PatchImageMessage> = {
-      type: WS_TYPE_IMAGE_UPDATED,
-      data: {
-        ...cruxReq,
-        id: message.id,
+    await this.imageService.patchImage(
+      teamSlug,
+      message.imageId,
+      {
+        tag: message.tag,
       },
+      identity,
+    )
+
+    const res: WsMessage<ImageTagMessage> = {
+      type: WS_TYPE_IMAGE_TAG_UPDATED,
+      data: message,
     }
 
     subscription.sendToAllExcept(client, res)
@@ -191,7 +181,7 @@ export default class VersionWebSocketGateway {
     }
   }
 
-  @SubscribeMessage('order-images')
+  @SubscribeMessage(WS_TYPE_ORDER_IMAGES)
   async orderImages(
     @SocketClient() client: WsClient,
     @SocketMessage() message: OrderImagesMessage,

@@ -1,11 +1,16 @@
 import clsx from 'clsx'
 import useTranslation from 'next-translate/useTranslation'
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
 import DyoCheckbox from './dyo-checkbox'
 import DyoIcon from './dyo-icon'
 import DyoMessage from './dyo-message'
 
-export type DyoMultiSelectProps<T> = {
+type MutliSelectItem = {
+  id: string
+  name: string
+}
+
+export type DyoMultiSelectProps<T extends MutliSelectItem> = {
   className?: string
   name: string
   disabled?: boolean
@@ -13,13 +18,11 @@ export type DyoMultiSelectProps<T> = {
   message?: string
   messageType?: 'error' | 'info'
   choices: readonly T[]
-  selection: string[]
-  idConverter: (choice: T) => string
-  labelConverter: (choice: T) => string
-  onSelectionChange: (selection: string[]) => void
+  selection: T[]
+  onSelectionChange: (selection: T[]) => void
 }
 
-const DyoMultiSelect = <T,>(props: DyoMultiSelectProps<T>) => {
+const DyoMultiSelect = <T extends MutliSelectItem>(props: DyoMultiSelectProps<T>) => {
   const {
     message,
     messageType,
@@ -27,9 +30,7 @@ const DyoMultiSelect = <T,>(props: DyoMultiSelectProps<T>) => {
     className,
     grow,
     choices,
-    selection,
-    idConverter,
-    labelConverter,
+    selection: propsSelection,
     onSelectionChange,
     name,
   } = props
@@ -38,7 +39,12 @@ const DyoMultiSelect = <T,>(props: DyoMultiSelectProps<T>) => {
 
   const [selectorVisible, setSelectorVisible] = useState<boolean>(false)
 
-  const toggleSelection = (ev: React.MouseEvent | React.ChangeEvent, id: string) => {
+  const selection = useMemo(
+    () => choices.filter(choice => propsSelection.find(it => it.id === choice.id)),
+    [choices, propsSelection],
+  )
+
+  const toggleSelection = (ev: React.MouseEvent | React.ChangeEvent, item: T) => {
     if (disabled) {
       return
     }
@@ -46,15 +52,10 @@ const DyoMultiSelect = <T,>(props: DyoMultiSelectProps<T>) => {
     ev.preventDefault()
     ev.stopPropagation()
 
-    if (selection.includes(id)) {
-      const newSelection = [...selection]
-      const index = selection.indexOf(id)
-      if (index >= 0) {
-        newSelection.splice(index, 1)
-      }
-      onSelectionChange(newSelection)
+    if (selection.includes(item)) {
+      onSelectionChange(selection.filter(it => it !== item))
     } else {
-      onSelectionChange([...selection, id])
+      onSelectionChange([...selection, item])
     }
   }
 
@@ -98,17 +99,7 @@ const DyoMultiSelect = <T,>(props: DyoMultiSelectProps<T>) => {
             )}
             onClick={toggleDropdown}
           >
-            <label>
-              {!selection || selection.length === 0
-                ? t('none')
-                : selection
-                    .map(it => {
-                      const item = choices.find(elem => idConverter(elem) === it)
-                      return item ? labelConverter(item) : null
-                    })
-                    .filter(it => !!it)
-                    .join(', ')}
-            </label>
+            <label>{!selection || selection.length < 1 ? t('none') : selection.map(it => it.name).join(', ')}</label>
           </div>
           <div className="pointer-events-none pr-2 absolute h-[24px] right-0 top-1/2 transform -translate-y-1/2">
             <DyoIcon src="/chevron_down.svg" alt={t('common:down')} aria-hidden size="md" />
@@ -117,24 +108,21 @@ const DyoMultiSelect = <T,>(props: DyoMultiSelectProps<T>) => {
 
         {selectorVisible && (
           <div className="absolute w-full z-50 mt-0.5 bg-medium ring-2 rounded-b-md ring-light-grey max-h-60 overflow-y-auto overflow-x-hidden">
-            {choices.map((it, index) => {
-              const itemId = idConverter(it)
-              return (
-                <div
-                  key={itemId}
-                  className="p-2 flex flex-row items-center cursor-pointer hover:bg-medium-eased"
-                  onClick={e => toggleSelection(e, itemId)}
-                >
-                  <DyoCheckbox
-                    className="flex-none mr-2"
-                    checked={selection.includes(itemId)}
-                    onCheckedChange={(_, ev) => toggleSelection(ev, itemId)}
-                    qaLabel={`${name}-${index}`}
-                  />
-                  <label className="text-light-eased cursor-pointer line-clamp-1">{labelConverter(it)}</label>
-                </div>
-              )
-            })}
+            {choices.map((it, index) => (
+              <div
+                key={`item-${index}`}
+                className="p-2 flex flex-row items-center cursor-pointer hover:bg-medium-eased"
+                onClick={e => toggleSelection(e, it)}
+              >
+                <DyoCheckbox
+                  className="flex-none mr-2"
+                  checked={selection.includes(it)}
+                  onCheckedChange={(_, ev) => toggleSelection(ev, it)}
+                  qaLabel={`${name}-${index}`}
+                />
+                <label className="text-light-eased cursor-pointer line-clamp-1">{it.name}</label>
+              </div>
+            ))}
           </div>
         )}
       </div>

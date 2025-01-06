@@ -1,22 +1,23 @@
 import { DeploymentStatusEnum, NodeTypeEnum, ProjectTypeEnum, Storage, VersionTypeEnum } from '.prisma/client'
 import { Test, TestingModule } from '@nestjs/testing'
-import { ContainerConfigData, InstanceContainerConfigData, MergedContainerConfigData } from 'src/domain/container'
+import { ConcreteContainerConfigData, ContainerConfigData } from 'src/domain/container'
+import { DeploymentWithNodeVersion } from 'src/domain/deployment'
 import { CommonContainerConfig, DagentContainerConfig, ImportContainer } from 'src/grpc/protobuf/proto/agent'
 import { DriverType, NetworkMode, RestartPolicy } from 'src/grpc/protobuf/proto/common'
 import EncryptionService from 'src/services/encryption.service'
 import AgentService from '../agent/agent.service'
 import AuditMapper from '../audit/audit.mapper'
+import ConfigBundleMapper from '../config.bundle/config.bundle.mapper'
 import ContainerMapper from '../container/container.mapper'
 import ImageMapper from '../image/image.mapper'
 import NodeMapper from '../node/node.mapper'
 import ProjectMapper from '../project/project.mapper'
 import RegistryMapper from '../registry/registry.mapper'
 import VersionMapper from '../version/version.mapper'
-import { DeploymentDto, DeploymentWithNodeVersion, PatchInstanceDto } from './deploy.dto'
+import { DeploymentDto, PatchInstanceDto } from './deploy.dto'
 import DeployMapper from './deploy.mapper'
 
 describe('DeployMapper', () => {
-  let containerMapper: ContainerMapper = null
   let deployMapper: DeployMapper = null
 
   beforeEach(async () => {
@@ -32,6 +33,7 @@ describe('DeployMapper', () => {
         NodeMapper,
         ImageMapper,
         DeployMapper,
+        ConfigBundleMapper,
         {
           provide: EncryptionService,
           useValue: jest.mocked(EncryptionService),
@@ -43,7 +45,6 @@ describe('DeployMapper', () => {
       ],
     }).compile()
 
-    containerMapper = module.get<ContainerMapper>(ContainerMapper)
     deployMapper = module.get<DeployMapper>(DeployMapper)
   })
 
@@ -268,7 +269,7 @@ describe('DeployMapper', () => {
     expectedState: null,
   }
 
-  const fullInstance: InstanceContainerConfigData = {
+  const fullInstance: ConcreteContainerConfigData = {
     name: 'instance.img',
     capabilities: [],
     deploymentStrategy: 'recreate',
@@ -492,93 +493,14 @@ describe('DeployMapper', () => {
     expectedState: null,
   }
 
-  const generateUndefinedInstance = (): InstanceContainerConfigData => {
-    const instance: InstanceContainerConfigData = {}
+  const generateUndefinedInstance = (): ConcreteContainerConfigData => {
+    const instance: ConcreteContainerConfigData = {}
     Object.keys(fullImage).forEach(key => {
       instance[key] = undefined
     })
 
     return instance
   }
-
-  describe('mergeConfigs', () => {
-    it('should use the instance variables when available', () => {
-      const merged = containerMapper.mergeConfigs(fullImage, fullInstance)
-
-      expect(merged).toEqual(fullInstance)
-    })
-
-    it('should use the image variables when instance is not available', () => {
-      const merged = containerMapper.mergeConfigs(fullImage, {})
-
-      const expected: InstanceContainerConfigData = {
-        ...fullImage,
-        secrets: [
-          {
-            id: 'secret1',
-            key: 'secret1',
-            required: false,
-            encrypted: false,
-            value: '',
-            publicKey: null,
-          },
-        ],
-      }
-
-      expect(merged).toEqual(expected)
-    })
-
-    it('should use the instance only when available', () => {
-      const instance: InstanceContainerConfigData = {
-        ports: fullInstance.ports,
-        labels: {
-          deployment: [
-            {
-              id: 'instance.labels.deployment',
-              key: 'instance.labels.deployment',
-              value: 'instance.labels.deployment',
-            },
-          ],
-        },
-        annotations: {
-          service: [
-            {
-              id: 'instance.annotations.service',
-              key: 'instance.annotations.service',
-              value: 'instance.annotations.service',
-            },
-          ],
-        },
-      }
-
-      const expected: InstanceContainerConfigData = {
-        ...fullImage,
-        ports: fullInstance.ports,
-        labels: {
-          ...fullImage.labels,
-          deployment: instance.labels.deployment,
-        },
-        annotations: {
-          ...fullImage.annotations,
-          service: instance.annotations.service,
-        },
-        secrets: [
-          {
-            id: 'secret1',
-            key: 'secret1',
-            required: false,
-            encrypted: false,
-            value: '',
-            publicKey: null,
-          },
-        ],
-      }
-
-      const merged = containerMapper.mergeConfigs(fullImage, instance)
-
-      expect(merged).toEqual(expected)
-    })
-  })
 
   describe('instanceConfigToInstanceContainerConfigData', () => {
     it('should overwrite the specified properties only', () => {
@@ -606,7 +528,7 @@ describe('DeployMapper', () => {
         },
       ]
 
-      const actual = deployMapper.instanceConfigDtoToInstanceContainerConfigData(fullImage, {}, patch.config)
+      const actual = deployMapper.concreteConfigDtoToConcreteContainerConfigData(fullImage, {}, patch.config)
 
       expect(actual).toEqual(expected)
     })
@@ -639,7 +561,7 @@ describe('DeployMapper', () => {
         deployment: fullInstance.labels.deployment,
       }
 
-      const actual = deployMapper.instanceConfigDtoToInstanceContainerConfigData(fullImage, {}, patch.config)
+      const actual = deployMapper.concreteConfigDtoToConcreteContainerConfigData(fullImage, {}, patch.config)
 
       expect(actual).toEqual(expected)
     })
@@ -676,7 +598,7 @@ describe('DeployMapper', () => {
         },
       }
 
-      const instance: InstanceContainerConfigData = {
+      const instance: ConcreteContainerConfigData = {
         labels: fullInstance.labels,
         annotations: fullInstance.annotations,
       }
@@ -693,7 +615,7 @@ describe('DeployMapper', () => {
         ingress: labelIngress,
       }
 
-      const actual = deployMapper.instanceConfigDtoToInstanceContainerConfigData(fullImage, instance, patch.config)
+      const actual = deployMapper.concreteConfigDtoToConcreteContainerConfigData(fullImage, instance, patch.config)
 
       expect(actual).toEqual(expected)
     })
@@ -710,6 +632,8 @@ describe('DeployMapper', () => {
       updatedAt: new Date(),
       createdBy: 'created-by',
       updatedBy: 'updated-by',
+      deployedAt: null,
+      deployedBy: null,
       node: {
         id: 'deployment-node-id',
         name: 'deployment node',
@@ -725,7 +649,7 @@ describe('DeployMapper', () => {
           type: ProjectTypeEnum.versionless,
         },
       },
-      environment: {},
+      configId: 'deployment-config-id',
       versionId: 'deployment-version-id',
       nodeId: 'deployment-node-id',
       tries: 1,
@@ -768,7 +692,8 @@ describe('DeployMapper', () => {
   describe('commonConfigToAgentProto', () => {
     it('the function storageToImportContainer should add https by default if protocol is missing', () => {
       const config = deployMapper.commonConfigToAgentProto(
-        <MergedContainerConfigData>{
+        <ConcreteContainerConfigData>{
+          storageSet: true,
           storageId: 'test-1234',
           storageConfig: {
             path: 'test',
@@ -791,7 +716,8 @@ describe('DeployMapper', () => {
 
     it('the function storageToImportContainer should leave http prefix untouched', () => {
       const config = deployMapper.commonConfigToAgentProto(
-        <MergedContainerConfigData>{
+        <ConcreteContainerConfigData>{
+          storageSet: true,
           storageId: 'test-1234',
           storageConfig: {
             path: 'test',
@@ -814,7 +740,8 @@ describe('DeployMapper', () => {
 
     it('the function storageToImportContainer should add https prefix untouched', () => {
       const config = deployMapper.commonConfigToAgentProto(
-        <MergedContainerConfigData>{
+        <ConcreteContainerConfigData>{
+          storageSet: true,
           storageId: 'test-1234',
           storageConfig: {
             path: 'test',
@@ -838,7 +765,7 @@ describe('DeployMapper', () => {
 
   describe('dagentConfigToAgentProto logConfig', () => {
     it('undefined logConfig should return no log driver', () => {
-      const config = deployMapper.dagentConfigToAgentProto(<MergedContainerConfigData>{
+      const config = deployMapper.dagentConfigToAgentProto(<ConcreteContainerConfigData>{
         networks: [],
         networkMode: 'host',
         restartPolicy: 'always',
@@ -856,7 +783,7 @@ describe('DeployMapper', () => {
     })
 
     it('node default driver type should return no log driver', () => {
-      const config = deployMapper.dagentConfigToAgentProto(<MergedContainerConfigData>{
+      const config = deployMapper.dagentConfigToAgentProto(<ConcreteContainerConfigData>{
         networks: [],
         networkMode: 'host',
         restartPolicy: 'always',
@@ -877,7 +804,7 @@ describe('DeployMapper', () => {
     })
 
     it('none driver type should return none log driver', () => {
-      const config = deployMapper.dagentConfigToAgentProto(<MergedContainerConfigData>{
+      const config = deployMapper.dagentConfigToAgentProto(<ConcreteContainerConfigData>{
         networks: [],
         networkMode: 'host',
         restartPolicy: 'always',

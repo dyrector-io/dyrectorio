@@ -86,7 +86,7 @@ export const iconRule = yup
   .label('common:icon')
 
 export const nameRule = yup.string().required().trim().min(3).max(70).label('common:name')
-export const descriptionRule = yup.string().optional().label('common:description')
+export const descriptionRule = yup.string().optional().nullable().label('common:description')
 export const identityNameRule = yup.string().trim().max(16)
 export const passwordLengthRule = yup.string().min(8).max(70).label('common:password')
 export const stringArrayRule = yup.array().of(yup.string())

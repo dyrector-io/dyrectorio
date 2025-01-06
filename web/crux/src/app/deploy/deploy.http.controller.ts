@@ -18,12 +18,14 @@ import {
   ApiBody,
   ApiConflictResponse,
   ApiCreatedResponse,
+  ApiExtraModels,
   ApiForbiddenResponse,
   ApiNoContentResponse,
   ApiNotFoundResponse,
   ApiOkResponse,
   ApiOperation,
   ApiTags,
+  refs,
 } from '@nestjs/swagger'
 import { Identity } from '@ory/kratos-client'
 import UuidParams from 'src/decorators/api-params.decorator'
@@ -35,14 +37,17 @@ import {
   CreateDeploymentTokenDto,
   DeploymentDetailsDto,
   DeploymentDto,
+  DeploymentListDto,
   DeploymentLogListDto,
   DeploymentLogPaginationQuery,
+  DeploymentQueryDto,
+  DeploymentSecretsDto,
   DeploymentTokenCreatedDto,
-  InstanceDto,
+  InstanceDetailsDto,
   InstanceSecretsDto,
-  PatchDeploymentDto,
   PatchInstanceDto,
   StartDeploymentDto,
+  UpdateDeploymentDto,
 } from './deploy.dto'
 import DeployService from './deploy.service'
 import DeployCreateTeamAccessGuard from './guards/deploy.create.team-access.guard'
@@ -65,6 +70,7 @@ const InstanceId = () => Param(PARAM_INSTANCE_ID)
 const ROUTE_TEAM_SLUG = ':teamSlug'
 const ROUTE_DEPLOYMENTS = 'deployments'
 const ROUTE_DEPLOYMENT_ID = ':deploymentId'
+const ROUTE_SECRETS = 'secrets'
 const ROUTE_INSTANCES = 'instances'
 const ROUTE_INSTANCE_ID = ':instanceId'
 const ROUTE_TOKEN = 'token'
@@ -79,17 +85,28 @@ export default class DeployHttpController {
   @HttpCode(HttpStatus.OK)
   @ApiOperation({
     description:
-      'Get the list of deployments. Request needs to include `teamSlug` in URL. A deployment should include `id`, `prefix`, `status`, `note`, `audit` log details, project `name`, `id`, `type`, version `name`, `type`, `id`, and node `name`, `id`, `type`.',
+      'Get the list of deployments. Request needs to include `teamSlug` in URL. Query could include `skip` and `take` to paginate. A deployment should include `id`, `prefix`, `status`, `note`, `audit` log details, project `name`, `id`, `type`, version `name`, `type`, `id`, and node `name`, `id`, `type`.',
     summary: 'Fetch the list of deployments.',
   })
+  @ApiExtraModels(DeploymentDto, DeploymentListDto)
   @ApiOkResponse({
-    type: DeploymentDto,
-    isArray: true,
+    schema: {
+      anyOf: refs(DeploymentDto, DeploymentListDto),
+    },
     description: 'List of deployments.',
   })
   @ApiForbiddenResponse({ description: 'Unauthorized request for deployments.' })
-  async getDeployments(@TeamSlug() teamSlug: string): Promise<DeploymentDto[]> {
-    return await this.service.getDeployments(teamSlug)
+  async getDeployments(
+    @TeamSlug() teamSlug: string,
+    @Query() query: DeploymentQueryDto,
+  ): Promise<DeploymentDto[] | DeploymentListDto> {
+    const page = await this.service.getDeployments(teamSlug, query)
+    if (!!query.skip || !!query.take) {
+      return page
+    }
+
+    // NOTE(@robot9706): If no pagination parameters are present return the items only to be backward compatible
+    return page.items
   }
 
   @Get(ROUTE_DEPLOYMENT_ID)
@@ -111,6 +128,25 @@ export default class DeployHttpController {
     return await this.service.getDeploymentDetails(deploymentId)
   }
 
+  @Get(`${ROUTE_DEPLOYMENT_ID}/${ROUTE_SECRETS}`)
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({
+    description:
+      'Request must include `teamSlug` and `deploymentId`, which refers to the ID of a deployment, needs to be included in URL. Response should include `publicKey`, `keys`.',
+    summary: 'Fetch secrets of a deployment.',
+  })
+  @ApiOkResponse({ type: DeploymentSecretsDto, description: 'Secrets of a deployment listed.' })
+  @ApiBadRequestResponse({ description: 'Bad request for deployment secrets.' })
+  @ApiForbiddenResponse({ description: 'Unauthorized request for deployment secrets.' })
+  @ApiNotFoundResponse({ description: 'Deployment secrets not found.' })
+  @UuidParams(PARAM_DEPLOYMENT_ID)
+  async getDeploymentSecrets(
+    @TeamSlug() _: string,
+    @DeploymentId() deploymentId: string,
+  ): Promise<DeploymentSecretsDto> {
+    return await this.service.getDeploymentSecrets(deploymentId)
+  }
+
   @Get(`${ROUTE_DEPLOYMENT_ID}/${ROUTE_INSTANCES}/${ROUTE_INSTANCE_ID}`)
   @HttpCode(HttpStatus.OK)
   @ApiOperation({
@@ -118,7 +154,7 @@ export default class DeployHttpController {
       'Request must include `teamSlug`, `deploymentId` and `instanceId`, which refer to the ID of a deployment and the instance, in the URL. Instances are the manifestation of an image in the deployment. Response should include `state`, `id`, `updatedAt`, and `image` details including `id`, `name`, `tag`, `order` and `config` variables.',
     summary: 'Get details of a soon-to-be container.',
   })
-  @ApiOkResponse({ type: InstanceDto, description: 'Details of an instance.' })
+  @ApiOkResponse({ type: InstanceDetailsDto, description: 'Details of an instance.' })
   @ApiBadRequestResponse({ description: 'Bad request for instance details.' })
   @ApiForbiddenResponse({ description: 'Unauthorized request for an instance.' })
   @ApiNotFoundResponse({ description: 'Instance not found.' })
@@ -127,11 +163,11 @@ export default class DeployHttpController {
     @TeamSlug() _: string,
     @DeploymentId() _deploymentId: string,
     @InstanceId() instanceId: string,
-  ): Promise<InstanceDto> {
+  ): Promise<InstanceDetailsDto> {
     return await this.service.getInstance(instanceId)
   }
 
-  @Get(`${ROUTE_DEPLOYMENT_ID}/${ROUTE_INSTANCES}/${ROUTE_INSTANCE_ID}/secrets`)
+  @Get(`${ROUTE_DEPLOYMENT_ID}/${ROUTE_INSTANCES}/${ROUTE_INSTANCE_ID}/${ROUTE_SECRETS}`)
   @HttpCode(HttpStatus.OK)
   @ApiOperation({
     description:
@@ -143,7 +179,7 @@ export default class DeployHttpController {
   @ApiForbiddenResponse({ description: 'Unauthorized request for instance secrets.' })
   @ApiNotFoundResponse({ description: 'Instance secrets not found.' })
   @UuidParams(PARAM_DEPLOYMENT_ID, PARAM_INSTANCE_ID)
-  async getDeploymentSecrets(
+  async getInstanceSecrets(
     @TeamSlug() _: string,
     @DeploymentId() _deploymentId: string,
     @InstanceId() instanceId: string,
@@ -179,7 +215,7 @@ export default class DeployHttpController {
     }
   }
 
-  @Patch(ROUTE_DEPLOYMENT_ID)
+  @Put(ROUTE_DEPLOYMENT_ID)
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({
     description: 'Request must include `deploymentId` and `teamSlug` in URL.',
@@ -194,10 +230,10 @@ export default class DeployHttpController {
   async patchDeployment(
     @TeamSlug() _: string,
     @DeploymentId() deploymentId: string,
-    @Body() request: PatchDeploymentDto,
+    @Body() request: UpdateDeploymentDto,
     @IdentityFromRequest() identity: Identity,
   ): Promise<void> {
-    await this.service.patchDeployment(deploymentId, request, identity)
+    await this.service.updateDeployment(deploymentId, request, identity)
   }
 
   @Patch(`${ROUTE_DEPLOYMENT_ID}/${ROUTE_INSTANCES}/${ROUTE_INSTANCE_ID}`)

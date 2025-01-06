@@ -1,12 +1,12 @@
-import { MergedContainerConfigData } from '@app/models'
+import { ConcreteContainerConfigData } from '@app/models'
 import { Translate } from 'next-translate'
 import { getConfigFieldErrorsForSchema, ContainerConfigValidationErrors } from './image'
-import { createMergedContainerConfigSchema } from './container'
+import { createConcreteContainerConfigSchema } from './container'
 
 // eslint-disable-next-line import/prefer-default-export
-export const getMergedContainerConfigFieldErrors = (
-  newConfig: MergedContainerConfigData,
+export const getConcreteContainerConfigFieldErrors = (
+  newConfig: ConcreteContainerConfigData,
   validation: Record<string, string>,
   t: Translate,
 ): ContainerConfigValidationErrors =>
-  getConfigFieldErrorsForSchema(createMergedContainerConfigSchema(validation), newConfig, t)
+  getConfigFieldErrorsForSchema(createConcreteContainerConfigSchema(validation), newConfig, t)

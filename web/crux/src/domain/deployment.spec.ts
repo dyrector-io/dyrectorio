@@ -2,11 +2,11 @@ import { DeploymentStatusEnum, VersionTypeEnum } from '@prisma/client'
 import { ContainerState, DeploymentStatus as ProtoDeploymentStatus } from 'src/grpc/protobuf/proto/common'
 import {
   checkDeploymentCopiability,
-  checkDeploymentDeletability,
   checkDeploymentDeployability,
-  checkDeploymentMutability,
   containerNameFromImageName,
   containerStateToDto,
+  deploymentIsDeletable,
+  deploymentIsMutable,
   deploymentStatusToDb,
 } from './deployment'
 
@@ -63,7 +63,7 @@ describe('DomainDeployment', () => {
     )
 
     it.each(DEPLOYMENT_STATUSES)('%p and %p', (status: DeploymentStatusEnum) => {
-      expect(checkDeploymentDeletability(status)).toEqual(status !== 'inProgress')
+      expect(deploymentIsDeletable(status)).toEqual(status !== 'inProgress')
     })
   })
 
@@ -71,7 +71,7 @@ describe('DomainDeployment', () => {
     it.each(DEPLOYMENT_STATUSES_VERSION_TYPES)(
       'should return true if status is deploying or if the status is successful or failed and the version is rolling (%p and %p)',
       (status: DeploymentStatusEnum, type: VersionTypeEnum) => {
-        expect(checkDeploymentMutability(status, type)).toEqual(
+        expect(deploymentIsMutable(status, type)).toEqual(
           status === 'preparing' || status === 'failed' || (status === 'successful' && type === 'rolling'),
         )
       },

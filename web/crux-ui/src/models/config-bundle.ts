@@ -1,4 +1,4 @@
-import { UniqueKeyValue } from './container'
+import { ContainerConfig, ContainerConfigData } from './container'
 
 export type BasicConfigBundle = {
   id: string
@@ -7,10 +7,11 @@ export type BasicConfigBundle = {
 
 export type ConfigBundle = BasicConfigBundle & {
   description?: string
+  configId: string
 }
 
-export type ConfigBundleDetails = ConfigBundle & {
-  environment: UniqueKeyValue[]
+export type ConfigBundleDetails = Omit<ConfigBundle, 'configId'> & {
+  config: ContainerConfig
 }
 
 export type CreateConfigBundle = {
@@ -18,25 +19,13 @@ export type CreateConfigBundle = {
   description?: string
 }
 
-export type UpdateConfigBundle = CreateConfigBundle & {
-  environment: UniqueKeyValue[]
-}
-
-export type ConfigBundleOption = BasicConfigBundle
-
-// ws
-export const WS_TYPE_PATCH_CONFIG_BUNDLE = 'patch-config-bundle'
-export type PatchConfigBundleMessage = {
+export type PatchConfigBundle = {
   name?: string
   description?: string
-  environment?: UniqueKeyValue[]
+  config?: ContainerConfigData
 }
 
-export const WS_TYPE_CONFIG_BUNDLE_UPDATED = 'config-bundle-updated'
-export type ConfigBundleUpdatedMessage = {
-  name?: string
-  description?: string
-  environment?: UniqueKeyValue[]
-}
-
-export const WS_TYPE_CONFIG_BUNDLE_PATCH_RECEIVED = 'patch-received'
+export const detailsToConfigBundle = (bundle: ConfigBundleDetails): ConfigBundle => ({
+  ...bundle,
+  configId: bundle.config.id,
+})

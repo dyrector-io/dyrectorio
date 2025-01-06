@@ -94,7 +94,6 @@ export default class PrismaErrorInterceptor implements NestInterceptor {
     DeploymentEvent: 'deploymentEvent',
     DeploymentToken: 'deploymentToken',
     Instance: 'instance',
-    InstanceContainerConfig: 'instanceConfig',
     UserInvitation: 'invitation',
     VersionsOnParentVersion: 'versionRelation',
     UsersOnTeams: 'team',

@@ -13,12 +13,14 @@ test('Creating a config bundle', async ({ page }) => {
   })
 
   await page.goto(TEAM_ROUTES.configBundle.details(configBundleId))
+  await page.waitForSelector(`h3:text-is("${BUNDLE_NAME}")`)
+
+  await page.locator('button:has-text("Config")').click()
+  await page.waitForURL(TEAM_ROUTES.containerConfig.details('**'))
 
   const keyInput = page.locator('input[placeholder="Key"]').first()
-  await expect(keyInput).toBeDisabled()
   await expect(keyInput).toHaveValue(ENV_KEY)
 
   const valueInput = page.locator('input[placeholder="Value"]').first()
-  await expect(valueInput).toBeDisabled()
   await expect(valueInput).toHaveValue(ENV_VALUE)
 })

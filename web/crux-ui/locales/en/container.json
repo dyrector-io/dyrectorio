@@ -1,4 +1,8 @@
 {
+  "containerConfigName": "Container Configs - {{name}}",
+  "editor": "Editor",
+  "json": "JSON",
+
   "sensitiveKey": "Sensitive config data should be stored as secrets",
 
   "base": {
@@ -150,5 +154,10 @@
     "pathOverlapsSomePortranges": "{{path}} overlaps some port ranges",
     "missingExternalPort": "{{path}} is missing the external port definition",
     "shouldStartWithSlash": "{{path}} should start with a slash"
+  },
+
+  "errors": {
+    "ambiguousInConfigs": "Ambigous in {{configs}}",
+    "ambiguousKeyInConfigs": "Ambigous {{key}} in {{configs}}"
   }
 }

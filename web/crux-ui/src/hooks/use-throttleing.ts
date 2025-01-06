@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 
 type Throttling = (action: VoidFunction, immediate?: boolean) => void
 
@@ -28,9 +28,12 @@ export const useThrottling = (delay: number): Throttling => {
     return () => clearTimeout(schedule.current)
   }, [action, delay, schedule])
 
-  return (trigger, resetTimer = false) =>
-    setAction({
-      trigger,
-      resetTimer,
-    })
+  return useCallback(
+    (trigger, resetTimer = false) =>
+      setAction({
+        trigger,
+        resetTimer,
+      }),
+    [],
+  )
 }

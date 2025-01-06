@@ -203,22 +203,27 @@ model VersionsOnParentVersion {
 }
 
 model Image {
-  id         String           @id @default(uuid()) @db.Uuid
-  name       String
-  tag        String?
-  order      Int
-  versionId  String           @db.Uuid
-  registryId String           @db.Uuid
-  config     ContainerConfig?
-  instances  Instance[]
-  createdAt  DateTime         @default(now()) @db.Timestamptz(6)
-  createdBy  String           @db.Uuid
-  updatedAt  DateTime         @updatedAt @db.Timestamptz(6)
-  updatedBy  String?          @db.Uuid
-  labels     Json?
+  id        String   @id @default(uuid()) @db.Uuid
+  createdAt DateTime @default(now()) @db.Timestamptz(6)
+  createdBy String   @db.Uuid
+  updatedAt DateTime @updatedAt @db.Timestamptz(6)
+  updatedBy String?  @db.Uuid
 
-  registry Registry @relation(fields: [registryId], references: [id], onDelete: Cascade)
-  version  Version  @relation(fields: [versionId], references: [id], onDelete: Cascade)
+  name   String
+  tag    String?
+  order  Int
+  labels Json?
+
+  registry   Registry @relation(fields: [registryId], references: [id], onDelete: Cascade)
+  registryId String   @db.Uuid
+
+  version   Version @relation(fields: [versionId], references: [id], onDelete: Cascade)
+  versionId String  @db.Uuid
+
+  config   ContainerConfig @relation(fields: [configId], references: [id], onDelete: Cascade)
+  configId String          @unique @db.Uuid
+
+  instances Instance[]
 }
 
 enum NetworkMode {
@@ -245,110 +250,19 @@ enum ExposeStrategy {
   exposeWithTls
 }
 
+enum ContainerConfigType {
+  image
+  instance
+  deployment
+  configBundle
+}
+
 model ContainerConfig {
-  id String @id @default(uuid()) @db.Uuid
+  id        String   @id @default(uuid()) @db.Uuid
+  updatedAt DateTime @updatedAt @db.Timestamptz(6)
+  updatedBy String?
 
-  //Common
-  name             String
-  environment      Json?
-  secrets          Json?
-  capabilities     Json?
-  expose           ExposeStrategy
-  routing          Json?
-  configContainer  Json?
-  user             Int            @default(-1)
-  workingDirectory String?
-  tty              Boolean
-  ports            Json?
-  portRanges       Json?
-  volumes          Json?
-  commands         Json?
-  args             Json?
-  initContainers   Json?
-  storageSet       Boolean?
-  storageId        String?        @db.Uuid
-  storageConfig    Json?
-  expectedState    Json?
-
-  //Dagent
-  logConfig     Json?
-  restartPolicy RestartPolicy
-  networkMode   NetworkMode
-  networks      Json?
-  dockerLabels  Json?
-
-  //Crane
-  deploymentStrategy DeploymentStrategy
-  healthCheckConfig  Json?
-  resourceConfig     Json?
-  proxyHeaders       Boolean
-  useLoadBalancer    Boolean
-  extraLBAnnotations Json?
-  customHeaders      Json?
-  annotations        Json?
-  labels             Json?
-  metrics            Json?
-
-  image   Image  @relation(fields: [imageId], references: [id], onDelete: Cascade)
-  imageId String @unique @db.Uuid
-
-  storage Storage? @relation(fields: [storageId], references: [id], onDelete: Cascade)
-}
-
-model Deployment {
-  id          String               @id @default(uuid()) @db.Uuid
-  createdAt   DateTime             @default(now()) @db.Timestamptz(6)
-  createdBy   String               @db.Uuid
-  updatedAt   DateTime             @updatedAt @db.Timestamptz(6)
-  updatedBy   String?              @db.Uuid
-  note        String?
-  prefix      String?
-  status      DeploymentStatusEnum
-  environment Json?
-  versionId   String               @db.Uuid
-  nodeId      String               @db.Uuid
-  tries       Int                  @default(0)
-  protected   Boolean              @default(false)
-
-  version Version @relation(fields: [versionId], references: [id], onDelete: Cascade)
-  node    Node    @relation(fields: [nodeId], references: [id], onDelete: Cascade)
-
-  instances     Instance[]
-  events        DeploymentEvent[]
-  tokens        DeploymentToken[]
-  configBundles ConfigBundleOnDeployments[]
-}
-
-model DeploymentToken {
-  id           String    @id @default(uuid()) @db.Uuid
-  deploymentId String    @db.Uuid
-  createdBy    String    @db.Uuid
-  createdAt    DateTime  @default(now()) @db.Timestamptz(6)
-  name         String
-  expiresAt    DateTime? @db.Timestamptz(6)
-  nonce        String    @db.Uuid
-
-  deployment Deployment @relation(fields: [deploymentId], references: [id], onDelete: Cascade)
-  AuditLog   AuditLog[]
-
-  @@unique([deploymentId])
-  @@unique([deploymentId, nonce])
-}
-
-model Instance {
-  id           String   @id @default(uuid()) @db.Uuid
-  updatedAt    DateTime @updatedAt @db.Timestamptz(6)
-  deploymentId String   @db.Uuid
-  imageId      String   @db.Uuid
-
-  deployment Deployment               @relation(fields: [deploymentId], references: [id], onDelete: Cascade)
-  image      Image                    @relation(fields: [imageId], references: [id], onDelete: Cascade)
-  config     InstanceContainerConfig?
-}
-
-model InstanceContainerConfig {
-  id         String @id @default(uuid()) @db.Uuid
-  instanceId String @unique @db.Uuid
+  type ContainerConfigType
 
   //Common
   name             String?
@@ -368,7 +282,6 @@ model InstanceContainerConfig {
   args             Json?
   initContainers   Json?
   storageSet       Boolean?
-  storageId        String?         @unique @db.Uuid
   storageConfig    Json?
   expectedState    Json?
 
@@ -391,8 +304,71 @@ model InstanceContainerConfig {
   labels             Json?
   metrics            Json?
 
-  instance Instance @relation(fields: [instanceId], references: [id], onDelete: Cascade)
-  storage  Storage? @relation(fields: [storageId], references: [id], onDelete: Cascade)
+  image        Image?
+  instance     Instance?
+  deployment   Deployment?
+  configBundle ConfigBundle?
+
+  storage   Storage? @relation(fields: [storageId], references: [id], onDelete: Cascade)
+  storageId String?  @db.Uuid
+}
+
+model Deployment {
+  id        String   @id @default(uuid()) @db.Uuid
+  createdAt DateTime @default(now()) @db.Timestamptz(6)
+  createdBy String   @db.Uuid
+  updatedAt DateTime @updatedAt @db.Timestamptz(6)
+  updatedBy String?  @db.Uuid
+  deployedAt DateTime? @db.Timestamptz(6)
+  deployedBy String?  @db.Uuid
+
+  note      String?
+  prefix    String?
+  status    DeploymentStatusEnum
+  tries     Int                  @default(0)
+  protected Boolean              @default(false)
+
+  version   Version @relation(fields: [versionId], references: [id], onDelete: Cascade)
+  versionId String  @db.Uuid
+
+  node   Node   @relation(fields: [nodeId], references: [id], onDelete: Cascade)
+  nodeId String @db.Uuid
+
+  config   ContainerConfig @relation(fields: [configId], references: [id], onDelete: Cascade)
+  configId String          @unique @db.Uuid
+
+  instances     Instance[]
+  events        DeploymentEvent[]
+  token         DeploymentToken?
+  configBundles ConfigBundleOnDeployments[]
+}
+
+model DeploymentToken {
+  id           String    @id @default(uuid()) @db.Uuid
+  deploymentId String    @unique @db.Uuid
+  createdBy    String    @db.Uuid
+  createdAt    DateTime  @default(now()) @db.Timestamptz(6)
+  name         String
+  expiresAt    DateTime? @db.Timestamptz(6)
+  nonce        String    @db.Uuid
+
+  deployment Deployment @relation(fields: [deploymentId], references: [id], onDelete: Cascade)
+  AuditLog   AuditLog[]
+
+  @@unique([deploymentId, nonce])
+}
+
+model Instance {
+  id String @id @default(uuid()) @db.Uuid
+
+  deployment   Deployment @relation(fields: [deploymentId], references: [id], onDelete: Cascade)
+  deploymentId String     @db.Uuid
+
+  image   Image  @relation(fields: [imageId], references: [id], onDelete: Cascade)
+  imageId String @db.Uuid
+
+  config   ContainerConfig @relation(fields: [configId], references: [id], onDelete: Cascade)
+  configId String          @unique @db.Uuid
 }
 
 model DeploymentEvent {
@@ -579,7 +555,6 @@ model Storage {
   teamId String @db.Uuid
 
   containerConfigs ContainerConfig[]
-  instanceConfigs  InstanceContainerConfig[]
 
   @@unique([name, teamId])
 }
@@ -665,17 +640,20 @@ model PipelineEventWatcher {
 }
 
 model ConfigBundle {
-  id          String   @id @default(uuid()) @db.Uuid
+  id        String   @id @default(uuid()) @db.Uuid
+  createdAt DateTime @default(now()) @db.Timestamptz(6)
+  createdBy String   @db.Uuid
+  updatedAt DateTime @updatedAt @db.Timestamptz(6)
+  updatedBy String?  @db.Uuid
+
   name        String
   description String?
-  data        Json
-  createdAt   DateTime @default(now()) @db.Timestamptz(6)
-  createdBy   String   @db.Uuid
-  updatedAt   DateTime @updatedAt @db.Timestamptz(6)
-  updatedBy   String?  @db.Uuid
 
   team   Team   @relation(fields: [teamId], references: [id], onDelete: Cascade)
   teamId String @db.Uuid
+
+  config   ContainerConfig? @relation(fields: [configId], references: [id], onDelete: Cascade)
+  configId String          @unique @db.Uuid
 
   deployments ConfigBundleOnDeployments[]
 

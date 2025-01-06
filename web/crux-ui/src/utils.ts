@@ -489,7 +489,7 @@ export const toNumber = (value: string): number => {
   const parsedValue = Number(value)
 
   if (Number.isNaN(parsedValue)) {
-    return NaN
+    return null
   }
 
   return parsedValue

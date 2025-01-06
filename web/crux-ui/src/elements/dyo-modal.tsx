@@ -122,10 +122,10 @@ export const DyoConfirmationModal = (props: DyoConfirmationModalProps) => {
     <DyoModal
       {...forwardedProps}
       className={clsx(className, 'min-w-[450px]')}
-      title={config?.title}
+      title={config.title}
       open
       onClose={() => onClose(false)}
-      qaLabel={config?.qaLabel}
+      qaLabel={config.qaLabel}
       buttons={
         <>
           <DyoButton autoFocus color={config.confirmColor} onClick={() => onClose(true)}>

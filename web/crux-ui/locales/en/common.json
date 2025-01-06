@@ -250,5 +250,6 @@
   },
 
   "imageConfig": "Image config",
-  "instanceConfig": "Container config"
+  "instanceConfig": "Instance config",
+  "deploymentConfig": "Deployment config"
 }

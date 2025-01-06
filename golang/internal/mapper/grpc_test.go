@@ -24,7 +24,7 @@ func TestMapDeployImageRequest(t *testing.T) {
 	req := testDeployRequest()
 	cfg := testAppConfig()
 
-	res := MapDeployImage(req, cfg)
+	res := MapDeployImage("", req, cfg)
 	expected := testExpectedCommon(req)
 
 	assert.Equal(t, expected, res)
@@ -52,12 +52,12 @@ func TestMapDeployImageRequestRestartPolicies(t *testing.T) {
 	for _, tC := range cases {
 		req.Dagent.RestartPolicy = tC.policy
 		expected.ContainerConfig.RestartPolicy = tC.dockerType
-		res := MapDeployImage(req, cfg)
+		res := MapDeployImage("", req, cfg)
 		assert.Equal(t, expected, res)
 	}
 }
 
-func testExpectedCommon(req *agent.DeployRequest) *v1.DeployImageRequest {
+func testExpectedCommon(req *agent.DeployWorkloadRequest) *v1.DeployImageRequest {
 	return &v1.DeployImageRequest{
 		RequestID: "testID",
 		RegistryAuth: &image.RegistryAuth{
@@ -67,17 +67,13 @@ func testExpectedCommon(req *agent.DeployRequest) *v1.DeployImageRequest {
 			Password: "test-pass",
 		},
 		InstanceConfig: v1.InstanceConfig{
-			ContainerPreName:  "test-prefix",
-			MountPath:         "/path/to/mount",
-			Name:              "test-prefix",
-			Environment:       map[string]string{"Evn1": "Val1", "Env2": "Val2"},
-			Registry:          "",
-			RepositoryPreName: "repo-prefix",
-			SharedEnvironment: map[string]string{},
 			UseSharedEnvs:     false,
+			Environment:       map[string]string{},
+			SharedEnvironment: map[string]string{},
+			ContainerPreName:  "",
 		},
 		ContainerConfig: v1.ContainerConfig{
-			ContainerPreName:   "test-prefix",
+			ContainerPreName:   "",
 			Container:          "test-common-config",
 			Ports:              []builder.PortBinding{{ExposedPort: 0x4d2, PortBinding: pointer.ToUint16(0x1a85)}},
 			PortRanges:         []builder.PortRangeBinding{{Internal: builder.PortRange{From: 0x0, To: 0x18}, External: builder.PortRange{From: 0x40, To: 0x80}}},
@@ -153,7 +149,7 @@ func testExpectedCommon(req *agent.DeployRequest) *v1.DeployImageRequest {
 			UseLoadBalancer:    true,
 			ExtraLBAnnotations: map[string]string{"annotation1": "value1"},
 		},
-		RuntimeConfig: v1.Base64JSONBytes{0x6b, 0x65, 0x79, 0x31, 0x3d, 0x76, 0x61, 0x6c, 0x31, 0x2c, 0x6b, 0x65, 0x79, 0x32, 0x3d, 0x76, 0x61, 0x6c, 0x32}, // encoded string: a2V5MT12YWwxLGtleTI9dmFsMg==
+		RuntimeConfig: nil,
 		Registry:      req.Registry,
 		ImageName:     "test-image",
 		Tag:           "test-tag",
@@ -210,24 +206,19 @@ func TestMapDockerContainerEventToContainerState(t *testing.T) {
 	assert.Equal(t, common.ContainerState_EXITED, MapDockerContainerEventToContainerState("die"))
 }
 
-func testDeployRequest() *agent.DeployRequest {
+func testDeployRequest() *agent.DeployWorkloadRequest {
 	registry := "https://my-registry.com"
-	runtimeCfg := "key1=val1,key2=val2"
 	var uid int64 = 777
 	upLimit := "5Mi"
-	mntPath := "/path/to/mount"
-	repoPrefix := "repo-prefix"
 	strategy := common.ExposeStrategy_EXPOSE_WITH_TLS
 	b := true
-	return &agent.DeployRequest{
-		Id:            "testID",
-		ContainerName: "test-container",
-		ImageName:     "test-image",
-		Tag:           "test-tag",
-		Registry:      &registry,
-		RuntimeConfig: &runtimeCfg,
-		Dagent:        testDagentConfig(),
-		Crane:         testCraneConfig(),
+	return &agent.DeployWorkloadRequest{
+		Id:        "testID",
+		ImageName: "test-image",
+		Tag:       "test-tag",
+		Registry:  &registry,
+		Dagent:    testDagentConfig(),
+		Crane:     testCraneConfig(),
 		Common: &agent.CommonContainerConfig{
 			Name:        "test-common-config",
 			Commands:    []string{"make", "test"},
@@ -273,12 +264,6 @@ func testDeployRequest() *agent.DeployRequest {
 			User:     "test-user",
 			Password: "test-pass",
 			Url:      "https://test-url.com",
-		},
-		InstanceConfig: &agent.InstanceConfig{
-			Prefix:           "test-prefix",
-			MountPath:        &mntPath,
-			RepositoryPrefix: &repoPrefix,
-			Environment:      map[string]string{"Evn1": "Val1", "Env2": "Val2"},
 		},
 	}
 }
@@ -411,7 +396,7 @@ func testAppConfig() *config.CommonConfiguration {
 	}
 }
 
-func testDeployRequestWithLogDriver(driverType common.DriverType) *agent.DeployRequest {
+func testDeployRequestWithLogDriver(driverType common.DriverType) *agent.DeployWorkloadRequest {
 	request := testDeployRequest()
 	if driverType == common.DriverType_NODE_DEFAULT {
 		request.Dagent.LogConfig = nil
@@ -421,7 +406,7 @@ func testDeployRequestWithLogDriver(driverType common.DriverType) *agent.DeployR
 	return request
 }
 
-func testExpectedCommonWithLogConfigType(req *agent.DeployRequest, logConfigType string) *v1.DeployImageRequest {
+func testExpectedCommonWithLogConfigType(req *agent.DeployWorkloadRequest, logConfigType string) *v1.DeployImageRequest {
 	expected := testExpectedCommon(req)
 	if req.Dagent.LogConfig == nil {
 		expected.ContainerConfig.LogConfig = nil
@@ -508,7 +493,7 @@ func TestMapDeployImageLogConfig(t *testing.T) {
 			req := testDeployRequestWithLogDriver(tC.driver)
 			cfg := testAppConfig()
 
-			res := MapDeployImage(req, cfg)
+			res := MapDeployImage("", req, cfg)
 			expected := testExpectedCommonWithLogConfigType(req, tC.want)
 
 			assert.Equal(t, expected, res)

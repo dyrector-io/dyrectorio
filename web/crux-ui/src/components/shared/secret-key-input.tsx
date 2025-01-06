@@ -7,7 +7,7 @@ import { useEffect } from 'react'
 import { v4 as uuid } from 'uuid'
 import MultiInput from '../editor/multi-input'
 import { ItemEditorState } from '../editor/use-item-editor-state'
-import ConfigSectionLabel from '../projects/versions/images/config/config-section-label'
+import ConfigSectionLabel from '../container-configs/config-section-label'
 
 const EMPTY_KEY = {
   id: uuid(),

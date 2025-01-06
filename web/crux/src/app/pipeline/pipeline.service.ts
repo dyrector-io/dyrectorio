@@ -210,7 +210,6 @@ export default class PipelineService {
         ...this.mapper.detailsToDb(req, repo.projectId),
         hooks,
         token: !req.token ? undefined : this.encryptionService.encrypt(req.token),
-        updatedAt: new Date(),
         updatedBy: identity.id,
       },
     })
@@ -316,7 +315,6 @@ export default class PipelineService {
       },
       data: {
         ...this.mapper.eventWatcherToDb(req),
-        updatedAt: new Date(),
         updatedBy: identity.id,
       },
     })

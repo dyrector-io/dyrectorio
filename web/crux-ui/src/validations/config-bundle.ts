@@ -1,12 +1,8 @@
 /* eslint-disable import/prefer-default-export */
 import yup from './yup'
-import { nameRule } from './common'
+import { descriptionRule, nameRule } from './common'
 
-export const configBundleCreateSchema = yup.object().shape({
+export const configBundleSchema = yup.object().shape({
   name: nameRule,
-})
-
-export const configBundlePatchSchema = yup.object().shape({
-  name: nameRule.optional().nullable(),
-  environment: yup.array().optional().nullable().label('config-bundles:environment'),
+  description: descriptionRule,
 })

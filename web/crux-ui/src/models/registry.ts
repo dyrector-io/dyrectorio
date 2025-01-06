@@ -406,3 +406,11 @@ export const findRegistryByUrl = (registries: Registry[], url: string): Registry
   !registries || !url
     ? null
     : registries.filter(it => it.type !== 'unchecked').find(it => url.startsWith(it.imageUrlPrefix))
+
+export const imageName = (name: string, tag?: string): string => {
+  if (!tag) {
+    return name
+  }
+
+  return `${name}:${tag}`
+}

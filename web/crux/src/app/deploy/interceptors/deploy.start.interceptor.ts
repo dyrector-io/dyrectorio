@@ -1,18 +1,14 @@
 import { CallHandler, ExecutionContext, Injectable, NestInterceptor } from '@nestjs/common'
 import { Observable } from 'rxjs'
 import AgentService from 'src/app/agent/agent.service'
-import ContainerMapper from 'src/app/container/container.mapper'
 import { ImageValidation } from 'src/app/image/image.dto'
-import {
-  ContainerConfigData,
-  InstanceContainerConfigData,
-  UniqueKeyValue,
-  UniqueSecretKey,
-  UniqueSecretKeyValue,
-} from 'src/domain/container'
+import { ConcreteContainerConfigData, ContainerConfigData, ContainerConfigDataWithId } from 'src/domain/container'
+import { getConflictsForConcreteConfig } from 'src/domain/container-conflict'
+import { mergeConfigsWithConcreteConfig } from 'src/domain/container-merge'
 import { checkDeploymentDeployability } from 'src/domain/deployment'
 import { parseDyrectorioEnvRules } from 'src/domain/image'
-import { createStartDeploymentSchema, yupValidate } from 'src/domain/validation'
+import { missingSecretsOf } from 'src/domain/start-deployment'
+import { createStartDeploymentSchema, nullifyUndefinedProperties, yupValidate } from 'src/domain/validation'
 import { CruxPreconditionFailedException } from 'src/exception/crux-exception'
 import PrismaService from 'src/services/prisma.service'
 import { StartDeploymentDto } from '../deploy.dto'
@@ -22,7 +18,6 @@ export default class DeployStartValidationInterceptor implements NestInterceptor
   constructor(
     private prisma: PrismaService,
     private agentService: AgentService,
-    private containerMapper: ContainerMapper,
   ) {}
 
   async intercept(context: ExecutionContext, next: CallHandler): Promise<Observable<any>> {
@@ -34,9 +29,14 @@ export default class DeployStartValidationInterceptor implements NestInterceptor
     const deployment = await this.prisma.deployment.findUniqueOrThrow({
       include: {
         version: true,
+        config: true,
         configBundles: {
           include: {
-            configBundle: true,
+            configBundle: {
+              include: {
+                config: true,
+              },
+            },
           },
         },
         instances: {
@@ -62,13 +62,7 @@ export default class DeployStartValidationInterceptor implements NestInterceptor
       },
     })
 
-    if (deployment.instances.length < 1) {
-      throw new CruxPreconditionFailedException({
-        message: 'There are no instances to deploy',
-        property: 'instances',
-      })
-    }
-
+    // deployment
     if (!checkDeploymentDeployability(deployment.status, deployment.version.type)) {
       throw new CruxPreconditionFailedException({
         message: 'Invalid deployment status.',
@@ -77,11 +71,19 @@ export default class DeployStartValidationInterceptor implements NestInterceptor
       })
     }
 
+    // instances
+    if (deployment.instances.length < 1) {
+      throw new CruxPreconditionFailedException({
+        message: 'There are no instances to deploy',
+        property: 'instances',
+      })
+    }
+
     const instances = deployment.instances.map(it => ({
       ...it,
-      config: this.containerMapper.mergeConfigs(
-        it.image.config as any as ContainerConfigData,
-        (it.config ?? {}) as any as InstanceContainerConfigData,
+      config: mergeConfigsWithConcreteConfig(
+        [it.image.config as any as ContainerConfigData],
+        it.config as any as ConcreteContainerConfigData,
       ),
     }))
 
@@ -100,103 +102,113 @@ export default class DeployStartValidationInterceptor implements NestInterceptor
       return prev
     }, {})
 
+    nullifyUndefinedProperties(target.config)
+    target.configBundles.forEach(it => nullifyUndefinedProperties(it.configBundle.config))
+    target.instances.forEach(instance => {
+      nullifyUndefinedProperties(instance.config)
+      nullifyUndefinedProperties(instance.image.config)
+    })
     yupValidate(createStartDeploymentSchema(instanceValidations), target)
 
-    const node = this.agentService.getById(deployment.nodeId)
-    if (!node?.ready) {
+    const missingSecrets = deployment.instances
+      .map(it => {
+        const imageConfig = it.image.config as any as ContainerConfigData
+        const instanceConfig = it.config as any as ConcreteContainerConfigData
+        const mergedConfig = mergeConfigsWithConcreteConfig([imageConfig], instanceConfig)
+
+        return missingSecretsOf(it.configId, mergedConfig)
+      })
+      .filter(it => !!it)
+
+    if (missingSecrets.length > 0) {
       throw new CruxPreconditionFailedException({
-        message: 'Node is busy or unreachable',
+        message: 'Required secrets must have values!',
+        property: 'instanceSecrets',
+        value: missingSecrets,
+      })
+    }
+
+    // config bundles
+    if (deployment.configBundles.length > 0) {
+      const configs = deployment.configBundles.map(it => it.configBundle.config as any as ContainerConfigDataWithId)
+      const concreteConfig = deployment.config as any as ConcreteContainerConfigData
+      const conflicts = getConflictsForConcreteConfig(configs, concreteConfig)
+      if (conflicts) {
+        throw new CruxPreconditionFailedException({
+          message: 'Unresolved conflicts between config bundles',
+          property: 'configBundles',
+          value: Object.keys(conflicts).join(', '),
+        })
+      }
+
+      const mergedConfig = mergeConfigsWithConcreteConfig(configs, concreteConfig)
+      const missingInstanceSecrets = missingSecretsOf(deployment.configId, mergedConfig)
+      if (missingInstanceSecrets) {
+        throw new CruxPreconditionFailedException({
+          message: 'Required secrets must have values!',
+          property: 'deploymentSecrets',
+          value: missingInstanceSecrets,
+        })
+      }
+    }
+
+    // node
+    const node = this.agentService.getById(deployment.nodeId)
+    if (!node) {
+      throw new CruxPreconditionFailedException({
+        message: 'Node is unreachable',
         property: 'nodeId',
         value: deployment.nodeId,
       })
     }
 
-    const missingSecrets = deployment.instances.filter(it => {
-      const imageSecrets = (it.image.config.secrets as UniqueSecretKey[]) ?? []
-      const requiredSecrets = imageSecrets.filter(imageSecret => imageSecret.required).map(secret => secret.key)
-
-      const instanceSecrets = (it.config?.secrets as UniqueSecretKeyValue[]) ?? []
-      const hasSecrets = requiredSecrets.every(requiredSecret => {
-        const instanceSecret = instanceSecrets.find(secret => secret.key === requiredSecret)
-        if (!instanceSecret) {
-          return false
-        }
-
-        return instanceSecret.encrypted && instanceSecret.value.length > 0
+    if (!node.ready) {
+      throw new CruxPreconditionFailedException({
+        message: 'Node is busy',
+        property: 'nodeId',
+        value: deployment.nodeId,
       })
+    }
 
-      return !hasSecrets
+    // deployment protection
+    if (deployment.protected) {
+      // this is a protected deployment no need to check for protected prefixes
+
+      return next.handle()
+    }
+
+    const {
+      query: { ignoreProtected },
+    } = req
+
+    if (ignoreProtected) {
+      // force deploy
+
+      return next.handle()
+    }
+
+    const otherProtected = await this.prisma.deployment.findFirst({
+      where: {
+        protected: true,
+        nodeId: deployment.nodeId,
+        prefix: deployment.prefix,
+        versionId:
+          deployment.version.type === 'incremental'
+            ? {
+                not: deployment.versionId,
+              }
+            : undefined,
+      },
     })
 
-    if (missingSecrets.length > 0) {
+    if (otherProtected) {
       throw new CruxPreconditionFailedException({
-        message: 'Required secrets must have values!',
-        property: 'instanceIds',
-        value: missingSecrets.map(it => ({
-          id: it.id,
-          name: it.config?.name ?? it.image.name,
-        })),
-      })
-    }
-
-    if (!deployment.protected) {
-      const {
-        query: { ignoreProtected },
-      } = req
-
-      if (!ignoreProtected) {
-        const otherProtected = await this.prisma.deployment.findFirst({
-          where: {
-            protected: true,
-            nodeId: deployment.nodeId,
-            prefix: deployment.prefix,
-            versionId:
-              deployment.version.type === 'incremental'
-                ? {
-                    not: deployment.versionId,
-                  }
-                : undefined,
-          },
-        })
-
-        if (otherProtected) {
-          throw new CruxPreconditionFailedException({
-            message:
-              deployment.version.type === 'incremental'
-                ? "There's a protected deployment with the same node and prefix in a different version"
-                : "There's a protected deployment with the same node and prefix",
-            property: 'protectedDeploymentId',
-            value: otherProtected.id,
-          })
-        }
-      }
-    }
-
-    if (deployment.configBundles.length > 0) {
-      const deploymentEnv = (deployment.environment as UniqueKeyValue[]) ?? []
-      const deploymentEnvKeys = deploymentEnv.map(it => it.key)
-
-      const envToBundle: Record<string, string> = {} // [Environment key]: config bundle name
-
-      deployment.configBundles.forEach(it => {
-        const bundleEnv = (it.configBundle.data as UniqueKeyValue[]) ?? []
-
-        bundleEnv.forEach(env => {
-          if (deploymentEnvKeys.includes(env.key)) {
-            return
-          }
-          if (envToBundle[env.key]) {
-            throw new CruxPreconditionFailedException({
-              message: `Environment variable ${env.key} in ${it.configBundle.name} is already defined by ${
-                envToBundle[env.key]
-              }. Please define the key in the deployment or resolve the conflict in the bundles.`,
-              property: 'configBundleId',
-              value: it.configBundle.id,
-            })
-          }
-
-          envToBundle[env.key] = it.configBundle.name
-        })
+        message:
+          deployment.version.type === 'incremental'
+            ? "There's a protected deployment with the same node and prefix in a different version"
+            : "There's a protected deployment with the same node and prefix",
+        property: 'protectedDeploymentId',
+        value: otherProtected.id,
       })
     }
 

@@ -49,6 +49,7 @@ export type WsClientCallbacks = {
 }
 
 export interface WsSubscription {
+  getCompleter(clientToken: string): Observable<unknown>
   getParameter(name: string): string
   onMessage(client: WsClient, message: WsMessage): Observable<any>
   sendToAll(message: WsMessage): void

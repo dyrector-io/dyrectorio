@@ -11,7 +11,7 @@ import {
   ValidateNested,
 } from 'class-validator'
 import { ENVIRONMENT_VALUE_TYPES, EnvironmentValueType } from 'src/domain/image'
-import { ContainerConfigDto, PartialContainerConfigDto } from '../container/container.dto'
+import { ContainerConfigDto } from '../container/container.dto'
 import { BasicRegistryDto } from '../registry/registry.dto'
 
 export class EnvironmentRule {
@@ -46,9 +46,6 @@ export class ImageDto {
   @IsNumber()
   order: number
 
-  @ValidateNested()
-  config: ContainerConfigDto
-
   @Type(() => Date)
   @IsDate()
   createdAt: Date
@@ -58,6 +55,11 @@ export class ImageDto {
 
   @ValidateNested()
   labels: Record<string, string>
+}
+
+export class ImageDetailsDto extends ImageDto {
+  @ValidateNested()
+  config: ContainerConfigDto
 }
 
 export class AddImagesDto {
@@ -75,5 +77,5 @@ export class PatchImageDto {
 
   @IsOptional()
   @ValidateNested()
-  config?: PartialContainerConfigDto | null
+  config?: ContainerConfigDto | null
 }

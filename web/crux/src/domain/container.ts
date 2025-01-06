@@ -1,4 +1,5 @@
 import { NetworkMode } from '@prisma/client'
+import { registryImageNameToContainerName } from './image'
 
 export const PORT_MIN = 0
 export const PORT_MAX = 65535
@@ -164,14 +165,14 @@ export type ExpectedContainerState = {
 
 export type ContainerConfigData = {
   // common
-  name: string
+  name?: string
   environment?: UniqueKeyValue[]
   secrets?: UniqueSecretKey[]
   routing?: Routing
-  expose: ContainerExposeStrategy
+  expose?: ContainerExposeStrategy
   user?: number
   workingDirectory?: string
-  tty: boolean
+  tty?: boolean
   configContainer?: Container
   ports?: Port[]
   portRanges?: ContainerPortRange[]
@@ -179,24 +180,24 @@ export type ContainerConfigData = {
   commands?: UniqueKey[]
   args?: UniqueKey[]
   initContainers?: InitContainer[]
-  capabilities: UniqueKeyValue[]
+  capabilities?: UniqueKeyValue[]
   storageSet?: boolean
   storageId?: string
   storageConfig?: Storage
 
   // dagent
   logConfig?: Log
-  restartPolicy: ContainerRestartPolicyType
-  networkMode: NetworkMode
+  restartPolicy?: ContainerRestartPolicyType
+  networkMode?: NetworkMode
   networks?: UniqueKey[]
   dockerLabels?: UniqueKeyValue[]
   expectedState?: ExpectedContainerState
 
   // crane
-  deploymentStrategy: ContainerDeploymentStrategyType
+  deploymentStrategy?: ContainerDeploymentStrategyType
   customHeaders?: UniqueKey[]
-  proxyHeaders: boolean
-  useLoadBalancer: boolean
+  proxyHeaders?: boolean
+  useLoadBalancer?: boolean
   extraLBAnnotations?: UniqueKeyValue[]
   healthCheckConfig?: HealthCheck
   resourceConfig?: ResourceConfig
@@ -205,8 +206,12 @@ export type ContainerConfigData = {
   metrics?: Metrics
 }
 
-type DagentSpecificConfig = 'logConfig' | 'restartPolicy' | 'networkMode' | 'networks' | 'dockerLabels'
-type CraneSpecificConfig =
+export type ContainerConfigDataWithId = ContainerConfigData & {
+  id: string
+}
+
+type DagentSpecificConfigKeys = 'logConfig' | 'restartPolicy' | 'networkMode' | 'networks' | 'dockerLabels'
+type CraneSpecificConfigKeys =
   | 'deploymentStrategy'
   | 'customHeaders'
   | 'proxyHeaders'
@@ -218,15 +223,13 @@ type CraneSpecificConfig =
   | 'annotations'
   | 'metrics'
 
-export type DagentConfigDetails = Pick<ContainerConfigData, DagentSpecificConfig>
-export type CraneConfigDetails = Pick<ContainerConfigData, CraneSpecificConfig>
-export type CommonConfigDetails = Omit<ContainerConfigData, DagentSpecificConfig | CraneSpecificConfig>
+export type DagentConfigDetails = Pick<ContainerConfigData, DagentSpecificConfigKeys>
+export type CraneConfigDetails = Pick<ContainerConfigData, CraneSpecificConfigKeys>
+export type CommonConfigDetails = Omit<ContainerConfigData, DagentSpecificConfigKeys | CraneSpecificConfigKeys>
 
-export type MergedContainerConfigData = Omit<ContainerConfigData, 'secrets'> & {
-  secrets: UniqueSecretKeyValue[]
+export type ConcreteContainerConfigData = Omit<ContainerConfigData, 'secrets'> & {
+  secrets?: UniqueSecretKeyValue[]
 }
-
-export type InstanceContainerConfigData = Partial<MergedContainerConfigData>
 
 export const CONTAINER_CONFIG_JSON_FIELDS = [
   // Common
@@ -264,3 +267,16 @@ export const CONTAINER_CONFIG_DEFAULT_VALUES = {
 export const CONTAINER_CONFIG_COMPOSITE_FIELDS = {
   storage: ['storageSet', 'storageId', 'storageConfig'],
 }
+
+export const configIsEmpty = <T extends ContainerConfigData>(config: T): boolean => Object.keys(config).length < 1
+
+type InstanceWithConfigAndImageConfig = {
+  config: { name: string }
+  image: {
+    name: string
+    config: { name: string }
+  }
+}
+
+export const nameOfInstance = (instance: InstanceWithConfigAndImageConfig) =>
+  instance.config.name ?? instance.image.config.name ?? registryImageNameToContainerName(instance.image.name)

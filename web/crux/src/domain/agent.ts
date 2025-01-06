@@ -22,6 +22,7 @@ import {
   ContainerIdentifier,
   ContainerInspectResponse,
   ContainerLogListResponse,
+  ContainerOrPrefix,
   DeleteContainersRequest,
   DeploymentStatusMessage,
   Empty,
@@ -106,7 +107,7 @@ export class Agent {
     this.outdated = options.outdated
 
     const callbacks: Record<keyof CallbackCommand, KeyAndCommandProvider<any>> = {
-      listSecrets: (req: ListSecretsRequest) => [Agent.containerPrefixNameOf(req.container), { listSecrets: req }],
+      listSecrets: (req: ListSecretsRequest) => [Agent.containerPrefixNameOrPrefixOf(req.target), { listSecrets: req }],
       containerLog: (req: ContainerLogRequest) => [
         Agent.containerPrefixNameOf(req.container),
         {
@@ -121,12 +122,7 @@ export class Agent {
         { containerInspect: req },
       ],
       deleteContainers: (req: DeleteContainersRequest) => [
-        Agent.containerPrefixNameOf(
-          req?.container ?? {
-            prefix: req.prefix,
-            name: null,
-          },
-        ),
+        Agent.containerPrefixNameOrPrefixOf(req.target),
         { deleteContainers: req },
       ],
     }
@@ -494,6 +490,9 @@ export class Agent {
 
   public static containerPrefixNameOf = (id: ContainerIdentifier): string =>
     !id.prefix ? id.name : `${id.prefix}-${id.name ?? ''}`
+
+  public static containerPrefixNameOrPrefixOf = (target: ContainerOrPrefix) =>
+    this.containerPrefixNameOf(target.container ?? { prefix: target.prefix, name: '' })
 }
 
 export type AgentConnectionMessage = {

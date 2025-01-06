@@ -2,7 +2,7 @@ import { ContainerConfigPortRangeDto } from 'src/app/container/container.dto'
 import { EnvironmentRule, ImageValidation } from 'src/app/image/image.dto'
 import { ContainerPort } from 'src/app/node/node.dto'
 import { CruxBadRequestException } from 'src/exception/crux-exception'
-import { UID_MAX } from 'src/shared/const'
+import { UID_MAX, UID_MIN } from 'src/shared/const'
 import * as yup from 'yup'
 import {
   CONTAINER_DEPLOYMENT_STRATEGY_VALUES,
@@ -66,127 +66,62 @@ const portNumberBaseRule = yup
 const portNumberOptionalRule = portNumberBaseRule.nullable()
 const portNumberRule = portNumberBaseRule.required()
 
-const routingRule = yup
-  .object()
-  .shape({
-    domain: yup.string().nullable(),
-    path: yup.string().nullable(),
-    stripPath: yup.bool().nullable(),
-    uploadLimit: yup.string().nullable(),
-  })
-  .default({})
-  .nullable()
+const routingRule = yup.object().shape({
+  domain: yup.string().nullable(),
+  path: yup.string().nullable(),
+  stripPath: yup.bool().nullable(),
+  uploadLimit: yup.string().nullable(),
+})
 
-const exposeRule = yup
-  .mixed<ContainerExposeStrategy>()
-  .oneOf([...CONTAINER_EXPOSE_STRATEGY_VALUES])
-  .default('none')
-  .required()
-
-const instanceExposeRule = yup
-  .mixed<ContainerExposeStrategy>()
-  .oneOf([...CONTAINER_EXPOSE_STRATEGY_VALUES, null])
-  .nullable()
-
-const restartPolicyRule = yup
-  .mixed<ContainerRestartPolicyType>()
-  .oneOf([...CONTAINER_RESTART_POLICY_TYPE_VALUES])
-  .default('no')
-
-const instanceRestartPolicyRule = yup
-  .mixed<ContainerRestartPolicyType>()
-  .oneOf([...CONTAINER_RESTART_POLICY_TYPE_VALUES, null])
-  .nullable()
-
-const networkModeRule = yup
-  .mixed<ContainerNetworkMode>()
-  .oneOf([...CONTAINER_NETWORK_MODE_VALUES])
-  .default('bridge')
-  .required()
-
-const instanceNetworkModeRule = yup
-  .mixed<ContainerNetworkMode>()
-  .oneOf([...CONTAINER_NETWORK_MODE_VALUES, null])
-  .nullable()
-
+const exposeRule = yup.mixed<ContainerExposeStrategy>().oneOf([...CONTAINER_EXPOSE_STRATEGY_VALUES])
+const restartPolicyRule = yup.mixed<ContainerRestartPolicyType>().oneOf([...CONTAINER_RESTART_POLICY_TYPE_VALUES])
+const networkModeRule = yup.mixed<ContainerNetworkMode>().oneOf([...CONTAINER_NETWORK_MODE_VALUES])
 const deploymentStrategyRule = yup
   .mixed<ContainerDeploymentStrategyType>()
   .oneOf([...CONTAINER_DEPLOYMENT_STRATEGY_VALUES])
-  .required()
 
-const instanceDeploymentStrategyRule = yup
-  .mixed<ContainerDeploymentStrategyType>()
-  .oneOf([...CONTAINER_DEPLOYMENT_STRATEGY_VALUES, null])
-  .nullable()
+const logDriverRule = yup.mixed<ContainerLogDriverType>().oneOf([...CONTAINER_LOG_DRIVER_VALUES])
 
-const logDriverRule = yup
-  .mixed<ContainerLogDriverType>()
-  .oneOf([...CONTAINER_LOG_DRIVER_VALUES])
-  .default('nodeDefault')
+const volumeTypeRule = yup.mixed<ContainerVolumeType>().oneOf([...CONTAINER_VOLUME_TYPE_VALUES])
 
-const volumeTypeRule = yup
-  .mixed<ContainerVolumeType>()
-  .oneOf([...CONTAINER_VOLUME_TYPE_VALUES])
-  .default('rwo')
+const configContainerRule = yup.object().shape({
+  image: yup.string().required(),
+  volume: yup.string().required(),
+  path: yup.string().required(),
+  keepFiles: yup.boolean().default(false).required(),
+})
 
-const configContainerRule = yup
-  .object()
-  .shape({
-    image: yup.string().required(),
-    volume: yup.string().required(),
-    path: yup.string().required(),
-    keepFiles: yup.boolean().default(false).required(),
-  })
-  .default({})
-  .nullable()
-  .optional()
+const healthCheckConfigRule = yup.object().shape({
+  port: portNumberRule.nullable().optional(),
+  livenessProbe: yup.string().nullable().optional(),
+  readinessProbe: yup.string().nullable().optional(),
+  startupProbe: yup.string().nullable().optional(),
+})
 
-const healthCheckConfigRule = yup
-  .object()
-  .shape({
-    port: portNumberRule.nullable().optional(),
-    livenessProbe: yup.string().nullable().optional(),
-    readinessProbe: yup.string().nullable().optional(),
-    startupProbe: yup.string().nullable().optional(),
-  })
-  .default({})
-  .optional()
-  .nullable()
+const resourceConfigRule = yup.object().shape({
+  limits: yup
+    .object()
+    .shape({
+      cpu: yup.string().nullable(),
+      memory: yup.string().nullable(),
+    })
+    .nullable()
+    .optional(),
+  memory: yup
+    .object()
+    .shape({
+      cpu: yup.string().nullable(),
+      memory: yup.string().nullable(),
+    })
+    .nullable()
+    .optional(),
+  livenessProbe: yup.string().nullable(),
+})
 
-const resourceConfigRule = yup
-  .object()
-  .shape({
-    limits: yup
-      .object()
-      .shape({
-        cpu: yup.string().nullable(),
-        memory: yup.string().nullable(),
-      })
-      .nullable()
-      .optional(),
-    memory: yup
-      .object()
-      .shape({
-        cpu: yup.string().nullable(),
-        memory: yup.string().nullable(),
-      })
-      .nullable()
-      .optional(),
-    livenessProbe: yup.string().nullable(),
-  })
-  .default({})
-  .nullable()
-  .optional()
-
-const storageRule = yup
-  .object()
-  .shape({
-    bucket: yup.string().required(),
-    path: yup.string().required(),
-  })
-  .default({})
-  .nullable()
-  .optional()
+const storageRule = yup.object().shape({
+  bucket: yup.string().required(),
+  path: yup.string().required(),
+})
 
 const createOverlapTest = (
   schema: yup.NumberSchema<number, object, number>,
@@ -213,7 +148,6 @@ const portConfigRule = yup.mixed().when('portRanges', ([portRanges]) => {
           external: portNumberOptionalRule,
         }),
       )
-      .default([])
       .nullable()
       .optional()
   }
@@ -225,49 +159,40 @@ const portConfigRule = yup.mixed().when('portRanges', ([portRanges]) => {
         external: createOverlapTest(portNumberOptionalRule, portRanges, 'external'),
       }),
     )
-    .default([])
     .nullable()
     .optional()
 })
 
-const portRangeConfigRule = yup
-  .array(
-    yup.object().shape({
-      internal: yup
-        .object()
-        .shape({
-          from: portNumberRule,
-          to: portNumberRule,
-        })
-        .default({})
-        .required(),
-      external: yup
-        .object()
-        .shape({
-          from: portNumberRule,
-          to: portNumberRule,
-        })
-        .default({})
-        .required(),
-    }),
-  )
-  .default([])
-  .nullable()
-  .optional()
+const portRangeConfigRule = yup.array(
+  yup.object().shape({
+    internal: yup
+      .object()
+      .shape({
+        from: portNumberRule,
+        to: portNumberRule,
+      })
+      .default({})
+      .required(),
+    external: yup
+      .object()
+      .shape({
+        from: portNumberRule,
+        to: portNumberRule,
+      })
+      .default({})
+      .required(),
+  }),
+)
 
-const volumeConfigRule = yup
-  .array(
-    yup.object().shape({
-      name: yup.string().required(),
-      path: yup.string().required(),
-      size: yup.string().nullable(),
-      class: yup.string().nullable(),
-      type: volumeTypeRule,
-    }),
-  )
-  .default([])
-  .nullable()
-  .optional()
+const volumeConfigRule = yup.array(
+  yup.object().shape({
+    name: yup.string().required(),
+    path: yup.string().required(),
+    size: yup.string().nullable(),
+    class: yup.string().nullable(),
+    type: volumeTypeRule,
+  }),
+)
 
 const initContainerVolumeLinkRule = yup.array(
   yup.object().shape({
@@ -276,42 +201,37 @@ const initContainerVolumeLinkRule = yup.array(
   }),
 )
 
-const initContainerRule = yup
+const initContainerRule = yup.array(
+  yup.object().shape({
+    name: yup.string().required().matches(/^\S+$/g),
+    image: yup.string().required(),
+    command: shellCommandSchema.default([]).nullable(),
+    args: shellCommandSchema.default([]).nullable(),
+    environment: uniqueKeyValuesSchema.default([]).nullable(),
+    useParentConfig: yup.boolean().default(false).required(),
+    volumes: initContainerVolumeLinkRule.default([]).nullable(),
+  }),
+)
+
+const logConfigRule = yup.object().shape({
+  driver: logDriverRule,
+  options: uniqueKeyValuesSchema.default([]).nullable(),
+})
+
+const markerRule = yup.object().shape({
+  deployment: uniqueKeyValuesSchema.default([]).nullable(),
+  service: uniqueKeyValuesSchema.default([]).nullable(),
+  ingress: uniqueKeyValuesSchema.default([]).nullable(),
+})
+
+const uniqueSecretKeySchema = yup
   .array(
     yup.object().shape({
-      name: yup.string().required().matches(/^\S+$/g),
-      image: yup.string().required(),
-      command: shellCommandSchema.default([]).nullable(),
-      args: shellCommandSchema.default([]).nullable(),
-      environment: uniqueKeyValuesSchema.default([]).nullable(),
-      useParentConfig: yup.boolean().default(false).required(),
-      volumes: initContainerVolumeLinkRule.default([]).nullable(),
+      key: yup.string().required().ensure().matches(/^\S+$/g), // all characters are non-whitespaces
     }),
   )
-  .default([])
-  .nullable()
-  .optional()
-
-const logConfigRule = yup
-  .object()
-  .shape({
-    driver: logDriverRule,
-    options: uniqueKeyValuesSchema.default([]).nullable(),
-  })
-  .default({})
-  .nullable()
-  .optional()
-
-const markerRule = yup
-  .object()
-  .shape({
-    deployment: uniqueKeyValuesSchema.default([]).nullable(),
-    service: uniqueKeyValuesSchema.default([]).nullable(),
-    ingress: uniqueKeyValuesSchema.default([]).nullable(),
-  })
-  .default({})
-  .nullable()
-  .optional()
+  .ensure()
+  .test('keysAreUnique', 'Keys must be unique', arr => new Set(arr.map(it => it.key)).size === arr.length)
 
 const uniqueSecretKeyValuesSchema = yup
   .array(
@@ -354,99 +274,93 @@ const metricsRule = yup.mixed().when(['ports'], ([ports]) => {
     })
     .nullable()
     .optional()
-    .default(null)
 })
 
-const expectedContainerStateRule = yup
-  .object()
-  .shape({
-    state: yup.string().default(null).nullable().oneOf(CONTAINER_STATE_VALUES),
-    timeout: yup.number().default(null).nullable().min(0),
-    exitCode: yup.number().default(0).nullable().min(-127).max(128),
-  })
-  .default({})
-  .nullable()
-  .optional()
-
-export const containerConfigSchema = yup.object().shape({
-  name: yup.string().required().matches(/^\S+$/g),
-  environment: uniqueKeyValuesSchema.default([]).nullable(),
-  secrets: uniqueSecretKeyValuesSchema.default([]).nullable(),
-  routing: routingRule,
-  expose: exposeRule,
-  user: yup.number().default(null).min(-1).max(UID_MAX).nullable(),
-  workingDirectory: yup.string().nullable().optional().matches(/^\S+$/g),
-  tty: yup.boolean().default(false).required(),
-  configContainer: configContainerRule,
-  ports: portConfigRule,
-  portRanges: portRangeConfigRule,
-  volumes: volumeConfigRule,
-  commands: shellCommandSchema.default([]).nullable(),
-  args: shellCommandSchema.default([]).nullable(),
-  initContainers: initContainerRule,
-  capabilities: uniqueKeyValuesSchema.default([]).nullable(),
-  storageId: yup.string().default(null).nullable(),
-  storageConfig: storageRule,
-
-  // dagent:
-  logConfig: logConfigRule,
-  restartPolicy: restartPolicyRule,
-  networkMode: networkModeRule,
-  networks: uniqueKeysOnlySchema.default([]).nullable(),
-  dockerLabels: uniqueKeyValuesSchema.default([]).nullable(),
-  expectedState: expectedContainerStateRule,
-
-  // crane
-  deploymentStrategy: deploymentStrategyRule,
-  customHeaders: uniqueKeysOnlySchema.default([]).nullable(),
-  proxyHeaders: yup.boolean().default(false).required(),
-  useLoadBalancer: yup.boolean().default(false).required(),
-  extraLBAnnotations: uniqueKeyValuesSchema.default([]).nullable(),
-  healthCheckConfig: healthCheckConfigRule,
-  resourceConfig: resourceConfigRule,
-  annotations: markerRule,
-  labels: markerRule,
-  metrics: metricsRule,
+const expectedContainerStateRule = yup.object().shape({
+  state: yup.string().default(null).nullable().oneOf(CONTAINER_STATE_VALUES),
+  timeout: yup.number().default(null).nullable().min(0),
+  exitCode: yup.number().default(0).nullable().min(-127).max(128),
 })
 
-export const instanceContainerConfigSchema = yup.object().shape({
-  name: yup.string().nullable(),
-  environment: uniqueKeyValuesSchema.default([]).nullable(),
-  secrets: uniqueKeyValuesSchema.default([]).nullable(),
-  routing: routingRule.nullable(),
-  expose: instanceExposeRule,
-  user: yup.number().default(null).min(-1).max(UID_MAX).nullable(),
-  tty: yup.boolean().default(false).nullable(),
-  configContainer: configContainerRule.nullable(),
-  ports: portConfigRule.nullable(),
-  portRanges: portRangeConfigRule.nullable(),
-  volumes: volumeConfigRule.nullable(),
-  commands: shellCommandSchema.default([]).nullable(),
-  args: shellCommandSchema.default([]).nullable(),
-  initContainers: initContainerRule.nullable(),
-  capabilities: uniqueKeyValuesSchema.default([]).nullable(),
-  storageId: yup.string().default(null).nullable(),
-  storageConfig: storageRule,
+const containerConfigSchema = yup.object().shape({
+  name: yup.string().optional().nullable().matches(/^\S+$/g),
+  environment: uniqueKeyValuesSchema.optional().nullable(),
+  secrets: uniqueSecretKeySchema.optional().nullable(),
+  routing: routingRule.optional().nullable(),
+  expose: exposeRule.optional().nullable(),
+  user: yup.number().default(null).min(UID_MIN).max(UID_MAX).optional().nullable(),
+  workingDirectory: yup.string().optional().nullable().matches(/^\S+$/g),
+  tty: yup.boolean().optional().nullable(),
+  configContainer: configContainerRule.optional().nullable(),
+  ports: portConfigRule.optional().nullable(),
+  portRanges: portRangeConfigRule.optional().nullable(),
+  volumes: volumeConfigRule.optional().nullable(),
+  commands: shellCommandSchema.optional().nullable(),
+  args: shellCommandSchema.optional().nullable(),
+  initContainers: initContainerRule.optional().nullable(),
+  capabilities: uniqueKeyValuesSchema.optional().nullable(),
+  storageId: yup.string().optional().nullable(),
+  storageConfig: storageRule.optional().nullable(),
 
   // dagent:
-  logConfig: logConfigRule.nullable(),
-  restartPolicy: instanceRestartPolicyRule,
-  networkMode: instanceNetworkModeRule,
-  networks: uniqueKeysOnlySchema.default([]).nullable(),
-  dockerLabels: uniqueKeyValuesSchema.default([]).nullable(),
-  expectedState: expectedContainerStateRule,
+  logConfig: logConfigRule.optional().nullable(),
+  restartPolicy: restartPolicyRule.optional().nullable(),
+  networkMode: networkModeRule.optional().nullable(),
+  networks: uniqueKeysOnlySchema.optional().nullable(),
+  dockerLabels: uniqueKeyValuesSchema.optional().nullable(),
+  expectedState: expectedContainerStateRule.optional().nullable(),
 
   // crane
-  deploymentStrategy: instanceDeploymentStrategyRule,
-  customHeaders: uniqueKeysOnlySchema.default([]).nullable(),
-  proxyHeaders: yup.boolean().default(false).nullable(),
-  useLoadBalancer: yup.boolean().default(false).nullable(),
-  extraLBAnnotations: uniqueKeyValuesSchema.default([]).nullable(),
-  healthCheckConfig: healthCheckConfigRule.nullable(),
-  resourceConfig: resourceConfigRule.nullable(),
-  annotations: markerRule.nullable(),
-  labels: markerRule.nullable(),
-  metrics: metricsRule,
+  deploymentStrategy: deploymentStrategyRule.optional().nullable(),
+  customHeaders: uniqueKeysOnlySchema.optional().nullable(),
+  proxyHeaders: yup.boolean().optional().nullable(),
+  useLoadBalancer: yup.boolean().optional().nullable(),
+  extraLBAnnotations: uniqueKeyValuesSchema.optional().nullable(),
+  healthCheckConfig: healthCheckConfigRule.optional().nullable(),
+  resourceConfig: resourceConfigRule.optional().nullable(),
+  annotations: markerRule.optional().nullable(),
+  labels: markerRule.optional().nullable(),
+  metrics: metricsRule.optional().nullable(),
+})
+
+export const concreteContainerConfigSchema = yup.object().shape({
+  name: yup.string().optional().nullable(),
+  environment: uniqueKeyValuesSchema.optional().nullable(),
+  secrets: uniqueSecretKeyValuesSchema.optional().nullable(),
+  routing: routingRule.optional().nullable(),
+  expose: exposeRule.optional().nullable(),
+  user: yup.number().optional().nullable().min(-1).max(UID_MAX),
+  tty: yup.boolean().optional().nullable(),
+  configContainer: configContainerRule.optional().nullable(),
+  ports: portConfigRule.optional().nullable(),
+  portRanges: portRangeConfigRule.optional().nullable(),
+  volumes: volumeConfigRule.optional().nullable(),
+  commands: shellCommandSchema.optional().nullable(),
+  args: shellCommandSchema.optional().nullable(),
+  initContainers: initContainerRule.optional().nullable(),
+  capabilities: uniqueKeyValuesSchema.optional().nullable(),
+  storageId: yup.string().optional().nullable(),
+  storageConfig: storageRule.optional().nullable(),
+
+  // dagent:
+  logConfig: logConfigRule.optional().nullable(),
+  restartPolicy: restartPolicyRule.optional().nullable(),
+  networkMode: networkModeRule.optional().nullable(),
+  networks: uniqueKeysOnlySchema.optional().nullable(),
+  dockerLabels: uniqueKeyValuesSchema.optional().nullable(),
+  expectedState: expectedContainerStateRule.optional().nullable(),
+
+  // crane
+  deploymentStrategy: deploymentStrategyRule.optional().nullable(),
+  customHeaders: uniqueKeysOnlySchema.optional().nullable(),
+  proxyHeaders: yup.boolean().optional().nullable(),
+  useLoadBalancer: yup.boolean().optional().nullable(),
+  extraLBAnnotations: uniqueKeyValuesSchema.optional().nullable(),
+  healthCheckConfig: healthCheckConfigRule.optional().nullable(),
+  resourceConfig: resourceConfigRule.optional().nullable(),
+  annotations: markerRule.optional().nullable(),
+  labels: markerRule.optional().nullable(),
+  metrics: metricsRule.optional().nullable(),
 })
 
 const validateEnvironmentRule = (rule: EnvironmentRule, index: number, env: UniqueKeyValue) => {
@@ -519,12 +433,19 @@ const testEnvironment = (validation: ImageValidation, arr: UniqueKeyValue[]) => 
 
 export const createStartDeploymentSchema = (instanceValidation: Record<string, ImageValidation>) =>
   yup.object({
-    environment: uniqueKeyValuesSchema,
+    config: containerConfigSchema,
+    configBundles: yup.array(
+      yup.object({
+        configBundle: yup.object({
+          config: containerConfigSchema,
+        }),
+      }),
+    ),
     instances: yup
       .array(
         yup.object({
           id: yup.string(),
-          config: instanceContainerConfigSchema.nullable(),
+          config: concreteContainerConfigSchema,
         }),
       )
       .test(
@@ -629,6 +550,17 @@ export const templateSchema = yup.object({
     )
     .required(),
 })
+
+export const nullifyUndefinedProperties = (candidate: object) => {
+  if (candidate) {
+    Object.entries(candidate).forEach(entry => {
+      const [key, value] = entry
+      if (typeof value === 'undefined') {
+        candidate[key] = null
+      }
+    })
+  }
+}
 
 export const yupValidate = (schema: yup.AnySchema, candidate: any) => {
   try {

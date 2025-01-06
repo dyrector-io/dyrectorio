@@ -39,7 +39,7 @@ const DyoToggle = (props: DyoToggleProps) => {
       <button
         type="button"
         role="switch"
-        aria-checked={checked}
+        aria-checked={checked ?? false}
         name={name}
         disabled={disabled}
         className={`${
