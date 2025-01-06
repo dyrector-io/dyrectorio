@@ -75,7 +75,7 @@ test.describe('Versioned Project', () => {
     const copyButton = await page.locator('button:has-text("Copy")')
     await copyButton.click()
 
-    await page.locator(`button:has-text("${nodeName}")`).click()
+    await page.locator(`button:has-text("${nodeName}"):above(label:has-text("Prefix"))`).click()
     await fillDeploymentPrefix(page, `${prefix}-new-prefix`)
 
     const currentUrl = page.url()
@@ -87,7 +87,7 @@ test.describe('Versioned Project', () => {
   })
 
   test('deployment should not be copiable to the same node with the same prefix', async ({ page }) => {
-    const nodeName = 'versioned-copiability-same-node-same-prefix'
+    const nodeName = 'vc-same-node-same-prefix'
     const projectName = nodeName
     const prefix = projectName
 
@@ -105,7 +105,7 @@ test.describe('Versioned Project', () => {
     const copyButton = await page.locator(`[alt="Copy"]:right-of(:has-text("${projectName}"))`).first()
     await copyButton.click()
 
-    await page.locator(`button:has-text("${nodeName}")`).click()
+    await page.locator(`button:has-text("${nodeName}"):above(label:has-text("Prefix"))`).click()
     await fillDeploymentPrefix(page, prefix)
     await page.locator('button:has-text("Copy")').click()
 
