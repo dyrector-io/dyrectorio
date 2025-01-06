@@ -1,4 +1,4 @@
-import { WS_TYPE_PATCH_CONFIG, WS_TYPE_PATCH_INSTANCE } from '@app/models'
+import { WS_TYPE_PATCH_CONFIG } from '@app/models'
 import { expect } from '@playwright/test'
 import { DAGENT_NODE, NGINX_TEST_IMAGE_WITH_TAG, TEAM_ROUTES, waitForURLExcept } from 'e2e/utils/common'
 import { addPortsToContainerConfig } from 'e2e/utils/container-config'
@@ -189,11 +189,12 @@ test.describe('Deleting default version', () => {
     await settingsButton.click()
 
     await page.waitForSelector(`h2:has-text("Instance config")`)
-    const wsRoute = TEAM_ROUTES.deployment.detailsSocket(defaultDeploymentId)
+    const instanceConfigId = page.url().split('/').pop()
+    const wsRoute = TEAM_ROUTES.containerConfig.detailsSocket(instanceConfigId)
 
     const internal = '1000'
     const external = '2000'
-    await addPortsToContainerConfig(page, ws, wsRoute, WS_TYPE_PATCH_INSTANCE, internal, external)
+    await addPortsToContainerConfig(page, ws, wsRoute, WS_TYPE_PATCH_CONFIG, internal, external)
 
     const newVersionId = await createVersion(page, projectId, 'new-version', 'Rolling')
 
@@ -289,11 +290,12 @@ test.describe("Deleting copied deployment's parent", () => {
     await page.waitForURL(`/**/container-configurations/**`)
     await page.waitForSelector('h2:text-is("Instance config")')
 
-    const wsRoute = TEAM_ROUTES.deployment.detailsSocket(parentDeploymentId)
+    const instanceConfigId = page.url().split('/').pop()
+    const wsRoute = TEAM_ROUTES.containerConfig.detailsSocket(instanceConfigId)
 
     const internal = '1000'
     const external = '2000'
-    await addPortsToContainerConfig(page, ws, wsRoute, WS_TYPE_PATCH_INSTANCE, internal, external)
+    await addPortsToContainerConfig(page, ws, wsRoute, WS_TYPE_PATCH_CONFIG, internal, external)
 
     await page.goto(TEAM_ROUTES.deployment.details(parentDeploymentId))
     await page.waitForSelector('h2:text-is("Deployments")')
