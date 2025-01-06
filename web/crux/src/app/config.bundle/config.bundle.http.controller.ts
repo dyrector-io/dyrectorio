@@ -26,6 +26,8 @@ import {
 import { Identity } from '@ory/kratos-client'
 import UuidParams from 'src/decorators/api-params.decorator'
 import { CreatedResponse, CreatedWithLocation } from '../../interceptors/created-with-location.decorator'
+import { DeploymentDto } from '../deploy/deploy.dto'
+import DeployService from '../deploy/deploy.service'
 import { IdentityFromRequest } from '../token/jwt-auth.guard'
 import {
   ConfigBundleDetailsDto,
@@ -50,7 +52,10 @@ const ROUTE_CONFIG_BUNDLE_ID = ':configBundleId'
 @ApiTags(ROUTE_CONFIG_BUNDLES)
 @UseGuards(ConfigBundleTeamAccessGuard)
 export default class ConfigBundlesHttpController {
-  constructor(private service: ConfigBundleService) {}
+  constructor(
+    private readonly service: ConfigBundleService,
+    private readonly deployService: DeployService,
+  ) {}
 
   @Get()
   @HttpCode(HttpStatus.OK)
@@ -82,6 +87,28 @@ export default class ConfigBundlesHttpController {
   @UuidParams(PARAM_CONFIG_BUNDLE_ID)
   async getConfigBundleDetails(@TeamSlug() _: string, @ConfigBundleId() id: string): Promise<ConfigBundleDetailsDto> {
     return this.service.getConfigBundleDetails(id)
+  }
+
+  @Get(`${ROUTE_CONFIG_BUNDLE_ID}/deployments`)
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({
+    description:
+      'Get the list of deployments. Request needs to include `teamSlug` in URL. A deployment should include `id`, `prefix`, `status`, `note`, `audit` log details, project `name`, `id`, `type`, version `name`, `type`, `id`, and node `name`, `id`, `type`.',
+    summary: 'Fetch the list of deployments.',
+  })
+  @ApiOkResponse({
+    type: DeploymentDto,
+    isArray: true,
+    description: 'List of deployments.',
+  })
+  @ApiForbiddenResponse({ description: 'Unauthorized request for deployments.' })
+  async getDeployments(
+    @TeamSlug() teamSlug: string,
+    @ConfigBundleId() configBundleId: string,
+  ): Promise<DeploymentDto[]> {
+    const deployments = await this.deployService.getDeploymentsByConfigBundleId(configBundleId)
+
+    return deployments
   }
 
   @Post()

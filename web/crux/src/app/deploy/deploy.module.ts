@@ -31,7 +31,7 @@ import DeployWebSocketGateway from './deploy.ws.gateway'
     RegistryModule,
     forwardRef(() => ContainerModule),
     ConfigModule,
-    ConfigBundleModule,
+    forwardRef(() => ConfigBundleModule),
     AuditLoggerModule,
     ...CruxJwtModuleImports,
   ],

@@ -4,7 +4,7 @@ import EditNodeSection from '@app/components/nodes/edit-node-section'
 import NodeAuditList from '@app/components/nodes/node-audit-list'
 import NodeConnectionCard from '@app/components/nodes/node-connection-card'
 import NodeContainersList from '@app/components/nodes/node-containers-list'
-import NodeDeploymentList from '@app/components/nodes/node-deployment-list'
+import FilteredDeploymentList from '@app/components/deployments/filtered-deployment-list'
 import NodeSectionsHeading from '@app/components/nodes/node-sections-heading'
 import useNodeDetailsState from '@app/components/nodes/use-node-details-state'
 import { BreadcrumbLink } from '@app/components/shared/breadcrumb'
@@ -123,7 +123,7 @@ const NodeDetailsPage = (props: NodeDetailsPageProps) => {
           ) : state.section === 'logs' ? (
             <NodeAuditList node={node} />
           ) : (
-            <NodeDeploymentList deployments={deployments} />
+            <FilteredDeploymentList deployments={deployments} />
           )}
         </>
       )}

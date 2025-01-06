@@ -877,29 +877,7 @@ export default class DeployService {
         },
         skip: query.skip,
         take: query.take,
-        include: {
-          version: {
-            select: {
-              id: true,
-              name: true,
-              type: true,
-              project: {
-                select: {
-                  id: true,
-                  name: true,
-                  type: true,
-                },
-              },
-            },
-          },
-          node: {
-            select: {
-              id: true,
-              name: true,
-              type: true,
-            },
-          },
-        },
+        include: DeployService.listInclude,
       }),
       this.prisma.deployment.count({ where }),
     ])
@@ -910,45 +888,44 @@ export default class DeployService {
     }
   }
 
-  async getDeploymentsByNodeId(teamSlug: string, nodeId: string): Promise<DeploymentDto[]> {
+  async getDeploymentsByNodeId(nodeId: string): Promise<DeploymentDto[]> {
     const deployments = await this.prisma.deployment.findMany({
       where: {
         node: {
           id: nodeId,
-          team: {
-            slug: teamSlug,
-          },
         },
       },
       orderBy: {
         createdAt: 'desc',
       },
-      include: {
-        version: {
-          select: {
-            id: true,
-            name: true,
-            type: true,
-            project: {
-              select: {
-                id: true,
-                name: true,
-                type: true,
-              },
+      include: DeployService.listInclude,
+    })
+
+    return deployments.map(it => this.mapper.toDto(it))
+  }
+
+  async getDeploymentsByConfigBundleId(configBundleId: string): Promise<DeploymentDto[]> {
+    const bundle = await this.prisma.configBundle.findUnique({
+      where: {
+        id: configBundleId,
+      },
+      select: {
+        deployments: {
+          include: {
+            deployment: {
+              include: DeployService.listInclude,
             },
           },
-        },
-        node: {
-          select: {
-            id: true,
-            name: true,
-            type: true,
+          orderBy: {
+            deployment: {
+              createdAt: 'desc',
+            },
           },
         },
       },
     })
 
-    return deployments.map(it => this.mapper.toDto(it))
+    return bundle.deployments.map(it => this.mapper.toDto(it.deployment))
   }
 
   async getDeploymentSecrets(deploymentId: string): Promise<DeploymentSecretsDto> {
@@ -1277,5 +1254,29 @@ export default class DeployService {
     })
 
     return versions.flatMap(it => it.deployments)
+  }
+
+  private static listInclude = {
+    version: {
+      select: {
+        id: true,
+        name: true,
+        type: true,
+        project: {
+          select: {
+            id: true,
+            name: true,
+            type: true,
+          },
+        },
+      },
+    },
+    node: {
+      select: {
+        id: true,
+        name: true,
+        type: true,
+      },
+    },
   }
 }

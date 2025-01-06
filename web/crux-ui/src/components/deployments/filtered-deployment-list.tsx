@@ -23,7 +23,7 @@ type NodeDeploymentListProps = {
 
 type DeploymentFilter = TextFilter & EnumFilter<DeploymentStatus>
 
-const NodeDeploymentList = (props: NodeDeploymentListProps) => {
+const FilteredDeploymentList = (props: NodeDeploymentListProps) => {
   const { deployments: propsDeployments } = props
 
   const { t } = useTranslation('deployments')
@@ -163,4 +163,4 @@ const NodeDeploymentList = (props: NodeDeploymentListProps) => {
   )
 }
 
-export default NodeDeploymentList
+export default FilteredDeploymentList
