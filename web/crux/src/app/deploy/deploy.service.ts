@@ -804,7 +804,7 @@ export default class DeployService {
     return runningDeployment.watchStatus().pipe(map(it => this.mapper.progressEventToEventDto(it)))
   }
 
-  async getDeployments(teamSlug: string, query?: DeploymentQueryDto): Promise<DeploymentListDto> {
+  async getDeployments(teamSlug: string, query: DeploymentQueryDto): Promise<DeploymentListDto> {
     let where: Prisma.DeploymentWhereInput = {
       version: {
         project: {
@@ -813,7 +813,7 @@ export default class DeployService {
           },
         },
       },
-      nodeId: query.nodeId,
+      nodeId: query.nodeId ?? undefined,
       status: query.status ? this.mapper.statusDtoToDb(query.status) : undefined,
     }
 
@@ -910,6 +910,47 @@ export default class DeployService {
     }
   }
 
+  async getDeploymentsByNodeId(teamSlug: string, nodeId: string): Promise<DeploymentDto[]> {
+    const deployments = await this.prisma.deployment.findMany({
+      where: {
+        node: {
+          id: nodeId,
+          team: {
+            slug: teamSlug,
+          },
+        },
+      },
+      orderBy: {
+        createdAt: 'desc',
+      },
+      include: {
+        version: {
+          select: {
+            id: true,
+            name: true,
+            type: true,
+            project: {
+              select: {
+                id: true,
+                name: true,
+                type: true,
+              },
+            },
+          },
+        },
+        node: {
+          select: {
+            id: true,
+            name: true,
+            type: true,
+          },
+        },
+      },
+    })
+
+    return deployments.map(it => this.mapper.toDto(it))
+  }
+
   async getDeploymentSecrets(deploymentId: string): Promise<DeploymentSecretsDto> {
     const deployment = await this.prisma.deployment.findUniqueOrThrow({
       where: {
@@ -997,16 +1038,8 @@ export default class DeployService {
         note: request.note,
         status: DeploymentStatusEnum.preparing,
         createdBy: identity.id,
-        version: {
-          connect: {
-            id: copiedDeployment.versionId,
-          },
-        },
-        node: {
-          connect: {
-            id: copiedDeployment.nodeId,
-          },
-        },
+        version: { connect: { id: copiedDeployment.versionId } },
+        node: { connect: { id: request.nodeId } },
         config: !copiedDeployment.config
           ? undefined
           : {

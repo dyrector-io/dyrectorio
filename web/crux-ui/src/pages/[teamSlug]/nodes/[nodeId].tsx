@@ -15,7 +15,7 @@ import { DyoConfirmationModal } from '@app/elements/dyo-modal'
 import { defaultApiErrorHandler } from '@app/errors'
 import useSubmit from '@app/hooks/use-submit'
 import useTeamRoutes from '@app/hooks/use-team-routes'
-import { NodeDetails } from '@app/models'
+import { Deployment, NodeDetails } from '@app/models'
 import { TeamRoutes } from '@app/routes'
 import { withContextAuthorization } from '@app/utils'
 import { getCruxFromContext } from '@server/crux-api'
@@ -24,12 +24,13 @@ import useTranslation from 'next-translate/useTranslation'
 import { useRouter } from 'next/dist/client/router'
 import { useSWRConfig } from 'swr'
 
-interface NodeDetailsPageProps {
+type NodeDetailsPageProps = {
   node: NodeDetails
+  deployments: Deployment[]
 }
 
 const NodeDetailsPage = (props: NodeDetailsPageProps) => {
-  const { node: propsNode } = props
+  const { node: propsNode, deployments } = props
 
   const { t } = useTranslation('nodes')
   const routes = useTeamRoutes()
@@ -122,7 +123,7 @@ const NodeDetailsPage = (props: NodeDetailsPageProps) => {
           ) : state.section === 'logs' ? (
             <NodeAuditList node={node} />
           ) : (
-            <NodeDeploymentList nodeId={propsNode.id} />
+            <NodeDeploymentList deployments={deployments} />
           )}
         </>
       )}
@@ -140,10 +141,12 @@ const getPageServerSideProps = async (context: GetServerSidePropsContext) => {
   const nodeId = context.query.nodeId as string
 
   const node = await getCruxFromContext<NodeDetails>(context, routes.node.api.details(nodeId))
+  const deployments = await getCruxFromContext<Deployment[]>(context, routes.node.api.deployments(nodeId))
 
   return {
     props: {
       node,
+      deployments,
     },
   }
 }

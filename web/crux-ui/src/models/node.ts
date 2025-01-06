@@ -102,11 +102,6 @@ export type NodeContainerInspection = {
   inspection: string
 }
 
-export type NodeDeploymentQuery = PaginationQuery & {
-  filter?: string
-  status?: DeploymentStatus
-}
-
 // ws
 
 export const WS_TYPE_NODE_EVENT = 'event'

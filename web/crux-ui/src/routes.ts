@@ -5,7 +5,6 @@ import {
   ContainerIdentifier,
   ContainerOperation,
   DeploymentQuery,
-  NodeDeploymentQuery,
   PaginationQuery,
   VersionSectionsState,
 } from './models'
@@ -238,7 +237,7 @@ class NodeApi {
 
   audit = (id: string, query: AuditLogQuery) => urlQuery(`${this.details(id)}/audit`, query)
 
-  deployments = (id: string, query?: NodeDeploymentQuery) => urlQuery(`${this.details(id)}/deployments`, query)
+  deployments = (id: string) => `${this.details(id)}/deployments`
 
   kick = (id: string) => `${this.details(id)}/kick`
 

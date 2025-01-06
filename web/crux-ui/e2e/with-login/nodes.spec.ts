@@ -223,13 +223,16 @@ test('Stopping the underlying container of a log stream should not affect the co
 
   await page.locator('button:has-text("Containers")').click()
 
+  await page.getByPlaceholder('Search').fill(prefix)
+  await expect(page.locator('table.w-full >> tbody >> tr')).toHaveCount(1)
+
   const row = page.getByRole('row', { name: containerName })
 
   await expect(row.getByRole('cell', { name: 'Running' }).nth(0)).toBeVisible()
 
-  await row.getByAltText('Logs').click()
-
   const nodeId = page.url().split('/').pop()
+
+  await row.getByAltText('Logs').click()
 
   await page.waitForURL(
     TEAM_ROUTES.node.containerLog(nodeId, {

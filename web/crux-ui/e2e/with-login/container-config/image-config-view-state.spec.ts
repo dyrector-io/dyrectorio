@@ -21,7 +21,7 @@ test.describe('View state', () => {
     const { imageConfigId } = await setup(page, 'editor-state-conf', '1.0.0', NGINX_TEST_IMAGE_WITH_TAG)
 
     await page.goto(TEAM_ROUTES.containerConfig.details(imageConfigId))
-    await page.waitForSelector('h2:text-is("Image")')
+    await page.waitForSelector('h2:text-is("Image config")')
 
     const editorButton = await page.waitForSelector('button:has-text("Editor")')
 
@@ -38,7 +38,7 @@ test.describe('View state', () => {
     const { imageConfigId } = await setup(page, 'editor-state-json', '1.0.0', NGINX_TEST_IMAGE_WITH_TAG)
 
     await page.goto(TEAM_ROUTES.containerConfig.details(imageConfigId))
-    await page.waitForSelector('h2:text-is("Image")')
+    await page.waitForSelector('h2:text-is("Image config")')
 
     const jsonEditorButton = await page.waitForSelector('button:has-text("JSON")')
 

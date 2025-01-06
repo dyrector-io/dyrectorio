@@ -138,21 +138,23 @@ export default class ContainerMapper {
       ...patch,
     }
 
-    if ('storage' in patch) {
+    if (typeof patch.storage === 'object' && patch.storage !== null) {
       result = {
         ...result,
         storageSet: true,
-        storageId: patch.storage?.storageId ?? null,
-        storageConfig: patch.storage?.storageId
+        storageId: patch.storage.storageId ?? null,
+        storageConfig: patch.storage.storageId
           ? {
               path: patch.storage.path,
               bucket: patch.storage.bucket,
             }
           : null,
       }
+    } else {
+      result.storageSet = current.storageId && !!current.storageConfig
     }
 
-    if ('annotations' in patch) {
+    if (typeof patch.annotations === 'object' && patch.annotations !== null) {
       result = {
         ...result,
         annotations: {
@@ -162,7 +164,7 @@ export default class ContainerMapper {
       }
     }
 
-    if ('labels' in patch) {
+    if (typeof patch.labels === 'object' && patch.labels !== null) {
       result = {
         ...result,
         labels: {
