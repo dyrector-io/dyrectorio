@@ -18,14 +18,12 @@ import {
   ApiBody,
   ApiConflictResponse,
   ApiCreatedResponse,
-  ApiExtraModels,
   ApiForbiddenResponse,
   ApiNoContentResponse,
   ApiNotFoundResponse,
   ApiOkResponse,
   ApiOperation,
   ApiTags,
-  refs,
 } from '@nestjs/swagger'
 import { Identity } from '@ory/kratos-client'
 import UuidParams from 'src/decorators/api-params.decorator'
