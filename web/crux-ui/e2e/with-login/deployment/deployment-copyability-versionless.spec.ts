@@ -44,7 +44,7 @@ test.describe('Versionless Project', () => {
     const copyButton = await page.locator(`[alt="Copy"]:right-of(:has-text("${projectName}"))`).first()
     await copyButton.click()
 
-    await page.locator(`button:has-text("${nodeName}"):above(:has-text("Prefix"))`).click()
+    await page.locator(`button:has-text("${nodeName}"):above(label:has-text("Prefix"))`).click()
     await fillDeploymentPrefix(page, prefix)
     await page.locator('button:has-text("Copy")').click()
 
@@ -72,7 +72,7 @@ test.describe('Versionless Project', () => {
     const copyButton = page.locator('button:has-text("Copy")')
     await copyButton.click()
 
-    await page.locator(`button:has-text("${otherNode}"):above(:has-text("Prefix"))`).click()
+    await page.locator(`button:has-text("${otherNode}"):above(label:has-text("Prefix"))`).click()
     await fillDeploymentPrefix(page, prefix)
 
     const currentUrl = page.url()
@@ -99,7 +99,7 @@ test.describe('Versionless Project', () => {
     const copyButton = page.locator('button:has-text("Copy")')
     await copyButton.click()
 
-    await page.locator(`button:has-text("${nodeName}"):above(:has-text("Prefix"))`).click()
+    await page.locator(`button:has-text("${nodeName}"):above(label:has-text("Prefix"))`).click()
     await fillDeploymentPrefix(page, `${prefix}-new-prefix`)
 
     const currentUrl = page.url()
