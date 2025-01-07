@@ -15,7 +15,7 @@ test('In progress deployment should be not deletable', async ({ page }) => {
 
   const sock = waitSocketRef(page)
   await page.goto(TEAM_ROUTES.containerConfig.details(imageConfigId))
-  await page.waitForSelector('h2:text-is("Image")')
+  await page.waitForSelector('h2:text-is("Image config")')
   const ws = await sock
   const wsRoute = TEAM_ROUTES.containerConfig.detailsSocket(imageConfigId)
 
@@ -88,6 +88,9 @@ test('Deleting a deployment should refresh deployment list', async ({ page }) =>
 
   await page.goto(TEAM_ROUTES.deployment.list())
   await page.waitForSelector('h2:text-is("Deployments")')
+
+  await page.getByPlaceholder('Search').fill(projectName)
+  await expect(page.locator('table.w-full >> tbody >> tr')).toHaveCount(2)
 
   await deleteRefreshDeployment()
   await expect(page.locator(`.p-2:has-text('pw-${projectName}')`)).toHaveCount(1)

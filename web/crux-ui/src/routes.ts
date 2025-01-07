@@ -677,6 +677,8 @@ class ConfigBundleApi {
   list = () => this.root
 
   details = (id: string) => `${this.root}/${id}`
+
+  deployments = (id: string) => `${this.details(id)}/deployments`
 }
 
 class ConfigBundleRoutes {

@@ -67,6 +67,9 @@ export default class DeployPatchValidationInterceptor implements NestInterceptor
       const otherProtected = await this.prisma.deployment.findFirst({
         where: {
           protected: true,
+          id: {
+            not: deployment.id,
+          },
           nodeId: deployment.nodeId,
           prefix: deployment.prefix,
           versionId:

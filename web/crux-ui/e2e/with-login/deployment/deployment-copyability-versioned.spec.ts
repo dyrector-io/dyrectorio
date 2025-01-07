@@ -75,7 +75,7 @@ test.describe('Versioned Project', () => {
     const copyButton = await page.locator('button:has-text("Copy")')
     await copyButton.click()
 
-    await page.locator(`button:has-text("${nodeName}")`).click()
+    await page.locator(`button:has-text("${nodeName}"):above(label:has-text("Prefix"))`).click()
     await fillDeploymentPrefix(page, `${prefix}-new-prefix`)
 
     const currentUrl = page.url()
@@ -87,7 +87,7 @@ test.describe('Versioned Project', () => {
   })
 
   test('deployment should not be copiable to the same node with the same prefix', async ({ page }) => {
-    const nodeName = 'versioned-copiability-same-node-same-prefix'
+    const nodeName = 'vc-same-node-same-prefix'
     const projectName = nodeName
     const prefix = projectName
 
@@ -99,10 +99,13 @@ test.describe('Versioned Project', () => {
     await page.goto(TEAM_ROUTES.deployment.list())
     await page.waitForSelector('h2:text-is("Deployments")')
 
+    await page.getByPlaceholder('Search').fill(prefix)
+    await expect(page.locator('table.w-full >> tbody >> tr')).toHaveCount(1)
+
     const copyButton = await page.locator(`[alt="Copy"]:right-of(:has-text("${projectName}"))`).first()
     await copyButton.click()
 
-    await page.locator(`button:has-text("${nodeName}")`).click()
+    await page.locator(`button:has-text("${nodeName}"):above(label:has-text("Prefix"))`).click()
     await fillDeploymentPrefix(page, prefix)
     await page.locator('button:has-text("Copy")').click()
 
@@ -118,11 +121,11 @@ test.describe('Versioned Project', () => {
 
     const projectId = await createProject(page, projectName, 'versioned')
     const versionId = await createVersion(page, projectId, '0.1.0', 'Incremental')
-    const imageId = await createImage(page, projectId, versionId, NGINX_TEST_IMAGE_WITH_TAG)
+    const imageConfigId = await createImage(page, projectId, versionId, NGINX_TEST_IMAGE_WITH_TAG)
 
     const sock = waitSocketRef(page)
-    await page.goto(TEAM_ROUTES.project.versions(projectId).imageDetails(versionId, imageId))
-    await page.waitForSelector('h2:text-is("Image")')
+    await page.goto(TEAM_ROUTES.containerConfig.details(imageConfigId))
+    await page.waitForSelector('h2:text-is("Image config")')
     const ws = await sock
     const wsRoute = TEAM_ROUTES.containerConfig.detailsSocket(imageConfigId)
 

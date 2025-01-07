@@ -32,7 +32,7 @@ const SelectNodeChips = (props: SelectNodeChipsProps) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [nodes])
 
-  const baseChoices = allowNull === true ? [null] : []
+  const baseChoices = allowNull ? [null] : []
   const choices = [...baseChoices, ...(nodes ?? [])]
 
   return fetchError ? (

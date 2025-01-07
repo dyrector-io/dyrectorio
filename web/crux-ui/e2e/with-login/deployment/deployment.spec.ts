@@ -1,6 +1,7 @@
-import { ProjectType, WS_TYPE_PATCH_RECEIVED } from '@app/models'
+import { ProjectType } from '@app/models'
 import { expect, Page } from '@playwright/test'
-import { test } from '../../utils/test.fixture'
+import { createConfigBundle } from 'e2e/utils/config-bundle'
+import { deploy } from 'e2e/utils/node-helper'
 import { DAGENT_NODE, NGINX_TEST_IMAGE_WITH_TAG, TEAM_ROUTES } from '../../utils/common'
 import { createNode } from '../../utils/nodes'
 import {
@@ -12,9 +13,7 @@ import {
   createVersion,
   fillDeploymentPrefix,
 } from '../../utils/projects'
-import { createConfigBundle } from 'e2e/utils/config-bundle'
-import { waitSocketRef, waitSocketReceived } from 'e2e/utils/websocket'
-import { deploy } from 'e2e/utils/node-helper'
+import { test } from '../../utils/test.fixture'
 
 const setup = async (
   page: Page,
@@ -110,7 +109,7 @@ test('Can create from deployments page', async ({ page }) => {
   await page.locator('button:has-text("Add")').click()
   await expect(page.locator('h4:has-text("Add")')).toBeVisible()
 
-  await page.locator(`button:has-text("${DAGENT_NODE}")`).click()
+  await page.locator(`button:has-text("${DAGENT_NODE}"):above(:has-text("Projects"))`).click()
   await page.locator(`button:has-text("${projectName}")`).click()
   await page.locator(`button:has-text("${versionName}")`).click()
   await fillDeploymentPrefix(page, projectName.toLowerCase())
@@ -174,23 +173,18 @@ test('Incremental versions should keep config bundle environment after a success
 
   const { id: deploymentId } = await addDeploymentToVersion(page, projectId, versionId, DAGENT_NODE)
 
-  const sock = waitSocketRef(page)
   await page.goto(TEAM_ROUTES.deployment.details(deploymentId))
-  const ws = await sock
 
-  const wsRoute = TEAM_ROUTES.deployment.detailsSocket(deploymentId)
-  const wsPatchReceived = waitSocketReceived(ws, wsRoute, WS_TYPE_PATCH_RECEIVED)
-
-  await page.click('label:text-is("None"):below(label:text-is("CONFIG BUNDLE"))')
+  await page.getByRole('button', { name: 'Edit' }).click()
+  await page.click('label:text-is("None"):below(label:text-is("Config bundle"))')
   await page.click(`label:text-is("${bundleName}"):below(label:text-is("None"))`)
-
-  await wsPatchReceived
+  await page.getByRole('button', { name: 'Save' }).click()
 
   await deploy(page, deploymentId, false, false)
 
   await page.goto(TEAM_ROUTES.deployment.details(deploymentId))
 
-  await expect(page.locator('label:text-is("None"):below(label:text-is("CONFIG BUNDLE"))')).toHaveCount(1)
+  await page.locator('button:has-text("Config")').click()
 
   await expect(page.locator('input[placeholder="Key"]').first()).toHaveValue(BUNDLE_ENV)
   await expect(page.locator('input[placeholder="Value"]').first()).toHaveValue(BUNDLE_VALUE)

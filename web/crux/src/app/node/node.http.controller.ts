@@ -52,8 +52,8 @@ import NodeGetScriptValidationPipe from './pipes/node.get-script.pipe'
 @UseGuards(NodeTeamAccessGuard)
 export default class NodeHttpController {
   constructor(
-    private service: NodeService,
-    private deployService: DeployService,
+    private readonly service: NodeService,
+    private readonly deployService: DeployService,
   ) {}
 
   @Get()
@@ -271,11 +271,9 @@ export default class NodeHttpController {
   })
   @ApiForbiddenResponse({ description: 'Unauthorized request for deployments.' })
   async getDeployments(@TeamSlug() teamSlug: string, @NodeId() nodeId: string): Promise<DeploymentDto[]> {
-    const paged = await this.deployService.getDeployments(teamSlug, {
-      nodeId,
-    })
+    const deployments = await this.deployService.getDeploymentsByNodeId(nodeId)
 
-    return paged.items
+    return deployments
   }
 
   @Post(`${ROUTE_NODE_ID}/kick`)

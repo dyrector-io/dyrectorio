@@ -1,4 +1,4 @@
-import { WS_TYPE_PATCH_CONFIG, WS_TYPE_PATCH_INSTANCE } from '@app/models'
+import { WS_TYPE_PATCH_CONFIG } from '@app/models'
 import { Page, expect } from '@playwright/test'
 import { wsPatchMatchEverySecret, wsPatchMatchNonNullSecretValues } from 'e2e/utils/websocket-match'
 import { DAGENT_NODE, NGINX_TEST_IMAGE_WITH_TAG, TEAM_ROUTES, waitForURLExcept } from '../../utils/common'
@@ -13,16 +13,10 @@ import {
 import { hookTestPageEvents, test } from '../../utils/test.fixture'
 import { waitSocketRef, wsPatchSent } from '../../utils/websocket'
 
-const addSecretToImage = async (
-  page: Page,
-  projectId: string,
-  versionId: string,
-  imageId: string,
-  secretKeys: string[],
-): Promise<void> => {
+const addSecretToImage = async (page: Page, imageConfigId: string, secretKeys: string[]): Promise<void> => {
   const sock = waitSocketRef(page)
   await page.goto(TEAM_ROUTES.containerConfig.details(imageConfigId))
-  await page.waitForSelector('h2:text-is("Image")')
+  await page.waitForSelector('h2:text-is("Image config")')
   const ws = await sock
   const wsRoute = TEAM_ROUTES.containerConfig.detailsSocket(imageConfigId)
 
@@ -38,7 +32,7 @@ const addSecretToImage = async (
   await wsSent
 }
 
-const openContainerConfigByDeploymentTable = async (page: Page, containerName: string): Promise<void> => {
+const openInstanceConfigByDeploymentTable = async (page: Page, containerName: string): Promise<string> => {
   const instanceRows = await page.locator('table.w-full >> tbody >> tr')
   await expect(instanceRows).toHaveCount(1)
 
@@ -48,7 +42,9 @@ const openContainerConfigByDeploymentTable = async (page: Page, containerName: s
   )
   await containerSettingsButton.click()
 
-  await page.waitForSelector(`h2:has-text("Container")`)
+  await page.waitForSelector(`h2:has-text("Instance config")`)
+
+  return page.url().split('/').pop()
 }
 
 test.describe('Deployment Copy', () => {
@@ -75,7 +71,7 @@ test.describe('Deployment Copy', () => {
     const versionId = await createVersion(page, projectId, '0.1.0', 'Incremental')
     const imageConfigId = await createImage(page, projectId, versionId, NGINX_TEST_IMAGE_WITH_TAG)
 
-    await addSecretToImage(page, projectId, versionId, imageConfigId, secretKeys)
+    await addSecretToImage(page, imageConfigId, secretKeys)
 
     const { id: deploymentId } = await addDeploymentToVersion(page, projectId, versionId, DAGENT_NODE, {
       prefix: originalPrefix,
@@ -87,20 +83,20 @@ test.describe('Deployment Copy', () => {
     await page.waitForSelector('h2:text-is("Deployments")')
     const ws = await sock
 
-    await openContainerConfigByDeploymentTable(page, 'nginx')
+    const originalConfigId = await openInstanceConfigByDeploymentTable(page, 'nginx')
 
     const newSecretValue = 'new-secret-value'
 
-    const newSecertKeyInput = page.locator('input[placeholder="Key"][value=""]:below(label:has-text("SECRETS"))')
-    await newSecertKeyInput.fill(newSecretKey)
+    const newSecretKeyInput = page.locator('input[placeholder="Key"][value=""]:below(label:has-text("SECRETS"))')
+    await newSecretKeyInput.fill(newSecretKey)
 
     const newSecretValueInput = page.locator(
       `input[placeholder="Value"][value=""]:near(input[placeholder="Key"][value="${newSecretKey}"], 10)`,
     )
     await newSecretValueInput.fill(newSecretValue)
 
-    const wsRoute = TEAM_ROUTES.deployment.detailsSocket(originalDeploymentId)
-    const wsSent = wsPatchSent(ws, wsRoute, WS_TYPE_PATCH_INSTANCE, wsPatchMatchNonNullSecretValues(newSecretKeyList))
+    const wsRoute = TEAM_ROUTES.containerConfig.detailsSocket(originalConfigId)
+    const wsSent = wsPatchSent(ws, wsRoute, WS_TYPE_PATCH_CONFIG, wsPatchMatchNonNullSecretValues(newSecretKeyList))
     await page.locator(`button:has-text("Save"):below(input[value="${newSecretValue}"])`).click()
     await wsSent
 
@@ -116,7 +112,7 @@ test.describe('Deployment Copy', () => {
     await copyButton.click()
 
     const newPrefix = 'dcpy-second'
-    await page.locator(`button:has-text("${DAGENT_NODE}")`).click()
+    await page.locator(`button:has-text("${DAGENT_NODE}")`).first().click()
     await fillDeploymentPrefix(page, newPrefix)
 
     const currentUrl = page.url()
@@ -126,7 +122,7 @@ test.describe('Deployment Copy', () => {
 
     await expect(page.locator('.bg-dyo-turquoise:has-text("Preparing")')).toHaveCount(1)
 
-    await openContainerConfigByDeploymentTable(page, 'nginx')
+    await openInstanceConfigByDeploymentTable(page, 'nginx')
 
     const newSecretValueInput = page.locator(
       `input[placeholder="Value"]:near(input[placeholder="Key"][value="${newSecretKey}"], 10)`,
@@ -153,7 +149,7 @@ test.describe('Deployment Copy', () => {
 
     await expect(page.locator('.bg-dyo-turquoise:has-text("Preparing")')).toHaveCount(1)
 
-    await openContainerConfigByDeploymentTable(page, 'nginx')
+    await openInstanceConfigByDeploymentTable(page, 'nginx')
 
     const newSecretKeyInput = page.locator(`input[placeholder="Key"][value="${newSecretKey}"]`)
 

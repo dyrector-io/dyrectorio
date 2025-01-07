@@ -1,4 +1,4 @@
-import { WS_TYPE_PATCH_CONFIG, WS_TYPE_PATCH_INSTANCE } from '@app/models'
+import { WS_TYPE_PATCH_CONFIG } from '@app/models'
 import { expect } from '@playwright/test'
 import { DAGENT_NODE, NGINX_TEST_IMAGE_WITH_TAG, TEAM_ROUTES, waitForURLExcept } from 'e2e/utils/common'
 import { addPortsToContainerConfig } from 'e2e/utils/container-config'
@@ -54,10 +54,10 @@ test.describe('Deleting default version', () => {
     const imageConfigId = await createImage(page, projectId, defaultVersionId, NGINX_TEST_IMAGE_WITH_TAG)
 
     const sock = waitSocketRef(page)
-    await page.goto(TEAM_ROUTES.project.versions(projectId).imageDetails(defaultVersionId, imageConfigId))
-    await page.waitForSelector('h2:text-is("Image")')
+    await page.goto(TEAM_ROUTES.containerConfig.details(imageConfigId))
+    await page.waitForSelector('h2:text-is("Image config")')
     const ws = await sock
-    const wsRoute = TEAM_ROUTES.project.versions(projectId).detailsSocket(defaultVersionId)
+    const wsRoute = TEAM_ROUTES.containerConfig.detailsSocket(imageConfigId)
 
     const internal = '1000'
     const external = '2000'
@@ -165,7 +165,7 @@ test.describe('Deleting default version', () => {
 
   test('should not affect the instance config of the deployment of a new version', async ({ page }) => {
     const projectName = 'delete-default-check-instance-config'
-    const prefix = projectName
+    const prefix = 'ddc-istance-conf'
 
     const projectId = await createProject(page, projectName, 'versioned')
     const defaultVersionName = 'default-version'
@@ -188,12 +188,13 @@ test.describe('Deleting default version', () => {
     const settingsButton = await page.waitForSelector(`[src="/concrete_container_config.svg"]:right-of(:text("nginx"))`)
     await settingsButton.click()
 
-    await page.waitForSelector(`h2:has-text("Container")`)
-    const wsRoute = TEAM_ROUTES.deployment.detailsSocket(defaultDeploymentId)
+    await page.waitForSelector(`h2:has-text("Instance config")`)
+    const instanceConfigId = page.url().split('/').pop()
+    const wsRoute = TEAM_ROUTES.containerConfig.detailsSocket(instanceConfigId)
 
     const internal = '1000'
     const external = '2000'
-    await addPortsToContainerConfig(page, ws, wsRoute, WS_TYPE_PATCH_INSTANCE, internal, external)
+    await addPortsToContainerConfig(page, ws, wsRoute, WS_TYPE_PATCH_CONFIG, internal, external)
 
     const newVersionId = await createVersion(page, projectId, 'new-version', 'Rolling')
 
@@ -228,7 +229,7 @@ test.describe('Deleting default version', () => {
     )
     await newVersionDeploymentSettingsButton.click()
 
-    await page.waitForSelector(`h2:has-text("Container")`)
+    await page.waitForSelector(`h2:has-text("Instance config")`)
 
     const internalInput = page.locator('input[placeholder="Internal"]')
     const externalInput = page.locator('input[placeholder="External"]')
@@ -265,7 +266,7 @@ test.describe("Deleting copied deployment's parent", () => {
   })
 
   test('should not affect the instance config of the child deployment', async ({ page }) => {
-    const projectName = 'delete-parent-deploy-instance-config'
+    const projectName = 'dpd-instance-config'
     const prefix = projectName
 
     const projectId = await createProject(page, projectName, 'versioned')
@@ -286,14 +287,15 @@ test.describe("Deleting copied deployment's parent", () => {
 
     const settingsButton = await page.waitForSelector(`[src="/concrete_container_config.svg"]:right-of(:text("nginx"))`)
     await settingsButton.click()
-    await page.waitForURL(`${TEAM_ROUTES.deployment.list()}/**/instances/**`)
-    await page.waitForSelector('h2:text-is("Container")')
+    await page.waitForURL(`/**/container-configurations/**`)
+    await page.waitForSelector('h2:text-is("Instance config")')
 
-    const wsRoute = TEAM_ROUTES.deployment.detailsSocket(parentDeploymentId)
+    const instanceConfigId = page.url().split('/').pop()
+    const wsRoute = TEAM_ROUTES.containerConfig.detailsSocket(instanceConfigId)
 
     const internal = '1000'
     const external = '2000'
-    await addPortsToContainerConfig(page, ws, wsRoute, WS_TYPE_PATCH_INSTANCE, internal, external)
+    await addPortsToContainerConfig(page, ws, wsRoute, WS_TYPE_PATCH_CONFIG, internal, external)
 
     await page.goto(TEAM_ROUTES.deployment.details(parentDeploymentId))
     await page.waitForSelector('h2:text-is("Deployments")')
@@ -301,7 +303,7 @@ test.describe("Deleting copied deployment's parent", () => {
     const copyButton = page.locator('button:has-text("Copy")')
     await copyButton.click()
 
-    await page.locator(`button:has-text("${DAGENT_NODE}")`).click()
+    await page.locator(`button:has-text("${DAGENT_NODE}")`).first().click()
     await fillDeploymentPrefix(page, `${prefix}-other`)
 
     const currentUrl = page.url()
@@ -333,7 +335,7 @@ test.describe("Deleting copied deployment's parent", () => {
     )
     await newDeploymentSettingsButton.click()
 
-    await page.waitForSelector(`h2:has-text("Container")`)
+    await page.waitForSelector(`h2:has-text("Instance config")`)
 
     const internalInput = page.locator('input[placeholder="Internal"]')
     const externalInput = page.locator('input[placeholder="External"]')
