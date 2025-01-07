@@ -337,13 +337,12 @@ const ContainerConfigPage = (props: ContainerConfigPageProps) => {
     patch.current = newPatch
 
     throttle(() => {
-      const conf = patch.current
-      patch.current = {}
-
       sock.send(WS_TYPE_PATCH_CONFIG, {
         id: resettableConfig.id,
-        config: conf,
+        config: patch.current,
       } as PatchConfigMessage)
+
+      patch.current = {}
     })
   }
 

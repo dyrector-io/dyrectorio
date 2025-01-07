@@ -7,4 +7,5 @@ export type Instance = {
   config: ConcreteContainerConfig
 }
 
-export const nameOfInstance = (instance: Instance) => instance.config.name ?? containerNameOfImage(instance.image)
+export const containerNameOfInstance = (instance: Instance) =>
+  instance.config.name ?? containerNameOfImage(instance.image)

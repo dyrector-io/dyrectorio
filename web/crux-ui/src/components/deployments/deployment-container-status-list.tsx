@@ -13,7 +13,7 @@ import {
   containerPrefixNameOf,
   ContainersStateListMessage,
   DeploymentRoot,
-  nameOfInstance,
+  containerNameOfInstance,
   WatchContainerStatusMessage,
   WS_TYPE_CONTAINERS_STATE_LIST,
   WS_TYPE_WATCH_CONTAINERS_STATE,
@@ -50,7 +50,7 @@ const DeploymentContainerStatusList = (props: DeploymentContainerStatusListProps
       configId: it.config.id,
       id: {
         prefix: deployment.prefix,
-        name: nameOfInstance(it),
+        name: containerNameOfInstance(it),
       },
       createdAt: null,
       state: null,

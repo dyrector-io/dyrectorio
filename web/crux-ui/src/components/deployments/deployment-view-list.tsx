@@ -3,7 +3,7 @@ import DyoIcon from '@app/elements/dyo-icon'
 import DyoLink from '@app/elements/dyo-link'
 import DyoTable, { DyoColumn, dyoCheckboxColumn, sortDate, sortString } from '@app/elements/dyo-table'
 import useTeamRoutes from '@app/hooks/use-team-routes'
-import { Instance, nameOfInstance } from '@app/models'
+import { Instance, containerNameOfInstance } from '@app/models'
 import { utcDateToLocale } from '@app/utils'
 import useTranslation from 'next-translate/useTranslation'
 import { DeploymentActions, DeploymentState } from './use-deployment-state'
@@ -34,9 +34,9 @@ const DeploymentViewList = (props: DeploymentViewListProps) => {
           header={t('containerName')}
           className="w-4/12"
           sortable
-          sortField={nameOfInstance}
+          sortField={containerNameOfInstance}
           sort={sortString}
-          body={nameOfInstance}
+          body={containerNameOfInstance}
         />
         <DyoColumn
           header={t('common:registry')}

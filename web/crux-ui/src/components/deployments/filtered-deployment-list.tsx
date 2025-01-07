@@ -17,13 +17,13 @@ import { useRouter } from 'next/router'
 import { QA_MODAL_LABEL_DEPLOYMENT_NOTE } from 'quality-assurance'
 import { useState } from 'react'
 
-interface NodeDeploymentListProps {
+type NodeDeploymentListProps = {
   deployments: Deployment[]
 }
 
 type DeploymentFilter = TextFilter & EnumFilter<DeploymentStatus>
 
-const NodeDeploymentList = (props: NodeDeploymentListProps) => {
+const FilteredDeploymentList = (props: NodeDeploymentListProps) => {
   const { deployments: propsDeployments } = props
 
   const { t } = useTranslation('deployments')
@@ -78,6 +78,7 @@ const NodeDeploymentList = (props: NodeDeploymentListProps) => {
                 sortField="project.name"
                 sort={sortString}
               />
+
               <DyoColumn
                 header={t('common:version')}
                 body={(it: Deployment) => it.version.name}
@@ -86,6 +87,7 @@ const NodeDeploymentList = (props: NodeDeploymentListProps) => {
                 sortField="version.name"
                 sort={sortString}
               />
+
               <DyoColumn
                 header={t('common:prefix')}
                 field="prefix"
@@ -94,6 +96,7 @@ const NodeDeploymentList = (props: NodeDeploymentListProps) => {
                 sortField="prefix"
                 sort={sortString}
               />
+
               <DyoColumn
                 header={t('common:updatedAt')}
                 body={(it: Deployment) => auditToLocaleDate(it.audit)}
@@ -103,6 +106,7 @@ const NodeDeploymentList = (props: NodeDeploymentListProps) => {
                 sortField={it => it.audit.updatedAt ?? it.audit.createdAt}
                 sort={sortDate}
               />
+
               <DyoColumn
                 header={t('common:status')}
                 body={(it: Deployment) => <DeploymentStatusTag status={it.status} className="w-fit mx-auto" />}
@@ -111,6 +115,7 @@ const NodeDeploymentList = (props: NodeDeploymentListProps) => {
                 sortField="status"
                 sort={sortEnum(DEPLOYMENT_STATUS_VALUES)}
               />
+
               <DyoColumn
                 header={t('common:actions')}
                 className="w-40 text-center"
@@ -158,4 +163,4 @@ const NodeDeploymentList = (props: NodeDeploymentListProps) => {
   )
 }
 
-export default NodeDeploymentList
+export default FilteredDeploymentList
