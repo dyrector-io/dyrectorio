@@ -24,6 +24,7 @@ test.describe('Versioned Project incremental version', () => {
       .first()
     await configButton.click()
 
+    await page.locator('button:has-text("Name")').click()
     await page.waitForSelector('input[id="common.containerName"]')
     await expect(await page.locator('input[id="common.containerName"]')).toBeEditable()
   })
@@ -52,6 +53,7 @@ test.describe('Versioned Project incremental version', () => {
       .first()
     await configButton.click()
 
+    await page.locator('button:has-text("Name")').click()
     await page.waitForSelector('input[id="common.containerName"]')
     await expect(await page.locator('input[id="common.containerName"]')).toBeDisabled()
   })
@@ -82,6 +84,7 @@ test.describe('Versioned Project incremental version', () => {
       .first()
     await configButton.click()
 
+    await page.locator('button:has-text("Name")').click()
     await page.waitForSelector('input[id="common.containerName"]')
     await expect(await page.locator('input[id="common.containerName"]')).toBeDisabled()
   })

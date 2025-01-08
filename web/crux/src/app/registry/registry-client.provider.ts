@@ -52,10 +52,10 @@ export default class RegistryClientProvider {
   }
 
   async getByRegistryId(teamId: string, registryId: string): Promise<RegistryClientEntry> {
-    let client = this.clients.get(registryId)
-    if (client) {
+    let entry = this.clients.get(registryId)
+    if (entry) {
       await this.authorize(teamId, registryId)
-      return client
+      return entry
     }
 
     const connInfo = await this.service.getRegistryConnectionInfoById(registryId)
@@ -132,7 +132,7 @@ export default class RegistryClientProvider {
 
     const createUnchecked = () => new UncheckedApiClient()
 
-    client = {
+    entry = {
       type: connInfo.type,
       client:
         connInfo.type === 'v2'
@@ -148,13 +148,13 @@ export default class RegistryClientProvider {
           : createUnchecked(),
     }
 
-    this.clients.set(connInfo.id, client)
+    this.clients.set(connInfo.id, entry)
 
     const teamRegistries = this.registriesByTeam.get(teamId) ?? []
 
     teamRegistries.push(registryId)
 
-    return client
+    return entry
   }
 
   @OnEvent(REGISTRY_EVENT_UPDATE)

@@ -27,7 +27,7 @@ import {
 import { Identity } from '@ory/kratos-client'
 import UuidParams from 'src/decorators/api-params.decorator'
 import { CreatedResponse, CreatedWithLocation } from '../../interceptors/created-with-location.decorator'
-import { DeploymentListDto } from '../deploy/deploy.dto'
+import { DeploymentDto, DeploymentListDto } from '../deploy/deploy.dto'
 import DeployService from '../deploy/deploy.service'
 import { DisableAuth, IdentityFromRequest } from '../token/jwt-auth.guard'
 import NodeTeamAccessGuard from './guards/node.team-access.http.guard'
@@ -36,7 +36,6 @@ import {
   CreateNodeDto,
   NodeAuditLogListDto,
   NodeAuditLogQueryDto,
-  NodeDeploymentQueryDto,
   NodeDetailsDto,
   NodeDto,
   NodeGenerateScriptDto,
@@ -53,8 +52,8 @@ import NodeGetScriptValidationPipe from './pipes/node.get-script.pipe'
 @UseGuards(NodeTeamAccessGuard)
 export default class NodeHttpController {
   constructor(
-    private service: NodeService,
-    private deployService: DeployService,
+    private readonly service: NodeService,
+    private readonly deployService: DeployService,
   ) {}
 
   @Get()
@@ -270,15 +269,10 @@ export default class NodeHttpController {
     description: 'Paginated list of deployments.',
   })
   @ApiForbiddenResponse({ description: 'Unauthorized request for deployments.' })
-  async getDeployments(
-    @TeamSlug() teamSlug: string,
-    @NodeId() nodeId: string,
-    @Query() query: NodeDeploymentQueryDto,
-  ): Promise<DeploymentListDto> {
-    return await this.deployService.getDeployments(teamSlug, {
-      ...query,
-      nodeId,
-    })
+  async getDeployments(@TeamSlug() teamSlug: string, @NodeId() nodeId: string): Promise<DeploymentDto[]> {
+    const deployments = await this.deployService.getDeploymentsByNodeId(nodeId)
+
+    return deployments
   }
 
   @Post(`${ROUTE_NODE_ID}/kick`)

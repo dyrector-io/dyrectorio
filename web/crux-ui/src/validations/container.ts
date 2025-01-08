@@ -8,17 +8,17 @@ import {
   CONTAINER_STATE_VALUES,
   CONTAINER_VOLUME_TYPE_VALUES,
   ContainerConfigExposeStrategy,
-  ContainerPortRange,
   ContainerDeploymentStrategyType,
   ContainerLogDriverType,
   ContainerNetworkMode,
   ContainerPort,
+  ContainerPortRange,
   ContainerRestartPolicyType,
   EnvironmentRule,
   Metrics,
   UniqueKeyValue,
-  VolumeType,
   UniqueSecretKeyValue,
+  VolumeType,
 } from '@app/models'
 import * as yup from 'yup'
 import { matchNoLeadingOrTrailingWhitespaces, matchNoWhitespace } from './common'
@@ -469,7 +469,7 @@ const testRules = (
   arr: (UniqueKeyValue | UniqueSecretKeyValue)[],
   fieldName: string,
 ) => {
-  if (rules.length === 0) {
+  if (rules.length < 1) {
     return null
   }
 
@@ -531,54 +531,6 @@ const testSecretRules = (imageLabels: Record<string, string>) => (secrets: Uniqu
   return testRules(secretRules, secrets, 'secret')
 }
 
-const testEnvironmentRules = (imageLabels: Record<string, string>) => (envs: UniqueKeyValue[]) => {
-  const rules = parseDyrectorioEnvRules(imageLabels)
-  if (!rules) {
-    return true
-  }
-
-  const requiredRules = Object.entries(rules).filter(([, rule]) => rule.required)
-  const envRules = requiredRules.filter(([_, rule]) => !rule.secret)
-
-  return testRules(envRules, envs, 'environment')
-}
-
-const testSecretRules = (imageLabels: Record<string, string>) => (secrets: UniqueSecretKeyValue[]) => {
-  const rules = parseDyrectorioEnvRules(imageLabels)
-  if (!rules) {
-    return true
-  }
-
-  const requiredRules = Object.entries(rules).filter(([, rule]) => rule.required)
-  const secretRules = requiredRules.filter(([_, rule]) => rule.secret)
-
-  return testRules(secretRules, secrets, 'secret')
-}
-
-const testEnvironmentRules = (imageLabels: Record<string, string>) => (envs: UniqueKeyValue[]) => {
-  const rules = parseDyrectorioEnvRules(imageLabels)
-  if (!rules) {
-    return true
-  }
-
-  const requiredRules = Object.entries(rules).filter(([, rule]) => rule.required)
-  const envRules = requiredRules.filter(([_, rule]) => !rule.secret)
-
-  return testRules(envRules, envs, 'environment')
-}
-
-const testSecretRules = (imageLabels: Record<string, string>) => (secrets: UniqueSecretKeyValue[]) => {
-  const rules = parseDyrectorioEnvRules(imageLabels)
-  if (!rules) {
-    return true
-  }
-
-  const requiredRules = Object.entries(rules).filter(([, rule]) => rule.required)
-  const secretRules = requiredRules.filter(([_, rule]) => rule.secret)
-
-  return testRules(secretRules, secrets, 'secret')
-}
-
 const createContainerConfigBaseSchema = (imageLabels: Record<string, string>) =>
   yup.object().shape({
     name: matchContainerName(yup.string().nullable().optional().label('container:common.containerName')),
@@ -607,7 +559,7 @@ const createContainerConfigBaseSchema = (imageLabels: Record<string, string>) =>
     capabilities: uniqueKeyValuesSchema.default(null).nullable().optional().label('container:common.capabilities'),
     storage: storageRule,
 
-    // dagent:
+    // dagent
     logConfig: logConfigRule,
     restartPolicy: restartPolicyRule,
     networkMode: networkModeRule,

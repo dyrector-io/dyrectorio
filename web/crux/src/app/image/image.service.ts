@@ -231,16 +231,19 @@ export default class ImageService {
 
       labels = await api.client.labels(image.name, request.tag)
       const rules = parseDyrectorioEnvRules(labels)
+      if (Object.entries(rules).length > 0) {
+        const configEnvironment = ImageService.mergeEnvironmentsRules(
+          image.config.environment as UniqueKeyValue[],
+          rules,
+        )
+        const configSecrets = ImageService.mergeSecretsRules(image.config.secrets as UniqueSecretKey[], rules)
 
-      const configEnvironment = ImageService.mergeEnvironmentsRules(image.config.environment as UniqueKeyValue[], rules)
-
-      const configSecrets = ImageService.mergeSecretsRules(image.config.secrets as UniqueSecretKey[], rules)
-
-      configUpdate = {
-        update: {
-          environment: configEnvironment,
-          secrets: configSecrets,
-        },
+        configUpdate = {
+          update: {
+            environment: configEnvironment,
+            secrets: configSecrets,
+          },
+        }
       }
     }
 

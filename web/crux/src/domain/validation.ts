@@ -302,7 +302,7 @@ const containerConfigSchema = yup.object().shape({
   storageId: yup.string().optional().nullable(),
   storageConfig: storageRule.optional().nullable(),
 
-  // dagent:
+  // dagent
   logConfig: logConfigRule.optional().nullable(),
   restartPolicy: restartPolicyRule.optional().nullable(),
   networkMode: networkModeRule.optional().nullable(),
@@ -342,7 +342,7 @@ export const concreteContainerConfigSchema = yup.object().shape({
   storageId: yup.string().optional().nullable(),
   storageConfig: storageRule.optional().nullable(),
 
-  // dagent:
+  // dagent
   logConfig: logConfigRule.optional().nullable(),
   restartPolicy: restartPolicyRule.optional().nullable(),
   networkMode: networkModeRule.optional().nullable(),

@@ -72,7 +72,7 @@ export const createImage = async (page: Page, projectId: string, versionId: stri
   const settingsButton = await page.waitForSelector(`[src="/container_config.svg"]:right-of(:text("${image}"))`)
   await settingsButton.click()
 
-  await page.waitForSelector(`h2:has-text("Image")`)
+  await page.waitForSelector(`h2:has-text("Image config")`)
 
   return page.url().split('/').pop()
 }

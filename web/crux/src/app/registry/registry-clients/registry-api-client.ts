@@ -7,7 +7,11 @@ export interface RegistryApiClient {
   tagInfo(image: string, tag: string): Promise<RegistryImageTag>
 }
 
-export const fetchInfoForTags = async (image: string, tags: string[], client: RegistryApiClient): Promise<Record<string, RegistryImageTag>> => {
+export const fetchInfoForTags = async (
+  image: string,
+  tags: string[],
+  client: RegistryApiClient,
+): Promise<Record<string, RegistryImageTag>> => {
   const tagsWithInfoPromise = tags.map(async it => {
     const info = await client.tagInfo(image, it)
 

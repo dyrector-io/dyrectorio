@@ -2,7 +2,7 @@ import { Cache } from 'cache-manager'
 import { getRegistryApiException } from 'src/exception/registry-exception'
 import { GitlabNamespace } from '../registry.dto'
 import { RegistryImageTag, RegistryImageTags } from '../registry.message'
-import { fetchInfoForTags, RegistryApiClient } from './registry-api-client'
+import { RegistryApiClient, fetchInfoForTags } from './registry-api-client'
 import V2HttpApiClient from './v2-http-api-client'
 import RegistryV2ApiClient, { RegistryV2ApiClientOptions } from './v2-registry-api-client'
 

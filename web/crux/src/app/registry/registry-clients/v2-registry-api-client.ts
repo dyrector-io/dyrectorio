@@ -2,7 +2,7 @@ import { Cache } from 'cache-manager'
 import { CruxUnauthorizedException } from 'src/exception/crux-exception'
 import { getRegistryApiException } from 'src/exception/registry-exception'
 import { RegistryImageTag, RegistryImageTags } from '../registry.message'
-import { fetchInfoForTags, RegistryApiClient } from './registry-api-client'
+import { RegistryApiClient, fetchInfoForTags } from './registry-api-client'
 import V2HttpApiClient from './v2-http-api-client'
 
 export type RegistryV2ApiClientOptions = {

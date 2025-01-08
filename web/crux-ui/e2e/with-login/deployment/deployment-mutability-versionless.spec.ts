@@ -19,6 +19,7 @@ test.describe('Versionless Project', () => {
       .first()
     await configButton.click()
 
+    await page.locator('button:has-text("Name")').click()
     await page.waitForSelector('input[id="common.containerName"]')
     await expect(await page.locator('input[id="common.containerName"]')).toBeEditable()
   })
@@ -43,6 +44,7 @@ test.describe('Versionless Project', () => {
       .first()
     await configButton.click()
 
+    await page.locator('button:has-text("Name")').click()
     await page.waitForSelector('input[id="common.containerName"]')
     await expect(await page.locator('input[id="common.containerName"]')).toBeEditable()
   })

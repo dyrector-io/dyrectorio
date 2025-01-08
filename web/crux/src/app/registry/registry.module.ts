@@ -18,7 +18,7 @@ import RegistryWebSocketGateway from './registry.ws.gateway'
 
 @Module({
   imports: [HttpModule, TeamModule, AuditLoggerModule, CacheModule.register(), ...CruxJwtModuleImports],
-  exports: [RegistryMapper, RegistryService],
+  exports: [RegistryClientProvider, RegistryMapper, RegistryService],
   controllers: [RegistryHttpController],
   providers: [
     RegistryService,
