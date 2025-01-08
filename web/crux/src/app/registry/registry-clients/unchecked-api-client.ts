@@ -1,13 +1,13 @@
 import { CruxBadRequestException } from 'src/exception/crux-exception'
-import { RegistryImageTag, RegistryImageTags } from '../registry.message'
-import { RegistryApiClient } from './registry-api-client'
+import { RegistryImageWithTags } from '../registry.message'
+import { RegistryApiClient, RegistryImageTagInfo } from './registry-api-client'
 
 class UncheckedApiClient implements RegistryApiClient {
   catalog(): Promise<string[]> {
     throw new CruxBadRequestException({ message: 'Unchecked registries have no catalog API!' })
   }
 
-  tags(): Promise<RegistryImageTags> {
+  tags(): Promise<RegistryImageWithTags> {
     throw new CruxBadRequestException({ message: 'Unchecked registries have no tags API!' })
   }
 
@@ -15,7 +15,7 @@ class UncheckedApiClient implements RegistryApiClient {
     return {}
   }
 
-  async tagInfo(image: string, tag: string): Promise<RegistryImageTag> {
+  async tagInfo(): Promise<RegistryImageTagInfo> {
     return null
   }
 }

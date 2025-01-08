@@ -1,8 +1,8 @@
 import { Cache } from 'cache-manager'
 import { CruxUnauthorizedException } from 'src/exception/crux-exception'
 import { getRegistryApiException } from 'src/exception/registry-exception'
-import { RegistryImageTag, RegistryImageTags } from '../registry.message'
-import { RegistryApiClient, fetchInfoForTags } from './registry-api-client'
+import { RegistryImageWithTags } from '../registry.message'
+import { RegistryApiClient, RegistryImageTagInfo, fetchInfoForTags } from './registry-api-client'
 import V2HttpApiClient from './v2-http-api-client'
 
 export type RegistryV2ApiClientOptions = {
@@ -70,7 +70,7 @@ class RegistryV2ApiClient implements RegistryApiClient {
     return repositories.filter(it => it.includes(text))
   }
 
-  async tags(image: string): Promise<RegistryImageTags> {
+  async tags(image: string): Promise<RegistryImageWithTags> {
     const res = await RegistryV2ApiClient.fetchPaginatedEndpoint(it => this.fetch(it), `/${image}/tags/list`)
     if (!res.ok) {
       throw getRegistryApiException(res, 'Tags request')
@@ -104,7 +104,7 @@ class RegistryV2ApiClient implements RegistryApiClient {
     return this.createApiClient().fetchLabels(image, tag)
   }
 
-  async tagInfo(image: string, tag: string): Promise<RegistryImageTag> {
+  async tagInfo(image: string, tag: string): Promise<RegistryImageTagInfo> {
     return this.createApiClient().fetchTagInfo(image, tag)
   }
 

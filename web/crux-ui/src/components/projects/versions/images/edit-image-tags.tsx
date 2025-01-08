@@ -1,72 +1,78 @@
 import { DyoHeading } from '@app/elements/dyo-heading'
 import { DyoInput } from '@app/elements/dyo-input'
+import { DyoLabel } from '@app/elements/dyo-label'
 import DyoMessage from '@app/elements/dyo-message'
 import DyoRadioButton from '@app/elements/dyo-radio-button'
+import LoadingIndicator from '@app/elements/loading-indicator'
 import { TextFilter, textFilterFor, useFilters } from '@app/hooks/use-filters'
 import { RegistryImageTag } from '@app/models'
+import { utcDateToLocale } from '@app/utils'
 import useTranslation from 'next-translate/useTranslation'
 import { useEffect, useMemo, useState } from 'react'
-import TagSortToggle, { SortState } from './tag-sort-toggle'
-import LoadingIndicator from '@app/elements/loading-indicator'
-import { DyoLabel } from '@app/elements/dyo-label'
-import DyoIndicator from '@app/elements/dyo-indicator'
+import TagSortToggle, { TagSortState } from './tag-sort-toggle'
 
-interface ImageTagInputProps {
+type ImageTagInputProps = {
   disabled?: boolean
   selected: string
   onTagSelected: (tag: string) => void
 }
 
-type ImageTagSelectListProps = ImageTagInputProps & {
-  tags: Record<string, RegistryImageTag>
+type SelectImageTagListProps = ImageTagInputProps & {
+  tags: RegistryImageTag[]
   loadingTags: boolean
 }
 
-type Entry = [string, RegistryImageTag]
-
-const ImageTagSelectList = (props: ImageTagSelectListProps) => {
+const SelectImageTagList = (props: SelectImageTagListProps) => {
   const { disabled, tags, selected: propsSelected, onTagSelected, loadingTags } = props
 
   const { t } = useTranslation('images')
 
   const [selected, setSelected] = useState(propsSelected)
-  const [sortState, setSortState] = useState<SortState>({
+  const [sortState, setSortState] = useState<TagSortState>({
     mode: 'date',
-    dir: 1,
+    direction: 'desc',
   })
 
-  const filters = useFilters<Entry, TextFilter>({
-    filters: [textFilterFor<Entry>(it => [it[0]])],
-    initialData: Object.entries(tags),
+  const filters = useFilters<RegistryImageTag, TextFilter>({
+    filters: [textFilterFor<RegistryImageTag>(it => [it.name, it.created])],
+    initialData: tags,
     initialFilter: {
       text: '',
     },
   })
 
-  useEffect(() => filters.setItems(Object.entries(tags)), [tags])
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  useEffect(() => filters.setItems(tags), [tags])
 
   const sortedItems = useMemo(() => {
-    const items = filters.filtered
-    switch (sortState.mode) {
-      case 'alphabetic':
-        return items.sort((a, b) => b[0].localeCompare(a[0]) * sortState.dir)
-      case 'date':
-        return items.sort((a, b) => {
-          const aDate = Date.parse(a[1].created)
-          const bDate = Date.parse(b[1].created)
+    const dir = sortState.direction === 'asc' ? -1 : 1
 
-          return Math.sign(bDate - aDate) * sortState.dir
+    const items = filters.filtered
+
+    switch (sortState.mode) {
+      case 'alphabetical':
+        return items.sort((one, other) => other.name.localeCompare(one.name) * dir)
+      case 'date':
+        return items.sort((one, other) => {
+          const oneDate = Date.parse(one.created)
+          const otherDate = Date.parse(other.created)
+
+          return Math.sign(otherDate - oneDate) * dir
         })
       default:
         return items
     }
   }, [sortState, filters.filtered])
 
-  const isTagNewer = (tagIndex: number, currentTagIndex: number) =>
-    currentTagIndex >= 0 &&
-    ((sortState.dir === -1 && currentTagIndex < tagIndex) || (sortState.dir === 1 && currentTagIndex > tagIndex))
+  const selectedTag = tags.find(it => it.name === selected) ?? null
 
-  const selectedTagIndex = selected ? sortedItems.findIndex(it => it[0] === selected) : -1
+  const newerThanSelected = (tag: RegistryImageTag): boolean => {
+    if (!selectedTag?.created) {
+      return false
+    }
+
+    return Date.parse(tag.created) > Date.parse(selectedTag.created)
+  }
 
   return (
     <div className="flex flex-col">
@@ -92,27 +98,34 @@ const ImageTagSelectList = (props: ImageTagSelectListProps) => {
       ) : (
         <>
           {selected ? null : <DyoMessage messageType="info" message={t('selectTag')} />}
-          <div className="flex flex-col max-h-96 overflow-y-auto">
+          <div className="flex flex-col max-h-96 overflow-y-auto mt-2">
             {sortedItems.map((it, index) => (
-              <DyoRadioButton
-                key={`tag-${it}`}
-                disabled={disabled}
-                label={it[0]}
-                checked={it[0] === selected}
-                onSelect={() => {
-                  setSelected(it[0])
-                  onTagSelected(it[0])
-                }}
-                qaLabel={`imageTag-${index}`}
-                labelTemplate={label => (
-                  <>
-                    {isTagNewer(index, selectedTagIndex) && (
-                      <DyoIndicator color="bg-dyo-violet" className="self-center" />
-                    )}
-                    <DyoLabel className="my-auto mx-2">{label}</DyoLabel>
-                  </>
-                )}
-              />
+              <div className="flex flex-row gap-2 justify-between">
+                <DyoRadioButton
+                  key={`tag-${it}`}
+                  disabled={disabled}
+                  label={it.name}
+                  checked={it.name === selected}
+                  onSelect={() => {
+                    setSelected(it.name)
+                    onTagSelected(it.name)
+                  }}
+                  qaLabel={`image-tag-${index}`}
+                  labelTemplate={label => (
+                    <>
+                      <DyoLabel className="my-auto mx-2">{label}</DyoLabel>
+
+                      {newerThanSelected(it) && (
+                        <span className="text-dyo-green bg-dyo-green bg-opacity-10 rounded-full bg-opacity-10 text-xs font-semibold h-fit px-2 py-0.5 my-auto">
+                          {t('common:new')}
+                        </span>
+                      )}
+                    </>
+                  )}
+                />
+
+                {it.created && <span className="text-bright-muted">{utcDateToLocale(it.created)}</span>}
+              </div>
             ))}
           </div>
         </>
@@ -126,7 +139,7 @@ const ImageTagInput = (props: ImageTagInputProps) => {
 
   const { t } = useTranslation('images')
 
-  const [selected, setSelected] = useState(propsSelected)
+  const [selected, setSelected] = useState(propsSelected ?? '')
 
   return (
     <div className="flex flex-col mt-6 mb-8">
@@ -146,14 +159,15 @@ const ImageTagInput = (props: ImageTagInputProps) => {
         messageType="info"
         message={!selected.length && t('tagRequired')}
       />
+
       <p className="text-light-eased ml-4 mt-2">{t('uncheckedRegistryExplanation')}</p>
     </div>
   )
 }
 
-const EditImageTags = (props: ImageTagSelectListProps) => {
+const EditImageTags = (props: SelectImageTagListProps) => {
   const { tags } = props
-  return tags ? <ImageTagSelectList {...props} /> : <ImageTagInput {...props} />
+  return tags ? <SelectImageTagList {...props} /> : <ImageTagInput {...props} />
 }
 
 export default EditImageTags

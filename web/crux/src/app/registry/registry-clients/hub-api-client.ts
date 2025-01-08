@@ -1,6 +1,6 @@
 import { Cache } from 'cache-manager'
 import { getRegistryApiException } from 'src/exception/registry-exception'
-import { RegistryImageTag } from '../registry.message'
+import { RegistryImageTagInfo } from './registry-api-client'
 import V2HttpApiClient from './v2-http-api-client'
 
 type HubApiPaginatedResponse = {
@@ -92,13 +92,15 @@ export default abstract class HubApiClient {
     )
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   async labels(image: string, tag: string): Promise<Record<string, string>> {
     // NOTE(@robot9706): Docker ratelimits us so skip this for now
     // return this.createApiClient().fetchLabels(image, tag)
     return {}
   }
 
-  async tagInfo(image: string, tag: string): Promise<RegistryImageTag> {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  async tagInfo(image: string, tag: string): Promise<RegistryImageTagInfo> {
     // NOTE(@robot9706): Docker ratelimits us so skip this for now
     // return this.createApiClient().fetchTagInfo(image, tag)
     return {

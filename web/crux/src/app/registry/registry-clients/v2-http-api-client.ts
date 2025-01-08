@@ -2,7 +2,7 @@ import { Logger } from '@nestjs/common'
 import { Cache } from 'cache-manager'
 import { CruxInternalServerErrorException } from 'src/exception/crux-exception'
 import { USER_AGENT_CRUX } from 'src/shared/const'
-import { RegistryImageTag } from '../registry.message'
+import { RegistryImageTagInfo } from './registry-api-client'
 
 type V2Error = {
   code: string
@@ -425,7 +425,7 @@ export default class V2HttpApiClient {
     return this.fetchLabelsByManifest(image, tagManifest, 0)
   }
 
-  async fetchTagInfo(image: string, tag: string): Promise<RegistryImageTag> {
+  async fetchTagInfo(image: string, tag: string): Promise<RegistryImageTagInfo> {
     const tagManifest = await this.fetchTagManifest(image, tag)
     if (!tagManifest) {
       return null

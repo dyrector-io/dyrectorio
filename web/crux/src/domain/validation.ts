@@ -398,7 +398,7 @@ const validateLabelRule = (rule: EnvironmentRule, field: string, env: KeyValueLi
 }
 
 const testRules = (rules: [string, EnvironmentRule][], arr: UniqueKeyValue[], fieldName: string) => {
-  if (rules.length === 0) {
+  if (rules.length < 1) {
     return null
   }
 
