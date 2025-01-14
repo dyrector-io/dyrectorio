@@ -27,7 +27,7 @@ import {
 import { Identity } from '@ory/kratos-client'
 import UuidParams from 'src/decorators/api-params.decorator'
 import { CreatedResponse, CreatedWithLocation } from '../../interceptors/created-with-location.decorator'
-import { DeploymentDto, DeploymentListDto } from '../deploy/deploy.dto'
+import { DeploymentDto } from '../deploy/deploy.dto'
 import DeployService from '../deploy/deploy.service'
 import { DisableAuth, IdentityFromRequest } from '../token/jwt-auth.guard'
 import NodeTeamAccessGuard from './guards/node.team-access.http.guard'
@@ -265,8 +265,9 @@ export default class NodeHttpController {
     summary: 'Fetch the list of deployments.',
   })
   @ApiOkResponse({
-    type: DeploymentListDto,
-    description: 'Paginated list of deployments.',
+    type: DeploymentDto,
+    isArray: true,
+    description: 'List of deployments.',
   })
   @ApiForbiddenResponse({ description: 'Unauthorized request for deployments.' })
   async getDeployments(@TeamSlug() _: string, @NodeId() nodeId: string): Promise<DeploymentDto[]> {

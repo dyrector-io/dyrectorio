@@ -505,7 +505,7 @@ const testRules = (
     return err
   }
 
-  return null
+  return true
 }
 
 const testEnvironmentRules =

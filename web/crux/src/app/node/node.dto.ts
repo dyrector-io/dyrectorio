@@ -15,7 +15,6 @@ import {
 import { CONTAINER_STATE_VALUES, ContainerState } from 'src/domain/container'
 import { PaginatedList, PaginationQuery } from 'src/shared/dtos/paginating'
 import { ContainerIdentifierDto } from '../container/container.dto'
-import { DEPLOYMENT_STATUS_VALUES, DeploymentStatusDto } from '../deploy/deploy.dto'
 
 export const NODE_SCRIPT_TYPE_VALUES = ['shell', 'powershell'] as const
 export type NodeScriptTypeDto = (typeof NODE_SCRIPT_TYPE_VALUES)[number]
@@ -271,17 +270,4 @@ export class NodeContainerLogQuery {
   @IsOptional()
   @Type(() => Number)
   take?: number
-}
-
-export class NodeDeploymentQueryDto extends PaginationQuery {
-  @IsOptional()
-  @IsString()
-  @Type(() => String)
-  @ApiProperty()
-  readonly filter?: string
-
-  @IsOptional()
-  @ApiProperty({ enum: DEPLOYMENT_STATUS_VALUES })
-  @IsIn(DEPLOYMENT_STATUS_VALUES)
-  readonly status?: DeploymentStatusDto
 }
