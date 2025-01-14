@@ -3,7 +3,7 @@ import { JWT } from 'google-auth-library'
 import { GetAccessTokenResponse } from 'google-auth-library/build/src/auth/oauth2client'
 import { CruxUnauthorizedException } from 'src/exception/crux-exception'
 import { getRegistryApiException } from 'src/exception/registry-exception'
-import { RegistryImageTag, RegistryImageWithTags } from '../registry.message'
+import { RegistryImageWithTags } from '../registry.message'
 import { RegistryApiClient, RegistryImageTagInfo, fetchInfoForTags } from './registry-api-client'
 import V2HttpApiClient from './v2-http-api-client'
 
