@@ -17,13 +17,13 @@ import { useRouter } from 'next/router'
 import { QA_MODAL_LABEL_DEPLOYMENT_NOTE } from 'quality-assurance'
 import { useState } from 'react'
 
-type NodeDeploymentListProps = {
+type FilteredDeploymentListProps = {
   deployments: Deployment[]
 }
 
 type DeploymentFilter = TextFilter & EnumFilter<DeploymentStatus>
 
-const FilteredDeploymentList = (props: NodeDeploymentListProps) => {
+const FilteredDeploymentList = (props: FilteredDeploymentListProps) => {
   const { deployments: propsDeployments } = props
 
   const { t } = useTranslation('deployments')

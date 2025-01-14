@@ -1,10 +1,11 @@
+import { Cache } from 'cache-manager'
 import { JWT } from 'google-auth-library'
 import { GetAccessTokenResponse } from 'google-auth-library/build/src/auth/oauth2client'
 import { CruxUnauthorizedException } from 'src/exception/crux-exception'
 import { getRegistryApiException } from 'src/exception/registry-exception'
-import { RegistryImageTags } from '../registry.message'
-import { RegistryApiClient } from './registry-api-client'
-import V2Labels from './v2-labels'
+import { RegistryImageWithTags } from '../registry.message'
+import { RegistryApiClient, RegistryImageTagInfo, fetchInfoForTags } from './registry-api-client'
+import V2HttpApiClient from './v2-http-api-client'
 
 export type GoogleClientOptions = {
   username?: string
@@ -19,6 +20,7 @@ export class GoogleRegistryClient implements RegistryApiClient {
   constructor(
     private url: string,
     private imageNamePrefix: string,
+    private readonly cache: Cache | null,
     options?: GoogleClientOptions,
   ) {
     if (options?.username) {
@@ -74,7 +76,7 @@ export class GoogleRegistryClient implements RegistryApiClient {
     return json.child.filter(it => it.includes(text))
   }
 
-  async tags(image: string): Promise<RegistryImageTags> {
+  async tags(image: string): Promise<RegistryImageWithTags> {
     if (this.client) {
       await this.registryCredentialsToBearerAuth()
     }
@@ -90,23 +92,41 @@ export class GoogleRegistryClient implements RegistryApiClient {
     }
 
     const json = (await tagRes.json()) as { tags: string[] }
+    const tags = await fetchInfoForTags(image, json.tags, this)
+
     return {
       name: image,
-      tags: json.tags,
+      tags,
     }
   }
 
-  async labels(image: string, tag: string): Promise<Record<string, string>> {
+  private async createApiClient(): Promise<V2HttpApiClient> {
     if (this.client) {
       await this.registryCredentialsToBearerAuth()
     }
 
-    const labelClient = new V2Labels(this.url, null, {
-      headers: {
-        Authorization: (this.headers as Record<string, string>).Authorization,
+    return new V2HttpApiClient(
+      {
+        baseUrl: this.url,
+        requestInit: {
+          headers: {
+            Authorization: (this.headers as Record<string, string>).Authorization,
+          },
+        },
       },
-    })
+      this.cache,
+    )
+  }
 
-    return labelClient.fetchLabels(image, tag)
+  async labels(image: string, tag: string): Promise<Record<string, string>> {
+    const client = await this.createApiClient()
+
+    return client.fetchLabels(image, tag)
+  }
+
+  async tagInfo(image: string, tag: string): Promise<RegistryImageTagInfo> {
+    const client = await this.createApiClient()
+
+    return client.fetchTagInfo(image, tag)
   }
 }

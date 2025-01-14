@@ -14,6 +14,10 @@ import {
   FindImageMessage,
   FindImageResultMessage,
   RegistryImageTagsMessage,
+  WS_TYPE_FETCH_IMAGE_TAGS,
+  WS_TYPE_FIND_IMAGE,
+  WS_TYPE_FIND_IMAGE_RESULT,
+  WS_TYPE_REGISTRY_IMAGE_TAGS,
 } from './registry.message'
 
 const TeamSlug = () => WsParam('teamSlug')
@@ -38,7 +42,7 @@ export default class RegistryWebSocketGateway {
   }
 
   @AuditLogLevel('disabled')
-  @SubscribeMessage('find-image')
+  @SubscribeMessage(WS_TYPE_FIND_IMAGE)
   async findImage(
     @TeamSlug() teamSlug: string,
     @SocketMessage() message: FindImageMessage,
@@ -51,7 +55,7 @@ export default class RegistryWebSocketGateway {
     const images = await api.client.catalog(message.filter)
 
     return {
-      type: 'find-image-result',
+      type: WS_TYPE_FIND_IMAGE_RESULT,
       data: {
         registryId: message.registryId,
         images: images.map(it => ({
@@ -64,7 +68,7 @@ export default class RegistryWebSocketGateway {
   }
 
   @AuditLogLevel('disabled')
-  @SubscribeMessage('fetch-image-tags')
+  @SubscribeMessage(WS_TYPE_FETCH_IMAGE_TAGS)
   async fetchImageTags(
     @TeamSlug() teamSlug: string,
     @SocketMessage() message: FetchImageTagsMessage,
@@ -77,7 +81,7 @@ export default class RegistryWebSocketGateway {
     const tags = message.images.map(it => api.client.tags(it))
 
     return {
-      type: 'registry-image-tags',
+      type: WS_TYPE_REGISTRY_IMAGE_TAGS,
       data: {
         registryId: message.registryId,
         images: await Promise.all(tags),

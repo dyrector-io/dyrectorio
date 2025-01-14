@@ -19,6 +19,9 @@ export class EnvironmentRule {
   type: EnvironmentValueType
 
   @IsBoolean()
+  secret: boolean
+
+  @IsBoolean()
   @IsOptional()
   required?: boolean
 

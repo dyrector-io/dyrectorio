@@ -1,5 +1,7 @@
+import { CACHE_MANAGER } from '@nestjs/cache-manager'
 import { Inject, Injectable, forwardRef } from '@nestjs/common'
 import { OnEvent } from '@nestjs/event-emitter'
+import { Cache } from 'cache-manager'
 import { REGISTRY_EVENT_UPDATE, RegistryUpdatedEvent } from 'src/domain/registry'
 import { CruxForbiddenException } from 'src/exception/crux-exception'
 import { REGISTRY_GITLAB_URLS, REGISTRY_HUB_URL } from 'src/shared/const'
@@ -11,7 +13,7 @@ import { GoogleRegistryClient } from './registry-clients/google-api-client'
 import PrivateHubApiClient from './registry-clients/private-hub-api-client'
 import { RegistryApiClient } from './registry-clients/registry-api-client'
 import UncheckedApiClient from './registry-clients/unchecked-api-client'
-import RegistryV2ApiClient from './registry-clients/v2-api-client'
+import RegistryV2ApiClient from './registry-clients/v2-registry-api-client'
 import { REGISTRY_HUB_CACHE_EXPIRATION } from './registry.const'
 import { GithubNamespace, GitlabNamespace, RegistryType } from './registry.dto'
 import RegistryService from './registry.service'
@@ -34,6 +36,8 @@ export default class RegistryClientProvider {
   constructor(
     @Inject(forwardRef(() => RegistryService))
     private readonly service: RegistryService,
+    @Inject(CACHE_MANAGER)
+    private readonly cache: Cache,
   ) {}
 
   removeClientsByTeam(teamId: string) {
@@ -48,10 +52,10 @@ export default class RegistryClientProvider {
   }
 
   async getByRegistryId(teamId: string, registryId: string): Promise<RegistryClientEntry> {
-    let client = this.clients.get(registryId)
-    if (client) {
+    let entry = this.clients.get(registryId)
+    if (entry) {
       await this.authorize(teamId, registryId)
-      return client
+      return entry
     }
 
     const connInfo = await this.service.getRegistryConnectionInfoById(registryId)
@@ -59,6 +63,7 @@ export default class RegistryClientProvider {
     const createV2 = () =>
       new RegistryV2ApiClient(
         connInfo.url,
+        this.cache,
         !connInfo.public
           ? {
               username: connInfo.user,
@@ -74,10 +79,11 @@ export default class RegistryClientProvider {
           this.getHubCacheForImageNamePrefix(registryId, connInfo.imageNamePrefix),
           REGISTRY_HUB_URL,
           connInfo.imageNamePrefix,
+          this.cache,
         )
       }
 
-      const hubClient = new PrivateHubApiClient(REGISTRY_HUB_URL, connInfo.imageNamePrefix)
+      const hubClient = new PrivateHubApiClient(REGISTRY_HUB_URL, connInfo.imageNamePrefix, this.cache)
       await hubClient.login(connInfo.user, connInfo.token)
 
       return hubClient
@@ -91,6 +97,7 @@ export default class RegistryClientProvider {
           password: connInfo.token,
         },
         connInfo.namespace as GithubNamespace,
+        this.cache,
       )
 
     const createGitlab = () =>
@@ -107,12 +114,14 @@ export default class RegistryClientProvider {
             }
           : REGISTRY_GITLAB_URLS,
         connInfo.namespace as GitlabNamespace,
+        this.cache,
       )
 
     const createGoogle = () =>
       new GoogleRegistryClient(
         connInfo.url,
         connInfo.imageNamePrefix,
+        this.cache,
         !connInfo.public
           ? {
               username: connInfo.user,
@@ -123,7 +132,7 @@ export default class RegistryClientProvider {
 
     const createUnchecked = () => new UncheckedApiClient()
 
-    client = {
+    entry = {
       type: connInfo.type,
       client:
         connInfo.type === 'v2'
@@ -139,13 +148,13 @@ export default class RegistryClientProvider {
           : createUnchecked(),
     }
 
-    this.clients.set(connInfo.id, client)
+    this.clients.set(connInfo.id, entry)
 
     const teamRegistries = this.registriesByTeam.get(teamId) ?? []
 
     teamRegistries.push(registryId)
 
-    return client
+    return entry
   }
 
   @OnEvent(REGISTRY_EVENT_UPDATE)
