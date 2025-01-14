@@ -1,20 +1,23 @@
-import { RegistryImageTag, RegistryImageTags } from '../registry.message'
+import { TAG_INFO_BATCH_SIZE } from 'src/shared/const'
+import { RegistryImageTag, RegistryImageWithTags } from '../registry.message'
 
-const TAG_INFO_BATCH_SIZE = 5
+export type RegistryImageTagInfo = {
+  created: string
+}
 
 export interface RegistryApiClient {
   catalog(text: string): Promise<string[]>
-  tags(image: string): Promise<RegistryImageTags>
+  tags(image: string): Promise<RegistryImageWithTags>
   labels(image: string, tag: string): Promise<Record<string, string>>
-  tagInfo(image: string, tag: string): Promise<RegistryImageTag>
+  tagInfo(image: string, tag: string): Promise<RegistryImageTagInfo>
 }
 
 export const fetchInfoForTags = async (
   image: string,
   tags: string[],
   client: RegistryApiClient,
-): Promise<Record<string, RegistryImageTag>> => {
-  const map: Record<string, RegistryImageTag> = {}
+): Promise<RegistryImageTag[]> => {
+  const result: RegistryImageTag[] = []
 
   for (let batch = 0; batch < Math.ceil(tags.length / TAG_INFO_BATCH_SIZE); batch++) {
     const start = batch * TAG_INFO_BATCH_SIZE
@@ -30,10 +33,14 @@ export const fetchInfoForTags = async (
 
     // eslint-disable-next-line no-await-in-loop
     const results = await Promise.all(promises)
-    results.forEach(it => {
-      map[it.tag] = it.info
-    })
+
+    const fetchedTags = results.map(it => ({
+      ...it.info,
+      name: it.tag,
+    }))
+
+    result.push(...fetchedTags)
   }
 
-  return map
+  return result
 }

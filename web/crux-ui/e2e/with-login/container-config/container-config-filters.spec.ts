@@ -21,7 +21,7 @@ test.describe('Filters', () => {
     const { imageConfigId } = await setup(page, 'filter-all', '1.0.0', NGINX_TEST_IMAGE_WITH_TAG)
 
     await page.goto(TEAM_ROUTES.containerConfig.details(imageConfigId))
-    await page.waitForSelector('h2:text-is("Image")')
+    await page.waitForSelector('h2:text-is("Image config")')
 
     const allButton = await page.locator('button:has-text("All")')
 
@@ -33,7 +33,7 @@ test.describe('Filters', () => {
     const { imageConfigId } = await setup(page, 'filter-select', '1.0.0', NGINX_TEST_IMAGE_WITH_TAG)
 
     await page.goto(TEAM_ROUTES.containerConfig.details(imageConfigId))
-    await page.waitForSelector('h2:text-is("Image")')
+    await page.waitForSelector('h2:text-is("Image config")')
 
     await page.locator(`button:has-text("Common")`).first().click()
 
@@ -46,7 +46,7 @@ test.describe('Filters', () => {
     const { imageConfigId } = await setup(page, 'sub-filter', '1.0.0', NGINX_TEST_IMAGE_WITH_TAG)
 
     await page.goto(TEAM_ROUTES.containerConfig.details(imageConfigId))
-    await page.waitForSelector('h2:text-is("Image")')
+    await page.waitForSelector('h2:text-is("Image config")')
 
     const subFilter = await page.locator(`button:has-text("Network mode")`)
 
@@ -61,7 +61,7 @@ test.describe('Filters', () => {
     const { imageConfigId } = await setup(page, 'sub-deselect', '1.0.0', NGINX_TEST_IMAGE_WITH_TAG)
 
     await page.goto(TEAM_ROUTES.containerConfig.details(imageConfigId))
-    await page.waitForSelector('h2:text-is("Image")')
+    await page.waitForSelector('h2:text-is("Image config")')
 
     const subFilter = await page.locator(`button:has-text("Deployment strategy")`)
 

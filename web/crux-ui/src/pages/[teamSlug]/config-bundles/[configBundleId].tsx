@@ -1,44 +1,29 @@
 import ConfigBundleCard from '@app/components/config-bundles/config-bundle-card'
 import EditConfigBundleCard from '@app/components/config-bundles/edit-config-bundle-card'
-import DeploymentStatusTag from '@app/components/deployments/deployment-status-tag'
+import FilteredDeploymentList from '@app/components/deployments/filtered-deployment-list'
 import { Layout } from '@app/components/layout'
 import { BreadcrumbLink } from '@app/components/shared/breadcrumb'
 import PageHeading from '@app/components/shared/page-heading'
 import { DetailsPageMenu } from '@app/components/shared/page-menu'
-import { PaginationSettings } from '@app/components/shared/paginator'
-import { DyoCard } from '@app/elements/dyo-card'
-import DyoIcon from '@app/elements/dyo-icon'
-import DyoLink from '@app/elements/dyo-link'
-import DyoTable, { DyoColumn, sortDate, sortEnum, sortString } from '@app/elements/dyo-table'
 import { defaultApiErrorHandler } from '@app/errors'
-import usePagination from '@app/hooks/use-pagination'
 import useSubmit from '@app/hooks/use-submit'
 import useTeamRoutes from '@app/hooks/use-team-routes'
-import {
-  ConfigBundleDetails,
-  Deployment,
-  DEPLOYMENT_STATUS_VALUES,
-  DeploymentQuery,
-  detailsToConfigBundle,
-  PaginatedList,
-  PaginationQuery,
-} from '@app/models'
+import { ConfigBundleDetails, Deployment, detailsToConfigBundle } from '@app/models'
 import { TeamRoutes } from '@app/routes'
-import { auditToLocaleDate, withContextAuthorization } from '@app/utils'
+import { withContextAuthorization } from '@app/utils'
 import { getCruxFromContext } from '@server/crux-api'
 import { GetServerSidePropsContext } from 'next'
 import useTranslation from 'next-translate/useTranslation'
 import { useRouter } from 'next/router'
-import { useCallback, useState } from 'react'
-
-const defaultPagination: PaginationSettings = { pageNumber: 0, pageSize: 10 }
+import { useState } from 'react'
 
 type ConfigBundleDetailsPageProps = {
   configBundle: ConfigBundleDetails
+  deployments: Deployment[]
 }
 
 const ConfigBundleDetailsPage = (props: ConfigBundleDetailsPageProps) => {
-  const { configBundle: propsConfigBundle } = props
+  const { configBundle: propsConfigBundle, deployments } = props
 
   const { t } = useTranslation('config-bundles')
   const router = useRouter()
@@ -51,30 +36,6 @@ const ConfigBundleDetailsPage = (props: ConfigBundleDetailsPageProps) => {
 
   const submit = useSubmit()
 
-  const fetchData = useCallback(
-    async (paginationQuery: PaginationQuery): Promise<PaginatedList<Deployment>> => {
-      const query: DeploymentQuery = {
-        ...paginationQuery,
-        configBundleId: propsConfigBundle.id,
-      }
-
-      const res = await fetch(routes.deployment.api.list(query))
-
-      if (!res.ok) {
-        await onApiError(res)
-        return null
-      }
-
-      return (await res.json()) as PaginatedList<Deployment>
-    },
-    [routes, onApiError],
-  )
-
-  const [pagination, setPagination] = usePagination({
-    defaultSettings: defaultPagination,
-    fetchData,
-  })
-
   const onDelete = async () => {
     const res = await fetch(routes.configBundle.api.details(configBundle.id), {
       method: 'DELETE',
@@ -85,11 +46,6 @@ const ConfigBundleDetailsPage = (props: ConfigBundleDetailsPageProps) => {
     } else {
       await onApiError(res)
     }
-  }
-
-  const onConfigBundleEdited = (bundle: ConfigBundleDetails) => {
-    setConfigBundle(bundle)
-    setEditing(false)
   }
 
   const pageLink: BreadcrumbLink = {
@@ -119,58 +75,14 @@ const ConfigBundleDetailsPage = (props: ConfigBundleDetailsPageProps) => {
           })}
         />
       </PageHeading>
+
       {editing ? (
-        <EditConfigBundleCard submit={submit} configBundle={configBundle} onConfigBundleEdited={onConfigBundleEdited} />
+        <EditConfigBundleCard submit={submit} configBundle={configBundle} onConfigBundleEdited={setConfigBundle} />
       ) : (
         <ConfigBundleCard configBundle={detailsToConfigBundle(configBundle)} />
       )}
-      <DyoCard className="relative mt-4">
-        <DyoTable
-          data={pagination.data ?? []}
-          dataKey="id"
-          pagination="server"
-          paginationTotal={pagination.total}
-          onServerPagination={setPagination}
-          initialSortColumn={4}
-          initialSortDirection="desc"
-        >
-          <DyoColumn header={t('common:project')} field="project.name" className="w-2/12" sortable sort={sortString} />
-          <DyoColumn header={t('common:version')} field="version.name" className="w-2/12" sortable sort={sortString} />
-          <DyoColumn header={t('common:node')} field="node.name" className="w-2/12" sortable sort={sortString} />
-          <DyoColumn header={t('common:prefix')} field="prefix" className="w-2/12" sortable sort={sortString} />
-          <DyoColumn
-            header={t('common:updatedAt')}
-            className="w-2/12"
-            suppressHydrationWarning
-            sortable
-            sortField={(it: Deployment) => it.audit.updatedAt ?? it.audit.createdAt}
-            sort={sortDate}
-            body={(it: Deployment) => auditToLocaleDate(it.audit)}
-          />
-          <DyoColumn
-            header={t('common:status')}
-            className="w-2/12 text-center"
-            sortable
-            sortField="status"
-            sort={sortEnum(DEPLOYMENT_STATUS_VALUES)}
-            body={(it: Deployment) => <DeploymentStatusTag status={it.status} className="w-fit mx-auto" />}
-          />
-          <DyoColumn
-            header={t('common:actions')}
-            className="w-40 text-center"
-            preventClickThrough
-            body={(it: Deployment) => (
-              <DyoLink
-                className="inline-block mr-2"
-                href={routes.deployment.details(it.id)}
-                qaLabel="deployment-list-view-icon"
-              >
-                <DyoIcon src="/eye.svg" alt={t('common:view')} size="md" />
-              </DyoLink>
-            )}
-          />
-        </DyoTable>
-      </DyoCard>
+
+      {deployments.length > 0 && <FilteredDeploymentList deployments={deployments} />}
     </Layout>
   )
 }
@@ -187,9 +99,15 @@ const getPageServerSideProps = async (context: GetServerSidePropsContext) => {
     routes.configBundle.api.details(configBundleId),
   )
 
+  const deployments = await getCruxFromContext<Deployment[]>(
+    context,
+    routes.configBundle.api.deployments(configBundleId),
+  )
+
   return {
     props: {
       configBundle,
+      deployments,
     },
   }
 }

@@ -9,6 +9,8 @@ export const REGISTRY_GITLAB_URLS = {
   registryUrl: 'registry.gitlab.com',
 }
 
+export const TAG_INFO_BATCH_SIZE = 5
+
 export const VERSIONLESS_PROJECT_VERSION_NAME = 'rolling'
 
 export const MAX_TIMEOUT = 2 ** 31 - 1

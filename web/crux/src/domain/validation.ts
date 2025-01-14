@@ -301,7 +301,7 @@ const containerConfigSchema = yup.object().shape({
   storageId: yup.string().optional().nullable(),
   storageConfig: storageRule.optional().nullable(),
 
-  // dagent:
+  // dagent
   logConfig: logConfigRule.optional().nullable(),
   restartPolicy: restartPolicyRule.optional().nullable(),
   networkMode: networkModeRule.optional().nullable(),
@@ -341,7 +341,7 @@ export const concreteContainerConfigSchema = yup.object().shape({
   storageId: yup.string().optional().nullable(),
   storageConfig: storageRule.optional().nullable(),
 
-  // dagent:
+  // dagent
   logConfig: logConfigRule.optional().nullable(),
   restartPolicy: restartPolicyRule.optional().nullable(),
   networkMode: networkModeRule.optional().nullable(),
@@ -363,7 +363,6 @@ export const concreteContainerConfigSchema = yup.object().shape({
 })
 
 // TODO(@robot9706): Fix labels & config bundles conflicting
-/*
 type KeyValueLike = {
   key: string
   value: string
@@ -399,7 +398,7 @@ const validateLabelRule = (rule: EnvironmentRule, field: string, env: KeyValueLi
 }
 
 const testRules = (rules: [string, EnvironmentRule][], arr: UniqueKeyValue[], fieldName: string) => {
-  if (rules.length === 0) {
+  if (rules.length < 1) {
     return null
   }
 
@@ -440,7 +439,6 @@ const testRules = (rules: [string, EnvironmentRule][], arr: UniqueKeyValue[], fi
 
   return null
 }
-*/
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 export const createStartDeploymentSchema = (instanceValidation: Record<string, ImageValidation>) =>
@@ -466,7 +464,6 @@ export const createStartDeploymentSchema = (instanceValidation: Record<string, I
         instances => new Set(instances.map(it => it.config.name)).size === instances.length,
       ),
     // TODO(@robot9706): Fix labels & config bundles conflicting
-    /*
       .test('instanceLabelRules', 'Instance must match their image label rules.', instances => {
         const errors = instances
           .map(it => {
@@ -495,7 +492,6 @@ export const createStartDeploymentSchema = (instanceValidation: Record<string, I
 
         return true
       }),
-      */
   })
 
 const templateRegistrySchema = yup.object().shape({

@@ -44,13 +44,14 @@ test.describe('Image common config from editor', () => {
 
     const sock = waitSocketRef(page)
     await page.goto(TEAM_ROUTES.containerConfig.details(imageConfigId))
-    await page.waitForSelector('h2:text-is("Image")')
+    await page.waitForSelector('h2:text-is("Image config")')
     const ws = await sock
     const wsRoute = TEAM_ROUTES.containerConfig.detailsSocket(imageConfigId)
 
     const name = 'new-container-name'
 
     const wsSent = wsPatchSent(ws, wsRoute, WS_TYPE_PATCH_CONFIG, wsPatchMatchContainerName(name))
+    await page.locator('button:has-text("Name")').click()
     await page.locator('input[placeholder="Container name"]').fill(name)
     await wsSent
 
@@ -64,11 +65,12 @@ test.describe('Image common config from editor', () => {
 
     const sock = waitSocketRef(page)
     await page.goto(TEAM_ROUTES.containerConfig.details(imageConfigId))
-    await page.waitForSelector('h2:text-is("Image")')
+    await page.waitForSelector('h2:text-is("Image config")')
     const ws = await sock
     const wsRoute = TEAM_ROUTES.containerConfig.detailsSocket(imageConfigId)
 
     const wsSent = wsPatchSent(ws, wsRoute, WS_TYPE_PATCH_CONFIG, wsPatchMatchExpose('exposeWithTls'))
+    await page.locator('button:has-text("Expose")').click()
     await page.getByRole('button', { name: 'HTTPS', exact: true }).click()
     await wsSent
 
@@ -82,13 +84,14 @@ test.describe('Image common config from editor', () => {
 
     const sock = waitSocketRef(page)
     await page.goto(TEAM_ROUTES.containerConfig.details(imageConfigId))
-    await page.waitForSelector('h2:text-is("Image")')
+    await page.waitForSelector('h2:text-is("Image config")')
     const ws = await sock
     const wsRoute = TEAM_ROUTES.containerConfig.detailsSocket(imageConfigId)
 
     const user = 23
 
     const wsSent = wsPatchSent(ws, wsRoute, WS_TYPE_PATCH_CONFIG, wsPatchMatchUser(user))
+    await page.locator('button:has-text("User")').click()
     await page.locator('input[placeholder="Container default"]').fill(user.toString())
     await wsSent
 
@@ -102,7 +105,7 @@ test.describe('Image common config from editor', () => {
 
     const sock = waitSocketRef(page)
     await page.goto(TEAM_ROUTES.containerConfig.details(imageConfigId))
-    await page.waitForSelector('h2:text-is("Image")')
+    await page.waitForSelector('h2:text-is("Image config")')
     const ws = await sock
     const wsRoute = TEAM_ROUTES.containerConfig.detailsSocket(imageConfigId)
 
@@ -122,7 +125,7 @@ test.describe('Image common config from editor', () => {
 
     const sock = waitSocketRef(page)
     await page.goto(TEAM_ROUTES.containerConfig.details(imageConfigId))
-    await page.waitForSelector('h2:text-is("Image")')
+    await page.waitForSelector('h2:text-is("Image config")')
     const ws = await sock
     const wsRoute = TEAM_ROUTES.containerConfig.detailsSocket(imageConfigId)
 
@@ -152,7 +155,7 @@ test.describe('Image common config from editor', () => {
 
     const sock = waitSocketRef(page)
     await page.goto(TEAM_ROUTES.containerConfig.details(imageConfigId))
-    await page.waitForSelector('h2:text-is("Image")')
+    await page.waitForSelector('h2:text-is("Image config")')
     const ws = await sock
     const wsRoute = TEAM_ROUTES.containerConfig.detailsSocket(imageConfigId)
 
@@ -195,7 +198,7 @@ test.describe('Image common config from editor', () => {
 
     const sock = waitSocketRef(page)
     await page.goto(TEAM_ROUTES.containerConfig.details(imageConfigId))
-    await page.waitForSelector('h2:text-is("Image")')
+    await page.waitForSelector('h2:text-is("Image config")')
     const ws = await sock
     const wsRoute = TEAM_ROUTES.containerConfig.detailsSocket(imageConfigId)
 
@@ -221,7 +224,7 @@ test.describe('Image common config from editor', () => {
 
     const sock = waitSocketRef(page)
     await page.goto(TEAM_ROUTES.containerConfig.details(imageConfigId))
-    await page.waitForSelector('h2:text-is("Image")')
+    await page.waitForSelector('h2:text-is("Image config")')
     const ws = await sock
     const wsRoute = TEAM_ROUTES.containerConfig.detailsSocket(imageConfigId)
 
@@ -244,7 +247,7 @@ test.describe('Image common config from editor', () => {
 
     const sock = waitSocketRef(page)
     await page.goto(TEAM_ROUTES.containerConfig.details(imageConfigId))
-    await page.waitForSelector('h2:text-is("Image")')
+    await page.waitForSelector('h2:text-is("Image config")')
     const ws = await sock
     const wsRoute = TEAM_ROUTES.containerConfig.detailsSocket(imageConfigId)
 
@@ -266,7 +269,7 @@ test.describe('Image common config from editor', () => {
     const { imageConfigId } = await setup(page, 'routing-editor', '1.0.0', NGINX_TEST_IMAGE_WITH_TAG)
     const sock = waitSocketRef(page)
     await page.goto(TEAM_ROUTES.containerConfig.details(imageConfigId))
-    await page.waitForSelector('h2:text-is("Image")')
+    await page.waitForSelector('h2:text-is("Image config")')
     const ws = await sock
     const wsRoute = TEAM_ROUTES.containerConfig.detailsSocket(imageConfigId)
 
@@ -317,7 +320,7 @@ test.describe('Image common config from editor', () => {
     const { imageConfigId } = await setup(page, 'environment-editor', '1.0.0', NGINX_TEST_IMAGE_WITH_TAG)
     const sock = waitSocketRef(page)
     await page.goto(TEAM_ROUTES.containerConfig.details(imageConfigId))
-    await page.waitForSelector('h2:text-is("Image")')
+    await page.waitForSelector('h2:text-is("Image config")')
     const ws = await sock
     const wsRoute = TEAM_ROUTES.containerConfig.detailsSocket(imageConfigId)
 
@@ -341,7 +344,7 @@ test.describe('Image common config from editor', () => {
     const { imageConfigId } = await setup(page, 'config-container-editor', '1.0.0', NGINX_TEST_IMAGE_WITH_TAG)
     const sock = waitSocketRef(page)
     await page.goto(TEAM_ROUTES.containerConfig.details(imageConfigId))
-    await page.waitForSelector('h2:text-is("Image")')
+    await page.waitForSelector('h2:text-is("Image config")')
     const ws = await sock
     const wsRoute = TEAM_ROUTES.containerConfig.detailsSocket(imageConfigId)
 
@@ -371,7 +374,7 @@ test.describe('Image common config from editor', () => {
     const { imageConfigId } = await setup(page, 'init-container-editor', '1.0.0', NGINX_TEST_IMAGE_WITH_TAG)
     const sock = waitSocketRef(page)
     await page.goto(TEAM_ROUTES.containerConfig.details(imageConfigId))
-    await page.waitForSelector('h2:text-is("Image")')
+    await page.waitForSelector('h2:text-is("Image config")')
     const ws = await sock
     const wsRoute = TEAM_ROUTES.containerConfig.detailsSocket(imageConfigId)
 
@@ -424,7 +427,7 @@ test.describe('Image common config from editor', () => {
     const { imageConfigId } = await setup(page, 'volume-editor', '1.0.0', NGINX_TEST_IMAGE_WITH_TAG)
     const sock = waitSocketRef(page)
     await page.goto(TEAM_ROUTES.containerConfig.details(imageConfigId))
-    await page.waitForSelector('h2:text-is("Image")')
+    await page.waitForSelector('h2:text-is("Image config")')
     const ws = await sock
     const wsRoute = TEAM_ROUTES.containerConfig.detailsSocket(imageConfigId)
 
@@ -462,7 +465,7 @@ test.describe('Image common config from editor', () => {
 
     const sock = waitSocketRef(page)
     await page.goto(TEAM_ROUTES.containerConfig.details(imageConfigId))
-    await page.waitForSelector('h2:text-is("Image")')
+    await page.waitForSelector('h2:text-is("Image config")')
     const ws = await sock
     const wsRoute = TEAM_ROUTES.containerConfig.detailsSocket(imageConfigId)
 

@@ -39,13 +39,14 @@ test.describe('Image kubernetes config from editor', () => {
 
     const sock = waitSocketRef(page)
     await page.goto(TEAM_ROUTES.containerConfig.details(imageConfigId))
-    await page.waitForSelector('h2:text-is("Image")')
+    await page.waitForSelector('h2:text-is("Image config")')
     const ws = await sock
     const wsRoute = TEAM_ROUTES.containerConfig.detailsSocket(imageConfigId)
 
     const strategy = 'rolling'
 
     const wsSent = wsPatchSent(ws, wsRoute, WS_TYPE_PATCH_CONFIG, wsPatchMatchDeploymentStrategy(strategy))
+    await page.locator('button:has-text("Deployment strategy")').click()
     await page.locator(`button:has-text("${strategy}")`).click()
     await wsSent
 
@@ -59,7 +60,7 @@ test.describe('Image kubernetes config from editor', () => {
 
     const sock = waitSocketRef(page)
     await page.goto(TEAM_ROUTES.containerConfig.details(imageConfigId))
-    await page.waitForSelector('h2:text-is("Image")')
+    await page.waitForSelector('h2:text-is("Image config")')
     const ws = await sock
     const wsRoute = TEAM_ROUTES.containerConfig.detailsSocket(imageConfigId)
 
@@ -84,7 +85,7 @@ test.describe('Image kubernetes config from editor', () => {
 
     const sock = waitSocketRef(page)
     await page.goto(TEAM_ROUTES.containerConfig.details(imageConfigId))
-    await page.waitForSelector('h2:text-is("Image")')
+    await page.waitForSelector('h2:text-is("Image config")')
     const ws = await sock
     const wsRoute = TEAM_ROUTES.containerConfig.detailsSocket(imageConfigId)
 
@@ -104,7 +105,7 @@ test.describe('Image kubernetes config from editor', () => {
 
     const sock = waitSocketRef(page)
     await page.goto(TEAM_ROUTES.containerConfig.details(imageConfigId))
-    await page.waitForSelector('h2:text-is("Image")')
+    await page.waitForSelector('h2:text-is("Image config")')
     const ws = await sock
     const wsRoute = TEAM_ROUTES.containerConfig.detailsSocket(imageConfigId)
 
@@ -143,7 +144,7 @@ test.describe('Image kubernetes config from editor', () => {
 
     const sock = waitSocketRef(page)
     await page.goto(TEAM_ROUTES.containerConfig.details(imageConfigId))
-    await page.waitForSelector('h2:text-is("Image")')
+    await page.waitForSelector('h2:text-is("Image config")')
     const ws = await sock
     const wsRoute = TEAM_ROUTES.containerConfig.detailsSocket(imageConfigId)
 
@@ -180,7 +181,7 @@ test.describe('Image kubernetes config from editor', () => {
     const { imageConfigId } = await setup(page, 'resource-config-editor', '1.0.0', NGINX_TEST_IMAGE_WITH_TAG)
     const sock = waitSocketRef(page)
     await page.goto(TEAM_ROUTES.containerConfig.details(imageConfigId))
-    await page.waitForSelector('h2:text-is("Image")')
+    await page.waitForSelector('h2:text-is("Image config")')
     const ws = await sock
     const wsRoute = TEAM_ROUTES.containerConfig.detailsSocket(imageConfigId)
 
@@ -221,7 +222,7 @@ test.describe('Image kubernetes config from editor', () => {
 
     const sock = waitSocketRef(page)
     await page.goto(TEAM_ROUTES.containerConfig.details(imageConfigId))
-    await page.waitForSelector('h2:text-is("Image")')
+    await page.waitForSelector('h2:text-is("Image config")')
     const ws = await sock
     const wsRoute = TEAM_ROUTES.containerConfig.detailsSocket(imageConfigId)
 
@@ -262,7 +263,7 @@ test.describe('Image kubernetes config from editor', () => {
 
     const sock = waitSocketRef(page)
     await page.goto(TEAM_ROUTES.containerConfig.details(imageConfigId))
-    await page.waitForSelector('h2:text-is("Image")')
+    await page.waitForSelector('h2:text-is("Image config")')
     const ws = await sock
     const wsRoute = TEAM_ROUTES.containerConfig.detailsSocket(imageConfigId)
 

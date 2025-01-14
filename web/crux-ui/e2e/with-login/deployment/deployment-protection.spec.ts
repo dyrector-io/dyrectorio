@@ -31,9 +31,9 @@ test('Protecting a deployment should fail while an incremental protected deploym
   await page.click('button:text-is("Deployments")')
 
   const deploymentsRows = await page.locator('table.w-full >> tbody >> tr')
-  await expect(deploymentsRows).toHaveCount(1)
+  await expect(deploymentsRows).not.toBeEmpty()
+  await deploymentsRows.locator(`td:has-text("${PREFIX}")`).click()
 
-  await deploymentsRows.first().click()
   await page.waitForURL(`${TEAM_ROUTES.deployment.list()}/**`)
   await page.waitForSelector('h2:text-is("Deployments")')
   const editDeploymentId = page.url().split('/').pop()

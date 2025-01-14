@@ -2,7 +2,7 @@ import { Logger } from '@nestjs/common'
 import { Cache } from 'cache-manager'
 import { CruxInternalServerErrorException } from 'src/exception/crux-exception'
 import { USER_AGENT_CRUX } from 'src/shared/const'
-import { RegistryImageTag } from '../registry.message'
+import { RegistryImageTagInfo } from './registry-api-client'
 
 type V2Error = {
   code: string
@@ -164,7 +164,11 @@ export default class V2HttpApiClient {
       tokenScope,
     )}`
 
+    this.logger.debug(`Fetching token from '${tokenUrl}'`)
+
     const tokenResponse = await fetch(tokenUrl, tokenInit)
+
+    this.logger.debug(`Got token response for '${tokenUrl}' - ${tokenResponse.status}`)
 
     if (tokenResponse.status !== 200) {
       this.logger.error('V2 token fetch failed', tokenResponse.status, await tokenResponse.text())
@@ -183,6 +187,8 @@ export default class V2HttpApiClient {
     const doFetch = async (): Promise<FetchResponse<T>> => {
       const fullUrl = `${this.baseUrl.startsWith('http') ? this.baseUrl : `https://${this.baseUrl}`}/v2/${endpoint}`
 
+      this.logger.debug(`Fetching '${fullUrl}'`)
+
       const baseHeaders = this.getHeaders()
 
       const res = await fetch(fullUrl, {
@@ -196,10 +202,10 @@ export default class V2HttpApiClient {
       const data = (await res.json()) as T
 
       if (res.status !== 200) {
-        this.logger.warn(`Got response '${fullUrl}' - ${res.status}`)
+        this.logger.error(`Got response '${fullUrl}' - ${res.status}`)
 
         const errors = data.errors.map(it => `${it.code} (${it.message})`).reduce((curr, it) => `${curr}, ${it}`)
-        this.logger.warn(errors)
+        this.logger.error(errors)
       }
 
       return {
@@ -252,16 +258,18 @@ export default class V2HttpApiClient {
     init?: RequestInit,
   ): Promise<T> {
     if (!this.cache) {
-      return this.fetchV2<T>(endpoint, init)
+      return await this.fetchV2<T>(endpoint, init)
     }
 
     const cached = await this.cache.get<T>(cacheKey)
     if (cached) {
+      this.logger.verbose(`Cache hit ${cacheKey}`)
       return cached
     }
 
     const result = await this.fetchV2<T>(endpoint, init)
     await this.cache.set(cacheKey, result, 0)
+    this.logger.debug(`Stored to cache ${cacheKey}`)
 
     return result
   }
@@ -428,7 +436,7 @@ export default class V2HttpApiClient {
     }
   }
 
-  async fetchTagInfo(image: string, tag: string): Promise<RegistryImageTag> {
+  async fetchTagInfo(image: string, tag: string): Promise<RegistryImageTagInfo> {
     try {
       const tagManifest = await this.fetchTagManifest(image, tag)
       if (!tagManifest) {

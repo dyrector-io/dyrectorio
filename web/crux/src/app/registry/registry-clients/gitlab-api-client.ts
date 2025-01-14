@@ -1,8 +1,8 @@
 import { Cache } from 'cache-manager'
 import { getRegistryApiException } from 'src/exception/registry-exception'
 import { GitlabNamespace } from '../registry.dto'
-import { RegistryImageTag, RegistryImageTags } from '../registry.message'
-import { RegistryApiClient, fetchInfoForTags } from './registry-api-client'
+import { RegistryImageWithTags } from '../registry.message'
+import { RegistryApiClient, RegistryImageTagInfo, fetchInfoForTags } from './registry-api-client'
 import V2HttpApiClient from './v2-http-api-client'
 import RegistryV2ApiClient, { RegistryV2ApiClientOptions } from './v2-registry-api-client'
 
@@ -58,7 +58,7 @@ export class GitlabRegistryClient implements RegistryApiClient {
     return repositories.filter(it => it.includes(text))
   }
 
-  async tags(image: string): Promise<RegistryImageTags> {
+  async tags(image: string): Promise<RegistryImageWithTags> {
     const tokenRes = await fetch(
       `https://${this.urls.apiUrl}/jwt/auth?service=container_registry&scope=repository:${image}:pull`,
       {
@@ -109,7 +109,7 @@ export class GitlabRegistryClient implements RegistryApiClient {
     return this.createApiClient().fetchLabels(image, tag)
   }
 
-  async tagInfo(image: string, tag: string): Promise<RegistryImageTag> {
+  async tagInfo(image: string, tag: string): Promise<RegistryImageTagInfo> {
     return this.createApiClient().fetchTagInfo(image, tag)
   }
 }

@@ -146,9 +146,9 @@ const VersionViewList = (props: VersionViewListProps) => {
           qaLabel={QA_MODAL_LABEL_IMAGE_TAGS}
         >
           <EditImageTags
-            loadingTags={tagsModalTarget.registry.type === 'unchecked' ? false : imageTags == null}
-            selected={tagsModalTarget?.tag ?? ''}
-            tags={tagsModalTarget.registry.type === 'unchecked' ? null : selectTagsOfImage(state, tagsModalTarget)}
+            loadingTags={tagsModalTarget.registry.type === 'unchecked' ? false : !imageTags}
+            selected={tagsModalTarget.tag}
+            tags={tagsModalTarget.registry.type === 'unchecked' ? null : imageTags}
             onTagSelected={it => actions.selectTagForImage(tagsModalTarget, it)}
           />
         </DyoModal>

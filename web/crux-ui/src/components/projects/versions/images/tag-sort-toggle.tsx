@@ -1,47 +1,41 @@
 import clsx from 'clsx'
 import Image from 'next/image'
 
-export const SORT_MODES = ['alphabetic', 'date'] as const
-export type SortModesEnum = (typeof SORT_MODES)[number]
+export const SORT_MODES = ['alphabetical', 'date'] as const
+export type TagSortMode = (typeof SORT_MODES)[number]
 
-export type SortState = {
-  mode: SortModesEnum
-  dir: -1 | 1
+export type TagSortDirection = 'asc' | 'desc'
+
+export type TagSortState = {
+  mode: TagSortMode
+  direction: TagSortDirection
 }
 
 type TagSortToggleProps = {
   className?: string
-  state: SortState
-  onStateChange: (state: SortState) => void
+  state: TagSortState
+  onStateChange: (state: TagSortState) => void
 }
 
-const SORT_ICONS: Record<SortModesEnum, { '1': string; '-1': string }> = {
-  alphabetic: {
-    '1': '/sort-alphabetical-asc.svg',
-    '-1': '/sort-alphabetical-desc.svg',
-  },
-  date: {
-    '1': '/sort-date-asc.svg',
-    '-1': '/sort-date-desc.svg',
-  },
-}
+const iconOf = (mode: TagSortMode, direction: TagSortDirection) => `/sort-${mode}-${direction}.svg`
 
 const TagSortToggle = (props: TagSortToggleProps) => {
   const { className, state, onStateChange } = props
-  const { mode, dir } = state
+  const { mode, direction } = state
 
-  const onToggleMode = (newMode: SortModesEnum) => {
-    if (mode === newMode) {
-      onStateChange({
-        mode,
-        dir: dir === 1 ? -1 : 1,
-      })
-    } else {
+  const onSortIconClick = (newMode: TagSortMode) => {
+    if (mode !== newMode) {
       onStateChange({
         mode: newMode,
-        dir,
+        direction,
       })
+      return
     }
+
+    onStateChange({
+      mode,
+      direction: direction === 'asc' ? 'desc' : 'asc',
+    })
   }
 
   return (
@@ -55,9 +49,9 @@ const TagSortToggle = (props: TagSortToggleProps) => {
         <div
           key={it}
           className={clsx('px-2 py-1.5 my-1 mr-0.5', mode === it && 'bg-dyo-turquoise rounded')}
-          onClick={() => onToggleMode(it)}
+          onClick={() => onSortIconClick(it)}
         >
-          <Image src={SORT_ICONS[it][dir]} alt={mode} width={22} height={22} />
+          <Image src={iconOf(it, direction)} alt={mode} width={22} height={22} />
         </div>
       ))}
     </div>

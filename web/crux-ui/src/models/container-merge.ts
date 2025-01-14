@@ -5,7 +5,6 @@ import {
   Marker,
   Port,
   UniqueKey,
-  UniqueKeyValue,
   UniqueSecretKey,
   UniqueSecretKeyValue,
   Volume,
@@ -82,20 +81,6 @@ export const mergeSecrets = (strong: UniqueSecretKeyValue[], weak: UniqueSecretK
   return [...missing, ...strong]
 }
 
-// TODO(@robot9706): Validate
-const mergeUniqueKeyValues = <T extends UniqueKeyValue>(strong: T[], weak: T[]): T[] => {
-  if (!strong) {
-    return weak ?? null
-  }
-
-  if (!weak) {
-    return strong
-  }
-
-  const missing = weak.filter(w => !strong.find(it => it.key === w.key))
-  return [...strong, ...missing]
-}
-
 export const mergeConfigs = (strong: ContainerConfigData, weak: ContainerConfigData): ContainerConfigData => ({
   // common
   name: strong.name ?? weak.name,
@@ -138,14 +123,17 @@ export const mergeConfigs = (strong: ContainerConfigData, weak: ContainerConfigD
 })
 
 // TODO(@robot9706): Validate
+// export const squashConfigs = (configs: ContainerConfigData[]): ContainerConfigData =>
+//   configs.reduce((result, conf) => {
+//     const merged = mergeConfigs(conf, result)
+//     return {
+//       ...merged,
+//       environment: mergeUniqueKeyValues(conf.environment, result.environment),
+//     }
+//   }, {} as ContainerConfigData)
+
 export const squashConfigs = (configs: ContainerConfigData[]): ContainerConfigData =>
-  configs.reduce((result, conf) => {
-    const merged = mergeConfigs(conf, result)
-    return {
-      ...merged,
-      environment: mergeUniqueKeyValues(conf.environment, result.environment),
-    }
-  }, {} as ContainerConfigData)
+  configs.reduce((result, conf) => mergeConfigs(conf, result), {} as ContainerConfigData)
 
 // this assumes that the concrete config takes care of any conflict between the other configs
 export const mergeConfigsWithConcreteConfig = (

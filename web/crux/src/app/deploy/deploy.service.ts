@@ -815,7 +815,7 @@ export default class DeployService {
     return runningDeployment.watchStatus().pipe(map(it => this.mapper.progressEventToEventDto(it)))
   }
 
-  async getDeployments(teamSlug: string, query?: DeploymentQueryDto): Promise<DeploymentListDto> {
+  async getDeployments(teamSlug: string, query: DeploymentQueryDto): Promise<DeploymentListDto> {
     let where: Prisma.DeploymentWhereInput = {
       version: {
         project: {
@@ -824,7 +824,7 @@ export default class DeployService {
           },
         },
       },
-      nodeId: query.nodeId,
+      nodeId: query.nodeId ?? undefined,
       status: query.status ? this.mapper.statusDtoToDb(query.status) : undefined,
     }
 
@@ -888,29 +888,7 @@ export default class DeployService {
         },
         skip: query.skip,
         take: query.take,
-        include: {
-          version: {
-            select: {
-              id: true,
-              name: true,
-              type: true,
-              project: {
-                select: {
-                  id: true,
-                  name: true,
-                  type: true,
-                },
-              },
-            },
-          },
-          node: {
-            select: {
-              id: true,
-              name: true,
-              type: true,
-            },
-          },
-        },
+        include: DeployService.listInclude,
       }),
       this.prisma.deployment.count({ where }),
     ])
@@ -919,6 +897,46 @@ export default class DeployService {
       items: deployments.map(it => this.mapper.toDto(it)),
       total,
     }
+  }
+
+  async getDeploymentsByNodeId(nodeId: string): Promise<DeploymentDto[]> {
+    const deployments = await this.prisma.deployment.findMany({
+      where: {
+        node: {
+          id: nodeId,
+        },
+      },
+      orderBy: {
+        createdAt: 'desc',
+      },
+      include: DeployService.listInclude,
+    })
+
+    return deployments.map(it => this.mapper.toDto(it))
+  }
+
+  async getDeploymentsByConfigBundleId(configBundleId: string): Promise<DeploymentDto[]> {
+    const bundle = await this.prisma.configBundle.findUnique({
+      where: {
+        id: configBundleId,
+      },
+      select: {
+        deployments: {
+          include: {
+            deployment: {
+              include: DeployService.listInclude,
+            },
+          },
+          orderBy: {
+            deployment: {
+              createdAt: 'desc',
+            },
+          },
+        },
+      },
+    })
+
+    return bundle.deployments.map(it => this.mapper.toDto(it.deployment))
   }
 
   async getDeploymentSecrets(deploymentId: string): Promise<DeploymentSecretsDto> {
@@ -1008,16 +1026,8 @@ export default class DeployService {
         note: request.note,
         status: DeploymentStatusEnum.preparing,
         createdBy: identity.id,
-        version: {
-          connect: {
-            id: copiedDeployment.versionId,
-          },
-        },
-        node: {
-          connect: {
-            id: copiedDeployment.nodeId,
-          },
-        },
+        version: { connect: { id: copiedDeployment.versionId } },
+        node: { connect: { id: request.nodeId } },
         config: !copiedDeployment.config
           ? undefined
           : {
@@ -1270,5 +1280,29 @@ export default class DeployService {
         ? applyStringTemplate(config.storageConfig.path, template)
         : null
     }
+  }
+
+  private static listInclude = {
+    version: {
+      select: {
+        id: true,
+        name: true,
+        type: true,
+        project: {
+          select: {
+            id: true,
+            name: true,
+            type: true,
+          },
+        },
+      },
+    },
+    node: {
+      select: {
+        id: true,
+        name: true,
+        type: true,
+      },
+    },
   }
 }

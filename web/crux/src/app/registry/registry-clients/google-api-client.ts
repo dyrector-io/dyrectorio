@@ -3,8 +3,8 @@ import { JWT } from 'google-auth-library'
 import { GetAccessTokenResponse } from 'google-auth-library/build/src/auth/oauth2client'
 import { CruxUnauthorizedException } from 'src/exception/crux-exception'
 import { getRegistryApiException } from 'src/exception/registry-exception'
-import { RegistryImageTag, RegistryImageTags } from '../registry.message'
-import { RegistryApiClient, fetchInfoForTags } from './registry-api-client'
+import { RegistryImageWithTags } from '../registry.message'
+import { RegistryApiClient, RegistryImageTagInfo, fetchInfoForTags } from './registry-api-client'
 import V2HttpApiClient from './v2-http-api-client'
 
 export type GoogleClientOptions = {
@@ -76,7 +76,7 @@ export class GoogleRegistryClient implements RegistryApiClient {
     return json.child.filter(it => it.includes(text))
   }
 
-  async tags(image: string): Promise<RegistryImageTags> {
+  async tags(image: string): Promise<RegistryImageWithTags> {
     if (this.client) {
       await this.registryCredentialsToBearerAuth()
     }
@@ -92,11 +92,11 @@ export class GoogleRegistryClient implements RegistryApiClient {
     }
 
     const json = (await tagRes.json()) as { tags: string[] }
-    const tagInfo = await fetchInfoForTags(image, json.tags, this)
+    const tags = await fetchInfoForTags(image, json.tags, this)
 
     return {
       name: image,
-      tags: tagInfo,
+      tags,
     }
   }
 
@@ -124,7 +124,7 @@ export class GoogleRegistryClient implements RegistryApiClient {
     return client.fetchLabels(image, tag)
   }
 
-  async tagInfo(image: string, tag: string): Promise<RegistryImageTag> {
+  async tagInfo(image: string, tag: string): Promise<RegistryImageTagInfo> {
     const client = await this.createApiClient()
 
     return client.fetchTagInfo(image, tag)

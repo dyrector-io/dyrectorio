@@ -1,5 +1,5 @@
 import { Cache } from 'cache-manager'
-import { RegistryImageTag, RegistryImageTags } from '../registry.message'
+import { RegistryImageTag, RegistryImageWithTags } from '../registry.message'
 import HubApiCache from './caches/hub-api-cache'
 import HubApiClient from './hub-api-client'
 import { RegistryApiClient } from './registry-api-client'
@@ -29,7 +29,7 @@ export default class CachedPublicHubApiClient extends HubApiClient implements Re
     return repositories.filter(it => it.includes(text))
   }
 
-  async tags(image: string): Promise<RegistryImageTags> {
+  async tags(image: string): Promise<RegistryImageWithTags> {
     let tags: string[] = this.hubCache.get(image)
     if (!tags) {
       tags = await this.fetchTags(image)
@@ -38,15 +38,9 @@ export default class CachedPublicHubApiClient extends HubApiClient implements Re
     }
 
     // NOTE(@robot9706): Docker ratelimits us so skip tag info for now
-    const tagsWithInfo = tags.reduce(
-      (map, it) => {
-        map[it] = {
-          created: null,
-        }
-        return map
-      },
-      {} as Record<string, RegistryImageTag>,
-    )
+    const tagsWithInfo: RegistryImageTag[] = tags.map(it => ({
+      name: it,
+    }))
 
     return {
       name: image,

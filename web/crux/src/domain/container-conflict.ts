@@ -293,7 +293,7 @@ const numbersConflict = (one: number, other: number): boolean => {
 }
 
 const objectsConflict = (one: object, other: object): boolean => {
-  if (typeof one !== 'object' || typeof other !== 'object') {
+  if (typeof one !== 'object' || typeof one === null || typeof other !== 'object' || typeof other === null) {
     // some of them are null or uninterpretable
     return false
   }

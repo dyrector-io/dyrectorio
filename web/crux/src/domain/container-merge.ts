@@ -98,7 +98,6 @@ export const mergeSecrets = (strong: UniqueSecretKeyValue[], weak: UniqueSecretK
   weak = weak ?? []
   strong = strong ?? []
 
-  // TODO(@robot9706): Validate this
   const overriddenKeys: Set<string> = new Set(strong?.map(it => it.key))
 
   const missing: UniqueSecretKeyValue[] = weak
@@ -114,18 +113,18 @@ export const mergeSecrets = (strong: UniqueSecretKeyValue[], weak: UniqueSecretK
 }
 
 // TODO(@robot9706): Validate
-const mergeUniqueKeyValues = <T extends UniqueKeyValue>(strong: T[], weak: T[]): T[] => {
-  if (!strong) {
-    return weak ?? null
-  }
+// const mergeUniqueKeyValues = <T extends UniqueKeyValue>(strong: T[], weak: T[]): T[] => {
+//   if (!strong) {
+//     return weak ?? null
+//   }
 
-  if (!weak) {
-    return strong
-  }
+//   if (!weak) {
+//     return strong
+//   }
 
-  const missing = weak.filter(w => !strong.find(it => it.key === w.key))
-  return [...strong, ...missing]
-}
+//   const missing = weak.filter(w => !strong.find(it => it.key === w.key))
+//   return [...strong, ...missing]
+// }
 
 export const mergeConfigs = (strong: ContainerConfigData, weak: ContainerConfigData): ContainerConfigData => ({
   // common
@@ -169,14 +168,16 @@ export const mergeConfigs = (strong: ContainerConfigData, weak: ContainerConfigD
 })
 
 // TODO(@robot9706): Validate
-export const squashConfigs = (configs: ContainerConfigData[]): ContainerConfigData =>
-  configs.reduce((result, conf) => {
-    const merged = mergeConfigs(conf, result)
-    return {
-      ...merged,
-      environment: mergeUniqueKeyValues(conf.environment, result.environment),
-    }
-  }, {} as ContainerConfigData)
+// export const squashConfigs = (configs: ContainerConfigData[]): ContainerConfigData =>
+//   configs.reduce((result, conf) => {
+//     const merged = mergeConfigs(conf, result)
+//     return {
+//       ...merged,
+//       environment: mergeUniqueKeyValues(conf.environment, result.environment),
+//     }
+//   }, {} as ContainerConfigData)
+const squashConfigs = (configs: ContainerConfigData[]): ContainerConfigData =>
+  configs.reduce((result, conf) => mergeConfigs(conf, result), {} as ContainerConfigData)
 
 // this assumes that the concrete config takes care of any conflict between the other configs
 export const mergeConfigsWithConcreteConfig = (
