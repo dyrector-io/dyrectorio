@@ -302,7 +302,7 @@ const containerConfigSchema = yup.object().shape({
   storageId: yup.string().optional().nullable(),
   storageConfig: storageRule.optional().nullable(),
 
-  // dagent:
+  // dagent
   logConfig: logConfigRule.optional().nullable(),
   restartPolicy: restartPolicyRule.optional().nullable(),
   networkMode: networkModeRule.optional().nullable(),
@@ -342,7 +342,7 @@ export const concreteContainerConfigSchema = yup.object().shape({
   storageId: yup.string().optional().nullable(),
   storageConfig: storageRule.optional().nullable(),
 
-  // dagent:
+  // dagent
   logConfig: logConfigRule.optional().nullable(),
   restartPolicy: restartPolicyRule.optional().nullable(),
   networkMode: networkModeRule.optional().nullable(),
@@ -363,7 +363,12 @@ export const concreteContainerConfigSchema = yup.object().shape({
   metrics: metricsRule.optional().nullable(),
 })
 
-const validateEnvironmentRule = (rule: EnvironmentRule, index: number, env: UniqueKeyValue) => {
+type KeyValueLike = {
+  key: string
+  value: string
+}
+
+const validateLabelRule = (rule: EnvironmentRule, field: string, env: KeyValueLike) => {
   const { key, value } = env
 
   try {
@@ -378,10 +383,10 @@ const validateEnvironmentRule = (rule: EnvironmentRule, index: number, env: Uniq
         yup.string().validateSync(value)
         break
       default:
-        return new yup.ValidationError('errors:yup.mixed.default', rule.type, `environment[${index}]`)
+        return new yup.ValidationError('errors:yup.mixed.default', rule.type, field)
     }
   } catch (fieldError) {
-    const err = new yup.ValidationError(fieldError.message, key, `environment[${index}]`)
+    const err = new yup.ValidationError(fieldError.message, key, field)
     err.params = {
       ...fieldError.params,
       path: key,
@@ -392,39 +397,43 @@ const validateEnvironmentRule = (rule: EnvironmentRule, index: number, env: Uniq
   return null
 }
 
-const testEnvironment = (validation: ImageValidation, arr: UniqueKeyValue[]) => {
-  if (!validation) {
+const testRules = (rules: [string, EnvironmentRule][], arr: UniqueKeyValue[], fieldName: string) => {
+  if (rules.length < 1) {
     return null
   }
 
-  const requiredKeys = Object.entries(validation.environmentRules)
-    .filter(([, rule]) => rule.required)
-    .map(([key]) => key)
+  const requiredKeys = rules.map(([key]) => key)
   const foundKeys = arr.map(it => it.key)
+
+  if (requiredKeys.length > 0 && (!arr || arr.length === 0)) {
+    return new yup.ValidationError('errors:yup.mixed.required', fieldName, fieldName)
+  }
 
   const missingKey = requiredKeys.find(it => !foundKeys.includes(it))
   if (missingKey) {
-    const err = new yup.ValidationError('errors:yup.mixed.required', missingKey, 'environment')
+    const err = new yup.ValidationError('errors:yup.mixed.required', missingKey, fieldName)
     err.params = {
       path: missingKey,
     }
     return err
   }
 
-  const fieldErrors = arr
+  const ruleMap = new Map(rules)
+
+  const envErrors = arr
     .map((it, index) => {
       const { key } = it
-      const rule = validation.environmentRules[key]
+      const rule = ruleMap.get(key)
       if (!rule) {
         return null
       }
 
-      return validateEnvironmentRule(rule, index, it)
+      return validateLabelRule(rule, `${fieldName}[${index}]`, it)
     })
     .filter(it => !!it)
 
-  if (fieldErrors.length > 0) {
-    const err = new yup.ValidationError(fieldErrors, missingKey, 'environment')
+  if (envErrors.length > 0) {
+    const err = new yup.ValidationError(envErrors, null, fieldName)
     return err
   }
 
@@ -453,7 +462,7 @@ export const createStartDeploymentSchema = (instanceValidation: Record<string, I
         'Container names must be unique',
         instances => new Set(instances.map(it => it.config.name)).size === instances.length,
       )
-      .test('instanceEnvironments', 'Instance environments must match their image label rules.', instances => {
+      .test('instanceLabelRules', 'Instance must match their image label rules.', instances => {
         const errors = instances
           .map(it => {
             const validation = instanceValidation[it.id]
@@ -461,7 +470,17 @@ export const createStartDeploymentSchema = (instanceValidation: Record<string, I
               return null
             }
 
-            return testEnvironment(validation, it.config.environment as UniqueKeyValue[])
+            const requiredRules = Object.entries(validation.environmentRules).filter(([, rule]) => rule.required)
+
+            const envRules = requiredRules.filter(([, rule]) => !rule.secret)
+            const secretRules = requiredRules.filter(([, rule]) => rule.secret)
+
+            const envError = testRules(envRules, it.config.environment as UniqueKeyValue[], 'environment')
+            if (envError) {
+              return envError
+            }
+
+            return testRules(secretRules, it.config.secrets as UniqueKeyValue[], 'secret')
           })
           .filter(it => !!it)
 

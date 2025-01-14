@@ -42,3 +42,5 @@ export const STORAGE_TEAM_SLUG = 'teamSlug'
 export const COOKIE_TEAM_SLUG = 'crux_team_slug'
 
 export const TOAST_DURATION = 5000 // sec in millis
+
+export const DYO_ENV_LABEL_PREFIX = 'org.dyrectorio.env'

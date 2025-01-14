@@ -9,10 +9,11 @@ type DyoRadioButtonProps = {
   checked?: boolean
   onSelect?: VoidFunction
   qaLabel: string
+  labelTemplate?: (label?: string) => React.ReactNode
 }
 
 const DyoRadioButton = (props: DyoRadioButtonProps) => {
-  const { className, disabled, label, checked, onSelect, qaLabel } = props
+  const { className, disabled, label, checked, onSelect, qaLabel, labelTemplate } = props
 
   const handleCheckedChange = () => {
     if (disabled) {
@@ -30,7 +31,7 @@ const DyoRadioButton = (props: DyoRadioButtonProps) => {
         <input type="radio" checked={checked} onChange={() => handleCheckedChange()} className="hidden" />
       </div>
 
-      <DyoLabel className="my-auto mx-2">{label}</DyoLabel>
+      {labelTemplate ? labelTemplate(label) : <DyoLabel className="my-auto mx-2">{label}</DyoLabel>}
     </div>
   )
 }

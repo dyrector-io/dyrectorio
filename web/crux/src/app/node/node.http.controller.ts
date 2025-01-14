@@ -270,7 +270,7 @@ export default class NodeHttpController {
     description: 'List of deployments.',
   })
   @ApiForbiddenResponse({ description: 'Unauthorized request for deployments.' })
-  async getDeployments(@TeamSlug() teamSlug: string, @NodeId() nodeId: string): Promise<DeploymentDto[]> {
+  async getDeployments(@TeamSlug() _: string, @NodeId() nodeId: string): Promise<DeploymentDto[]> {
     const deployments = await this.deployService.getDeploymentsByNodeId(nodeId)
 
     return deployments

@@ -194,15 +194,20 @@ export type FindImageResultMessage = {
 export const WS_TYPE_REGISTRY_FETCH_IMAGE_TAGS = 'fetch-image-tags'
 export type FetchImageTagsMessage = RegistryImages
 
-export type RegistryImageTags = {
+export type RegistryImageTag = {
   name: string
-  tags: string[]
+  created: string
+}
+
+export type RegistryImageWithTags = {
+  name: string
+  tags: RegistryImageTag[]
 }
 
 export const WS_TYPE_REGISTRY_IMAGE_TAGS = 'registry-image-tags'
 export type RegistryImageTagsMessage = {
   registryId: string
-  images: RegistryImageTags[]
+  images: RegistryImageWithTags[]
 }
 
 // mappers

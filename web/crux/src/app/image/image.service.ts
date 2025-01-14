@@ -1,7 +1,8 @@
 import { Injectable } from '@nestjs/common'
 import { EventEmitter2 } from '@nestjs/event-emitter'
 import { Identity } from '@ory/kratos-client'
-import { UniqueKeyValue } from 'src/domain/container'
+import { Prisma } from '@prisma/client'
+import { UniqueKeyValue, UniqueSecretKey } from 'src/domain/container'
 import { IMAGE_EVENT_ADD, IMAGE_EVENT_DELETE, ImageDeletedEvent, ImagesAddedEvent } from 'src/domain/domain-events'
 import { EnvironmentRule, parseDyrectorioEnvRules } from 'src/domain/image'
 import PrismaService from 'src/services/prisma.service'
@@ -145,12 +146,23 @@ export default class ImageService {
           const envRules = parseDyrectorioEnvRules(labels)
 
           const defaultEnvs = Object.entries(envRules)
-            .filter(([, rule]) => rule.required || !!rule.default)
+            .filter(([, rule]) => (rule.required || !!rule.default) && !rule.secret)
             .map(([key, rule]) => ({
               id: uuid(),
               key,
               value: rule.default ?? '',
             }))
+
+          const defaultSecrets = Object.entries(envRules)
+            .filter(([, rule]) => rule.secret)
+            .map(
+              ([key, rule]) =>
+                ({
+                  id: uuid(),
+                  key,
+                  required: rule.required,
+                }) as UniqueSecretKey,
+            )
 
           return prisma.image.update({
             where: {
@@ -161,6 +173,7 @@ export default class ImageService {
               config: {
                 update: {
                   environment: defaultEnvs,
+                  secrets: defaultSecrets,
                 },
               },
             },
@@ -200,6 +213,7 @@ export default class ImageService {
     }
 
     let labels: Record<string, string>
+    let configUpdate: Prisma.ContainerConfigUpdateOneRequiredWithoutImageNestedInput = null
     if (request.tag) {
       const image = await this.prisma.image.findUniqueOrThrow({
         where: {
@@ -217,11 +231,20 @@ export default class ImageService {
 
       labels = await api.client.labels(image.name, request.tag)
       const rules = parseDyrectorioEnvRules(labels)
+      if (Object.entries(rules).length > 0) {
+        const configEnvironment = ImageService.mergeEnvironmentsRules(
+          image.config.environment as UniqueKeyValue[],
+          rules,
+        )
+        const configSecrets = ImageService.mergeSecretsRules(image.config.secrets as UniqueSecretKey[], rules)
 
-      image.config.environment = ImageService.mergeEnvironmentsRules(
-        image.config.environment as UniqueKeyValue[],
-        rules,
-      )
+        configUpdate = {
+          update: {
+            environment: configEnvironment,
+            secrets: configSecrets,
+          },
+        }
+      }
     }
 
     await this.prisma.image.update({
@@ -236,6 +259,7 @@ export default class ImageService {
         labels: labels ?? undefined,
         tag: request.tag ?? undefined,
         updatedBy: identity.id,
+        config: configUpdate ?? undefined,
       },
     })
   }
@@ -296,18 +320,48 @@ export default class ImageService {
         return map
       }, {}) ?? {}
 
-    const mergedEnv = Object.entries(rules).reduce((map, it) => {
-      const [key, rule] = it
+    const mergedEnv = Object.entries(rules)
+      .filter(([, rule]) => !rule.secret)
+      .reduce((map, it) => {
+        const [key, rule] = it
 
-      map[key] = {
-        id: currentEnv[key]?.id ?? uuid(),
-        key,
-        value: currentEnv[key]?.value ?? rule.default ?? '',
-      }
+        map[key] = {
+          id: currentEnv[key]?.id ?? uuid(),
+          key,
+          value: currentEnv[key]?.value ?? rule.default ?? '',
+        }
 
-      return map
-    }, currentEnv)
+        return map
+      }, currentEnv)
 
     return Object.values(mergedEnv)
+  }
+
+  private static mergeSecretsRules(
+    secrets: UniqueSecretKey[],
+    rules: Record<string, EnvironmentRule>,
+  ): UniqueSecretKey[] | null {
+    const currentSecrets =
+      secrets?.reduce((map, it) => {
+        map[it.key] = it
+        return map
+      }, {}) ?? {}
+
+    const mergedSecrets = Object.entries(rules)
+      .filter(([, rule]) => rule.secret)
+      .reduce((map, it) => {
+        const [key, rule] = it
+
+        map[key] = {
+          id: currentSecrets[key]?.id ?? uuid(),
+          required: currentSecrets[key]?.required ?? rule.required ?? false,
+          key,
+          value: currentSecrets[key]?.value ?? rule.default ?? '',
+        }
+
+        return map
+      }, currentSecrets)
+
+    return Object.values(mergedSecrets)
   }
 }
