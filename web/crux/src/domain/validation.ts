@@ -20,7 +20,9 @@ import {
   ContainerVolumeType,
   Metrics,
   PORT_MAX,
+  UniqueKeyValue,
 } from './container'
+import { EnvironmentRule } from './image'
 
 export const nameRuleOptional = yup.string().trim().min(3).max(70)
 export const nameRule = yup.string().required().trim().min(3).max(70)
@@ -462,8 +464,8 @@ export const createStartDeploymentSchema = (instanceValidation: Record<string, I
         'containerNameAreUnique',
         'Container names must be unique',
         instances => new Set(instances.map(it => it.config.name)).size === instances.length,
-      ),
-    // TODO(@robot9706): Fix labels & config bundles conflicting
+      )
+      // TODO(@robot9706): Fix labels & config bundles conflicting
       .test('instanceLabelRules', 'Instance must match their image label rules.', instances => {
         const errors = instances
           .map(it => {
