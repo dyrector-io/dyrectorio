@@ -19,7 +19,7 @@ const VersionImagesSection = (props: VersionImagesSectionProps) => {
 
   return version.images.length ? (
     viewMode === 'tile' ? (
-      <VersionViewTile disabled={disabled} state={state} actions={actions} />
+      <VersionViewTile disabled={disabled} state={state} />
     ) : (
       <VersionViewList state={state} actions={actions} />
     )

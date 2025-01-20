@@ -1,6 +1,6 @@
-import yup from './yup'
 import { nameRule } from './common'
-import { createMergedContainerConfigSchema, uniqueKeyValuesSchema } from './container'
+import { createConcreteContainerConfigSchema, uniqueKeyValuesSchema } from './container'
+import yup from './yup'
 
 export const prefixRule = yup
   .string()
@@ -9,18 +9,26 @@ export const prefixRule = yup
   .required()
   .label('common:prefix')
 
+const noteRule = yup.string().optional().nullable().label('common:note')
+const nodeIdRule = yup.string().nullable().required().label('common:node')
+
 export const updateDeploymentSchema = yup.object().shape({
-  note: yup.string().label('common:note'),
+  note: noteRule,
   prefix: prefixRule,
+  protected: yup.bool().required(),
 })
 
 export const createDeploymentSchema = updateDeploymentSchema.concat(
   yup.object().shape({
-    nodeId: yup.mixed().nullable().required().label('common:node'),
+    nodeId: nodeIdRule,
   }),
 )
 
-export const copyDeploymentSchema = createDeploymentSchema
+export const copyDeploymentSchema = yup.object().shape({
+  note: noteRule,
+  prefix: prefixRule,
+  nodeId: nodeIdRule,
+})
 
 export const createDeploymentTokenSchema = yup.object().shape({
   name: nameRule,
@@ -40,7 +48,7 @@ export const startDeploymentSchema = yup.object({
   instances: yup
     .array(
       yup.object().shape({
-        config: createMergedContainerConfigSchema(null),
+        config: createConcreteContainerConfigSchema(null),
       }),
     )
     .ensure()

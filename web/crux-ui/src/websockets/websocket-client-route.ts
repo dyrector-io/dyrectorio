@@ -1,5 +1,5 @@
 import { Logger } from '@app/logger'
-import { SubscriptionMessage, SubscriptionMessageType, WebSocketSendMessage, WsMessage } from './common'
+import { SubscriptionMessage, SubscriptionMessageType, WebSocketClientSendMessage, WsMessage } from './common'
 import WebSocketClientEndpoint from './websocket-client-endpoint'
 
 type WebSocketClientRouteState = 'subscribed' | 'unsubscribed' | 'in-progress'
@@ -7,7 +7,7 @@ type WebSocketClientRouteState = 'subscribed' | 'unsubscribed' | 'in-progress'
 class WebSocketClientRoute {
   private logger: Logger
 
-  private readonly sendClientMessage: WebSocketSendMessage
+  private readonly sendClientMessage: WebSocketClientSendMessage
 
   private state: WebSocketClientRouteState = 'unsubscribed'
 
@@ -19,7 +19,7 @@ class WebSocketClientRoute {
 
   constructor(
     logger: Logger,
-    private readonly sendMessage: WebSocketSendMessage,
+    private readonly sendMessage: WebSocketClientSendMessage,
     private endpointPath: string,
   ) {
     this.logger = logger.derive(endpointPath)

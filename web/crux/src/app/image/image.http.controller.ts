@@ -30,7 +30,7 @@ import { IdentityFromRequest } from '../token/jwt-auth.guard'
 import ImageAddToVersionTeamAccessGuard from './guards/image.add-to-version.team-access.guard'
 import ImageOrderImagesTeamAccessGuard from './guards/image.order-images.team-access.guard'
 import ImageTeamAccessGuard from './guards/image.team-access.guard'
-import { AddImagesDto, ImageDto, PatchImageDto } from './image.dto'
+import { AddImagesDto, ImageDetailsDto, PatchImageDto } from './image.dto'
 import ImageService from './image.service'
 import ImageAddToVersionValidationInterceptor from './interceptors/image.add-images.interceptor'
 import DeleteImageValidationInterceptor from './interceptors/image.delete.interceptor'
@@ -62,7 +62,7 @@ export default class ImageHttpController {
     summary: 'Fetch data of all images of a version.',
   })
   @ApiOkResponse({
-    type: ImageDto,
+    type: ImageDetailsDto,
     isArray: true,
     description: 'Data of images listed.',
   })
@@ -72,7 +72,7 @@ export default class ImageHttpController {
     @TeamSlug() _: string,
     @ProjectId() _projectId: string,
     @VersionId() versionId: string,
-  ): Promise<ImageDto[]> {
+  ): Promise<ImageDetailsDto[]> {
     return await this.service.getImagesByVersionId(versionId)
   }
 
@@ -83,7 +83,7 @@ export default class ImageHttpController {
       "Fetch details of an image within a version. `projectId` refers to the project's ID, `versionId` refers to the version's ID, `imageId` refers to the image's ID. All, and `teamSlug` are required in the URL.</br></br>Image details consists `name`, `id`, `tag`, `order`, and the config of the image.",
     summary: 'Fetch data of an image of a version.',
   })
-  @ApiOkResponse({ type: ImageDto, description: 'Data of an image.' })
+  @ApiOkResponse({ type: ImageDetailsDto, description: 'Data of an image.' })
   @ApiBadRequestResponse({ description: 'Bad request for image details.' })
   @ApiForbiddenResponse({ description: 'Unauthorized request for image details.' })
   @ApiNotFoundResponse({ description: 'Image not found.' })
@@ -93,7 +93,7 @@ export default class ImageHttpController {
     @ProjectId() _projectId: string,
     @VersionId() _versionId: string,
     @ImageId() imageId: string,
-  ): Promise<ImageDto> {
+  ): Promise<ImageDetailsDto> {
     return await this.service.getImageDetails(imageId)
   }
 
@@ -106,7 +106,7 @@ export default class ImageHttpController {
     summary: 'Add images to a version.',
   })
   @ApiBody({ type: AddImagesDto, isArray: true })
-  @ApiCreatedResponse({ type: ImageDto, isArray: true, description: 'New image added.' })
+  @ApiCreatedResponse({ type: ImageDetailsDto, isArray: true, description: 'New image added.' })
   @ApiBadRequestResponse({ description: 'Bad request for images.' })
   @ApiForbiddenResponse({ description: 'Unauthorized request for images.' })
   @UseGuards(ImageAddToVersionTeamAccessGuard)
@@ -118,7 +118,7 @@ export default class ImageHttpController {
     @VersionId() versionId: string,
     @Body(new ValidateNonEmptyArrayPipe()) request: AddImagesDto[],
     @IdentityFromRequest() identity: Identity,
-  ): Promise<CreatedResponse<ImageDto[]>> {
+  ): Promise<CreatedResponse<ImageDetailsDto[]>> {
     const images = await this.service.addImagesToVersion(teamSlug, versionId, request, identity)
 
     return {

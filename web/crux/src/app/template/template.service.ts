@@ -13,7 +13,7 @@ import {
 import PrismaService from 'src/services/prisma.service'
 import TemplateFileService, { TemplateContainerConfig, TemplateImage } from 'src/services/template.file.service'
 import { VERSIONLESS_PROJECT_VERSION_NAME } from 'src/shared/const'
-import { v4 } from 'uuid'
+import { v4 as uuid } from 'uuid'
 import ImageMapper from '../image/image.mapper'
 import { CreateProjectDto, ProjectDto } from '../project/project.dto'
 import ProjectService from '../project/project.service'
@@ -95,18 +95,15 @@ export default class TemplateService {
   }
 
   private idify<T extends object>(object: T): T {
-    return { ...object, id: v4() }
+    return { ...object, id: uuid() }
   }
 
-  private mapTemplateConfig(config: TemplateContainerConfig): ContainerConfigData {
-    // TODO (polaroi8d): wait this until we'll rework the templates
+  private mapTemplateConfig(config: TemplateContainerConfig): Omit<ContainerConfigData, 'storageId'> {
+    // TODO (polaroi8d): wait with this for the templates rework
     // TODO (@m8vago): validate containerConfigData
 
     return {
       ...config,
-      tty: config.tty ?? false,
-      useLoadBalancer: config.useLoadBalancer ?? false,
-      proxyHeaders: config.proxyHeaders ?? false,
       deploymentStrategy: config.deploymentStatregy
         ? this.imageMapper.deploymentStrategyToDb(
             deploymentStrategyFromJSON(config.deploymentStatregy.toLocaleUpperCase()),
@@ -121,7 +118,7 @@ export default class TemplateService {
       expose: config.expose
         ? this.imageMapper.exposeStrategyToDb(exposeStrategyFromJSON(config.expose.toLocaleUpperCase()))
         : 'none',
-      networks: config.networks ? config.networks.map(it => ({ id: v4(), key: it })) : [],
+      networks: config.networks ? config.networks.map(it => ({ id: uuid(), key: it })) : [],
       ports: config.ports ? toPrismaJson(config.ports.map(it => this.idify(it))) : [],
       environment: config.environment ? config.environment.map(it => this.idify(it)) : [],
       args: config.args ? config.args.map(it => this.idify(it)) : [],
@@ -196,7 +193,7 @@ export default class TemplateService {
 
     const images = templateImages.map((it, index) => {
       const registryId = registryLookup.find(reg => reg.name === it.registryName).id
-      const config: ContainerConfigData = this.mapTemplateConfig(it.config)
+      const config = this.mapTemplateConfig(it.config)
 
       return this.prisma.image.create({
         include: {
@@ -204,16 +201,25 @@ export default class TemplateService {
           registry: true,
         },
         data: {
-          registryId,
-          versionId: version.id,
           createdBy: identity.id,
           name: it.image,
           order: index,
           tag: it.tag,
+          version: { connect: { id: version.id } },
+          registry: { connect: { id: registryId } },
           config: {
             create: {
               ...config,
-              id: undefined,
+              type: 'image',
+              updatedAt: undefined,
+              updatedBy: identity.id,
+              storage: !it.config.storageId
+                ? undefined
+                : {
+                    connect: {
+                      id: it.config.storageId,
+                    },
+                  },
             },
           },
         },

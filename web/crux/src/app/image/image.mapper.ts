@@ -1,121 +1,62 @@
-import { Injectable } from '@nestjs/common'
+import { forwardRef, Inject, Injectable } from '@nestjs/common'
+import { DeploymentStrategy, ExposeStrategy, Image, NetworkMode, RestartPolicy } from '@prisma/client'
+import { ContainerConfigData } from 'src/domain/container'
+import { ImageDetails, ImageWithRegistry } from 'src/domain/image'
 import {
-  ContainerConfig,
-  DeploymentStrategy,
-  ExposeStrategy,
-  Image,
-  InstanceContainerConfig,
-  NetworkMode,
-  Registry,
-  RestartPolicy,
-} from '@prisma/client'
-import {
-  ContainerConfigData,
-  ContainerLogDriverType,
-  ContainerState,
-  ContainerVolumeType,
-  Volume,
-} from 'src/domain/container'
-import { toPrismaJson } from 'src/domain/utils'
-import { Volume as ProtoVolume } from 'src/grpc/protobuf/proto/agent'
-import {
-  DriverType,
-  ContainerState as ProtoContainerState,
+  networkModeToJSON,
   DeploymentStrategy as ProtoDeploymentStrategy,
   ExposeStrategy as ProtoExposeStrategy,
   NetworkMode as ProtoNetworkMode,
   RestartPolicy as ProtoRestartPolicy,
-  VolumeType as ProtoVolumeType,
-  driverTypeFromJSON,
-  networkModeFromJSON,
-  networkModeToJSON,
-  volumeTypeFromJSON,
 } from 'src/grpc/protobuf/proto/common'
 import ContainerMapper from '../container/container.mapper'
 import RegistryMapper from '../registry/registry.mapper'
-import { ImageDto } from './image.dto'
+import { ImageDetailsDto, ImageDto } from './image.dto'
 
 @Injectable()
 export default class ImageMapper {
   constructor(
     private registryMapper: RegistryMapper,
+    @Inject(forwardRef(() => ContainerMapper))
     private readonly containerMapper: ContainerMapper,
   ) {}
 
-  toDto(it: ImageDetails): ImageDto {
+  toDto(it: ImageWithRegistry): ImageDto {
     return {
       id: it.id,
       name: it.name,
       tag: it.tag,
       order: it.order,
       registry: this.registryMapper.toDto(it.registry),
-      config: this.containerMapper.configDataToDto(it.config as any as ContainerConfigData),
       createdAt: it.createdAt,
       labels: it.labels as Record<string, string>,
     }
   }
 
-  dbContainerConfigToCreateImageStatement(
-    config: ContainerConfig | InstanceContainerConfig,
-  ): Omit<ContainerConfig, 'id' | 'imageId'> {
+  toDetailsDto(it: ImageDetails): ImageDetailsDto {
     return {
-      // common
-      name: config.name,
-      expose: config.expose,
-      routing: toPrismaJson(config.routing),
-      configContainer: toPrismaJson(config.configContainer),
-      // Set user to the given value, if not null or use 0 if specifically 0, otherwise set to default -1
-      user: config.user ?? (config.user === 0 ? 0 : -1),
-      workingDirectory: config.workingDirectory,
-      tty: config.tty ?? false,
-      ports: toPrismaJson(config.ports),
-      portRanges: toPrismaJson(config.portRanges),
-      volumes: toPrismaJson(config.volumes),
-      commands: toPrismaJson(config.commands),
-      args: toPrismaJson(config.args),
-      environment: toPrismaJson(config.environment),
-      secrets: toPrismaJson(config.secrets),
-      initContainers: toPrismaJson(config.initContainers),
-      logConfig: toPrismaJson(config.logConfig),
-      storageSet: config.storageSet,
-      storageId: config.storageId,
-      storageConfig: toPrismaJson(config.storageConfig),
-
-      // dagent
-      restartPolicy: config.restartPolicy,
-      networkMode: config.networkMode,
-      networks: toPrismaJson(config.networks),
-      dockerLabels: toPrismaJson(config.dockerLabels),
-      expectedState: toPrismaJson(config.expectedState),
-
-      // crane
-      deploymentStrategy: config.deploymentStrategy,
-      healthCheckConfig: toPrismaJson(config.healthCheckConfig),
-      resourceConfig: toPrismaJson(config.resourceConfig),
-      proxyHeaders: config.proxyHeaders ?? false,
-      useLoadBalancer: config.useLoadBalancer ?? false,
-      customHeaders: toPrismaJson(config.customHeaders),
-      extraLBAnnotations: toPrismaJson(config.extraLBAnnotations),
-      capabilities: toPrismaJson(config.capabilities),
-      annotations: toPrismaJson(config.annotations),
-      labels: toPrismaJson(config.labels),
-      metrics: toPrismaJson(config.metrics),
+      id: it.id,
+      name: it.name,
+      tag: it.tag,
+      order: it.order,
+      registry: this.registryMapper.toDto(it.registry),
+      config: this.containerMapper.configDataToDto(it.config.id, 'image', it.config as any as ContainerConfigData),
+      createdAt: it.createdAt,
+      labels: it.labels as Record<string, string>,
     }
   }
 
-  deploymentStrategyToProto(type: DeploymentStrategy): ProtoDeploymentStrategy {
-    if (!type) {
-      return null
+  dbImageToCreateImageStatement(image: Image): Omit<Image, 'id' | 'registryId' | 'versionId' | 'configId'> {
+    const result = {
+      ...image,
     }
 
-    switch (type) {
-      case DeploymentStrategy.recreate:
-        return ProtoDeploymentStrategy.RECREATE
-      case DeploymentStrategy.rolling:
-        return ProtoDeploymentStrategy.ROLLING_UPDATE
-      default:
-        return ProtoDeploymentStrategy.DEPLOYMENT_STRATEGY_UNSPECIFIED
-    }
+    delete result.id
+    delete result.registryId
+    delete result.versionId
+    delete result.configId
+
+    return result
   }
 
   deploymentStrategyToDb(type: ProtoDeploymentStrategy): DeploymentStrategy {
@@ -133,21 +74,6 @@ export default class ImageMapper {
     }
   }
 
-  exposeStrategyToProto(type: ExposeStrategy): ProtoExposeStrategy {
-    if (!type) {
-      return null
-    }
-
-    switch (type) {
-      case ExposeStrategy.expose:
-        return ProtoExposeStrategy.EXPOSE
-      case ExposeStrategy.exposeWithTls:
-        return ProtoExposeStrategy.EXPOSE_WITH_TLS
-      default:
-        return ProtoExposeStrategy.NONE_ES
-    }
-  }
-
   exposeStrategyToDb(type: ProtoExposeStrategy): ExposeStrategy {
     if (!type) {
       return undefined
@@ -160,25 +86,6 @@ export default class ImageMapper {
         return ExposeStrategy.exposeWithTls
       default:
         return ExposeStrategy.none
-    }
-  }
-
-  restartPolicyToProto(type: RestartPolicy): ProtoRestartPolicy {
-    if (!type) {
-      return null
-    }
-
-    switch (type) {
-      case RestartPolicy.always:
-        return ProtoRestartPolicy.ALWAYS
-      case RestartPolicy.no:
-        return ProtoRestartPolicy.NO
-      case RestartPolicy.unlessStopped:
-        return ProtoRestartPolicy.UNLESS_STOPPED
-      case RestartPolicy.onFailure:
-        return ProtoRestartPolicy.ON_FAILURE
-      default:
-        return ProtoRestartPolicy.NO
     }
   }
 
@@ -201,14 +108,6 @@ export default class ImageMapper {
     }
   }
 
-  networkModeToProto(it: NetworkMode): ProtoNetworkMode {
-    if (!it) {
-      return null
-    }
-
-    return networkModeFromJSON(it?.toUpperCase())
-  }
-
   networkModeToDb(it: ProtoNetworkMode): NetworkMode {
     if (!it) {
       return undefined
@@ -220,55 +119,4 @@ export default class ImageMapper {
 
     return networkModeToJSON(it).toLowerCase() as NetworkMode
   }
-
-  logDriverToProto(it: ContainerLogDriverType): DriverType {
-    switch (it) {
-      case undefined:
-      case null:
-      case 'none':
-        return DriverType.DRIVER_TYPE_NONE
-      case 'json-file':
-        return DriverType.JSON_FILE
-      default:
-        return driverTypeFromJSON(it.toUpperCase())
-    }
-  }
-
-  volumesToProto(volumes: Volume[]): ProtoVolume[] {
-    if (!volumes) {
-      return null
-    }
-
-    return volumes.map(it => ({ ...it, type: this.volumeTypeToProto(it.type) }))
-  }
-
-  volumeTypeToProto(it?: ContainerVolumeType): ProtoVolumeType {
-    if (!it) {
-      return ProtoVolumeType.RO
-    }
-
-    return volumeTypeFromJSON(it.toUpperCase())
-  }
-
-  stateToProto(state: ContainerState): ProtoContainerState {
-    if (!state) {
-      return null
-    }
-
-    switch (state) {
-      case 'running':
-        return ProtoContainerState.RUNNING
-      case 'waiting':
-        return ProtoContainerState.WAITING
-      case 'exited':
-        return ProtoContainerState.EXITED
-      default:
-        return ProtoContainerState.CONTAINER_STATE_UNSPECIFIED
-    }
-  }
-}
-
-export type ImageDetails = Image & {
-  config: ContainerConfig
-  registry: Registry
 }

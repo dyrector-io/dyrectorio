@@ -1,11 +1,24 @@
 import { Deployment, DeploymentStatusEnum, ProjectTypeEnum, Version, VersionTypeEnum } from '@prisma/client'
 import { CruxPreconditionFailedException } from 'src/exception/crux-exception'
-import { checkDeploymentMutability } from './deployment'
+import { DeploymentWithNode, deploymentIsMutable } from './deployment'
+import { ImageDetails } from './image'
 
 export type VersionWithName = Pick<Version, 'id' | 'name'>
 
 export type VersionWithDeployments = Version & {
   deployments: Deployment[]
+}
+
+export type VersionWithChildren = Version & {
+  children: { versionId: string }[]
+}
+
+export type VersionDetails = VersionWithChildren & {
+  project: {
+    type: ProjectTypeEnum
+  }
+  images: ImageDetails[]
+  deployments: DeploymentWithNode[]
 }
 
 export type VersionIncreasabilityCheckDao = {
@@ -25,7 +38,7 @@ export type VersionDeletabilityCheckDao = VersionMutabilityCheckDao & {
 }
 
 export const versionHasImmutableDeployments = (version: VersionMutabilityCheckDao): boolean =>
-  version.deployments.filter(it => !checkDeploymentMutability(it.status, version.type)).length > 0
+  version.deployments.filter(it => !deploymentIsMutable(it.status, version.type)).length > 0
 
 // - 'rolling' versions are not increasable
 // - an 'incremental' version is increasable, when it does not have any child yet
@@ -71,6 +84,4 @@ export const checkVersionMutability = (version: VersionMutabilityCheckDao) => {
       value: version.id,
     })
   }
-
-  return false
 }

@@ -1,4 +1,4 @@
-import { UID_MAX } from '@app/const'
+import { UID_MAX, UID_MIN } from '@app/const'
 import {
   CONTAINER_DEPLOYMENT_STRATEGY_VALUES,
   CONTAINER_EXPOSE_STRATEGY_VALUES,
@@ -8,15 +8,16 @@ import {
   CONTAINER_STATE_VALUES,
   CONTAINER_VOLUME_TYPE_VALUES,
   ContainerConfigExposeStrategy,
-  ContainerConfigPortRange,
   ContainerDeploymentStrategyType,
   ContainerLogDriverType,
   ContainerNetworkMode,
   ContainerPort,
+  ContainerPortRange,
   ContainerRestartPolicyType,
   EnvironmentRule,
   Metrics,
   UniqueKeyValue,
+  UniqueSecretKeyValue,
   VolumeType,
 } from '@app/models'
 import * as yup from 'yup'
@@ -102,29 +103,33 @@ const portNumberRule = portNumberBaseRule.nullable().required()
 const exposeRule = yup
   .mixed<ContainerConfigExposeStrategy>()
   .oneOf([...CONTAINER_EXPOSE_STRATEGY_VALUES])
-  .default('none')
-  .required()
+  .default(null)
+  .nullable()
+  .optional()
   .label('container:common.expose')
 
 const restartPolicyRule = yup
   .mixed<ContainerRestartPolicyType>()
   .oneOf([...CONTAINER_RESTART_POLICY_TYPE_VALUES])
-  .default('no')
-  .required()
+  .default(null)
+  .nullable()
+  .optional()
   .label('container:dagent.restartPolicy')
 
 const networkModeRule = yup
   .mixed<ContainerNetworkMode>()
   .oneOf([...CONTAINER_NETWORK_MODE_VALUES])
-  .default('bridge')
-  .required()
+  .default(null)
+  .nullable()
+  .optional()
   .label('container:dagent.networkMode')
 
 const deploymentStrategyRule = yup
   .mixed<ContainerDeploymentStrategyType>()
   .oneOf([...CONTAINER_DEPLOYMENT_STRATEGY_VALUES])
-  .default('recreate')
-  .required()
+  .default(null)
+  .nullable()
+  .optional()
   .label('container:crane.deploymentStrategy')
 
 const logDriverRule = yup
@@ -149,7 +154,7 @@ const configContainerRule = yup
     path: yup.string().required().label('container:common.path'),
     keepFiles: yup.boolean().default(false).required().label('container:common.keepFiles'),
   })
-  .default({})
+  .default(null)
   .nullable()
   .optional()
   .label('container:common.configContainer')
@@ -162,7 +167,7 @@ const healthCheckConfigRule = yup
     readinessProbe: yup.string().nullable().optional().label('container:crane.readinessProbe'),
     startupProbe: yup.string().nullable().optional().label('container:crane.startupProbe'),
   })
-  .default({})
+  .default(null)
   .optional()
   .nullable()
   .label('container:crane.healthCheckConfig')
@@ -188,7 +193,7 @@ const resourceConfigRule = yup
       .optional(),
     livenessProbe: yup.string().nullable().label('container:crane.livenessProbe'),
   })
-  .default({})
+  .default(null)
   .nullable()
   .optional()
   .label('container:crane.resourceConfig')
@@ -209,15 +214,15 @@ const storageRule = yup
     bucket: storageFieldRule.label('container:common.bucketPath'),
     path: storageFieldRule.label('container:common.volume'),
   })
-  .default({})
+  .default(null)
   .nullable()
   .optional()
   .label('container:common.storage')
 
 const createOverlapTest = (
   schema: yup.NumberSchema<number, any, number>,
-  portRanges: ContainerConfigPortRange[],
-  field: Exclude<keyof ContainerConfigPortRange, 'id'>,
+  portRanges: ContainerPortRange[],
+  field: Exclude<keyof ContainerPortRange, 'id'>,
 ) =>
   // eslint-disable-next-line no-template-curly-in-string
   schema.test('port-range-overlap', 'container:validation.pathOverlapsSomePortranges', value =>
@@ -255,7 +260,7 @@ const portConfigRule = yup.mixed().when('portRanges', ([portRanges]) => {
         external: createOverlapTest(portNumberOptionalRule, portRanges, 'external').label('container:common.external'),
       }),
     )
-    .default([])
+    .default(null)
     .nullable()
     .optional()
     .label('container:common.ports')
@@ -282,7 +287,7 @@ const portRangeConfigRule = yup
         .required(),
     }),
   )
-  .default([])
+  .default(null)
   .nullable()
   .optional()
   .label('container:common.portRanges')
@@ -301,7 +306,7 @@ const volumeConfigRule = yup
       type: volumeTypeRule,
     }),
   )
-  .default([])
+  .default(null)
   .nullable()
   .optional()
   .label('container:common.volumes')
@@ -325,7 +330,7 @@ const initContainerRule = yup
       volumes: initContainerVolumeLinkRule.default([]).nullable().label('container:common.volumes'),
     }),
   )
-  .default([])
+  .default(null)
   .nullable()
   .optional()
   .label('container:common.initContainer')
@@ -336,7 +341,7 @@ const logConfigRule = yup
     driver: logDriverRule,
     options: uniqueKeyValuesSchema.default([]).nullable().label('container:dagent.options'),
   })
-  .default({})
+  .default(null)
   .nullable()
   .optional()
   .label('container:dagent.logConfig')
@@ -348,7 +353,7 @@ const markerRule = yup
     service: uniqueKeyValuesSchema.default([]).nullable().label('container:crane.service'),
     ingress: uniqueKeyValuesSchema.default([]).nullable().label('container:crane.ingress'),
   })
-  .default({})
+  .default(null)
   .nullable()
   .optional()
 
@@ -373,6 +378,9 @@ const routingRule = yup
       .optional()
       .default(null),
   )
+  .default(null)
+  .nullable()
+  .optional()
   .label('container:common.routing')
 
 const createMetricsPortRule = (ports: ContainerPort[]) => {
@@ -404,9 +412,9 @@ const metricsRule = yup.mixed().when(['ports'], ([ports]) => {
           port: portRule,
         }),
     })
+    .default(null)
     .nullable()
     .optional()
-    .default(null)
     .label('container:crane.metrics')
 })
 
@@ -417,12 +425,17 @@ const expectedContainerStateRule = yup
     timeout: yup.number().default(null).nullable().min(0).label('container:dagent.expectedStateTimeout'),
     exitCode: yup.number().default(0).nullable().min(-127).max(128).label('container:dagent.expectedExitCode'),
   })
-  .default({})
+  .default(null)
   .nullable()
   .optional()
   .label('container:dagent.expectedState')
 
-const validateEnvironmentRule = (rule: EnvironmentRule, index: number, env: UniqueKeyValue) => {
+type KeyValueLike = {
+  key: string
+  value: string
+}
+
+const validateLabelRule = (rule: EnvironmentRule, field: string, env: KeyValueLike) => {
   const { key, value } = env
 
   try {
@@ -437,10 +450,10 @@ const validateEnvironmentRule = (rule: EnvironmentRule, index: number, env: Uniq
         yup.string().validateSync(value)
         break
       default:
-        return new yup.ValidationError('errors:yup.mixed.default', rule.type, `environment[${index}]`)
+        return new yup.ValidationError('errors:yup.mixed.default', rule.type, field)
     }
   } catch (fieldError) {
-    const err = new yup.ValidationError(fieldError.message, key, `environment[${index}]`)
+    const err = new yup.ValidationError(fieldError.message, key, field)
     err.params = {
       ...fieldError.params,
       path: key,
@@ -451,84 +464,119 @@ const validateEnvironmentRule = (rule: EnvironmentRule, index: number, env: Uniq
   return null
 }
 
-const testEnvironment = (imageLabels: Record<string, string>) => (arr: UniqueKeyValue[]) => {
-  if (!imageLabels) {
+const testRules = (
+  rules: [string, EnvironmentRule][],
+  arr: (UniqueKeyValue | UniqueSecretKeyValue)[],
+  fieldName: string,
+) => {
+  if (rules.length < 1) {
     return true
   }
 
-  const rules = parseDyrectorioEnvRules(imageLabels)
-
-  const requiredKeys = Object.entries(rules)
-    .filter(([, rule]) => rule.required)
-    .map(([key]) => key)
+  const requiredKeys = rules.map(([key]) => key)
   const foundKeys = arr.map(it => it.key)
 
   const missingKey = requiredKeys.find(it => !foundKeys.includes(it))
   if (missingKey) {
-    const err = new yup.ValidationError('errors:yup.mixed.required', missingKey, 'environment')
+    const err = new yup.ValidationError('errors:yup.mixed.required', missingKey, fieldName)
     err.params = {
       path: missingKey,
     }
     return err
   }
 
-  const fieldErrors = arr
+  const ruleMap = new Map(rules)
+
+  const envErrors = arr
     .map((it, index) => {
       const { key } = it
-      const rule = rules[key]
+      const rule = ruleMap[key]
       if (!rule) {
         return null
       }
 
-      return validateEnvironmentRule(rule, index, it)
+      return validateLabelRule(rule, `${fieldName}[${index}]`, it)
     })
     .filter(it => !!it)
 
-  if (fieldErrors.length > 0) {
-    const err = new yup.ValidationError(fieldErrors, missingKey, 'environment')
+  if (envErrors.length > 0) {
+    const err = new yup.ValidationError(envErrors, null, fieldName)
     return err
   }
 
   return true
 }
 
+const testEnvironmentRules = (imageLabels: Record<string, string>) => (envs: UniqueKeyValue[]) => {
+  const rules = parseDyrectorioEnvRules(imageLabels)
+  if (!rules) {
+    return true
+  }
+
+  const requiredRules = Object.entries(rules).filter(([, rule]) => rule.required)
+  const envRules = requiredRules.filter(([_, rule]) => !rule.secret)
+
+  return testRules(envRules, envs, 'environment')
+}
+
+const testSecretRules = (imageLabels: Record<string, string>) => (secrets: UniqueSecretKeyValue[]) => {
+  const rules = parseDyrectorioEnvRules(imageLabels)
+  if (!rules) {
+    return true
+  }
+
+  const requiredRules = Object.entries(rules).filter(([, rule]) => rule.required)
+  const secretRules = requiredRules.filter(([_, rule]) => rule.secret)
+
+  return testRules(secretRules, secrets, 'secret')
+}
+
 const createContainerConfigBaseSchema = (imageLabels: Record<string, string>) =>
   yup.object().shape({
-    name: matchContainerName(yup.string().required().label('container:common.containerName')),
+    name: matchContainerName(yup.string().nullable().optional().label('container:common.containerName')),
     environment: uniqueKeyValuesSchema
-      .default([])
+      .default(null)
       .nullable()
+      .optional()
       .label('container:common.environment')
-      .test('ruleValidation', 'errors:yup.mixed.required', testEnvironment(imageLabels)),
+      .test(
+        'labelRules',
+        'Environment variables must match their image label rules.',
+        testEnvironmentRules(imageLabels),
+      ),
     routing: routingRule,
     expose: exposeRule,
-    user: yup.number().default(null).min(-1).max(UID_MAX).nullable().label('container:common.user'),
+    user: yup.number().default(null).min(UID_MIN).max(UID_MAX).nullable().optional().label('container:common.user'),
     workingDirectory: yup.string().default(null).nullable().optional().label('container:common.workingDirectory'),
-    tty: yup.boolean().default(false).required().label('container:common.tty'),
+    tty: yup.boolean().default(null).nullable().optional().label('container:common.tty'),
     configContainer: configContainerRule,
     ports: portConfigRule,
     portRanges: portRangeConfigRule,
     volumes: volumeConfigRule,
-    commands: shellCommandSchema.default([]).nullable(),
-    args: shellCommandSchema.default([]).nullable(),
+    commands: shellCommandSchema.default(null).nullable().optional(),
+    args: shellCommandSchema.default(null).nullable().optional(),
     initContainers: initContainerRule,
-    capabilities: uniqueKeyValuesSchema.default([]).nullable().label('container:common.capabilities'),
+    capabilities: uniqueKeyValuesSchema.default(null).nullable().optional().label('container:common.capabilities'),
     storage: storageRule,
 
-    // dagent:
+    // dagent
     logConfig: logConfigRule,
     restartPolicy: restartPolicyRule,
     networkMode: networkModeRule,
-    networks: uniqueKeysOnlySchema.default([]).nullable().label('container:dagent.networks'),
-    dockerLabels: uniqueKeyValuesSchema.default([]).nullable().label('container:dagent.dockerLabels'),
+    networks: uniqueKeysOnlySchema.default(null).nullable().optional().label('container:dagent.networks'),
+    dockerLabels: uniqueKeyValuesSchema.default(null).nullable().optional().label('container:dagent.dockerLabels'),
     expectedState: expectedContainerStateRule,
 
     // crane
     deploymentStrategy: deploymentStrategyRule,
-    customHeaders: uniqueKeysOnlySchema.default([]).nullable().label('container:crane.customHeaders'),
-    proxyHeaders: yup.boolean().default(false).required().label('container:crane.proxyHeaders'),
-    useLoadBalancer: yup.boolean().default(false).required().label('container:crane.useLoadBalancer'),
-    extraLBAnnotations: uniqueKeyValuesSchema.default([]).nullable().label('container:crane.extraLBAnnotations'),
+    customHeaders: uniqueKeysOnlySchema.default(null).nullable().optional().label('container:crane.customHeaders'),
+    proxyHeaders: yup.boolean().default(null).nullable().optional().label('container:crane.proxyHeaders'),
+    useLoadBalancer: yup.boolean().default(null).nullable().optional().label('container:crane.useLoadBalancer'),
+    extraLBAnnotations: uniqueKeyValuesSchema
+      .default(null)
+      .nullable()
+      .optional()
+      .label('container:crane.extraLBAnnotations'),
     healthCheckConfig: healthCheckConfigRule,
     resourceConfig: resourceConfigRule,
     labels: markerRule.label('container:crane.labels'),
@@ -538,10 +586,15 @@ const createContainerConfigBaseSchema = (imageLabels: Record<string, string>) =>
 
 export const createContainerConfigSchema = (imageLabels: Record<string, string>) =>
   createContainerConfigBaseSchema(imageLabels).shape({
-    secrets: uniqueKeySchema.default([]).nullable().label('container:common.secrets'),
+    secrets: uniqueKeySchema.default(null).nullable().optional().label('container:common.secrets'),
   })
 
-export const createMergedContainerConfigSchema = (imageLabels: Record<string, string>) =>
+export const createConcreteContainerConfigSchema = (imageLabels: Record<string, string>) =>
   createContainerConfigBaseSchema(imageLabels).shape({
-    secrets: uniqueKeyValuesSchema.default([]).nullable().label('container:common.secrets'),
+    secrets: uniqueKeyValuesSchema
+      .default(null)
+      .nullable()
+      .optional()
+      .label('container:common.secrets')
+      .test('secretRules', 'Secrets must match their image label rules.', testSecretRules(imageLabels)),
   })

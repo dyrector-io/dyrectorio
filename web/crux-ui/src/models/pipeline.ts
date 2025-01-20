@@ -11,6 +11,7 @@ export type PipelineRunStatus = 'unknown' | 'queued' | 'running' | 'successful' 
 export type AzureRepository = {
   organization: string
   project: string
+  branch?: string
 }
 
 export type PipelineRepository = AzureRepository

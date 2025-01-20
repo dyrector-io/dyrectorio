@@ -4,9 +4,9 @@ import { DeploymentStatusEnum } from '@prisma/client'
 import { VersionWithDeployments } from 'src/domain/version'
 import { ImageWithConfig, copyDeployment } from 'src/domain/version-increase'
 import PrismaService from 'src/services/prisma.service'
+import ContainerMapper from '../container/container.mapper'
 import { DeploymentDto } from '../deploy/deploy.dto'
 import DeployMapper from '../deploy/deploy.mapper'
-import ImageMapper from '../image/image.mapper'
 import TeamRepository from '../team/team.repository'
 import {
   CreatePackageDeploymentDto,
@@ -26,7 +26,7 @@ class PackageService {
   constructor(
     private readonly mapper: PackageMapper,
     private readonly deployMapper: DeployMapper,
-    private readonly imageMapper: ImageMapper,
+    private readonly containerMapper: ContainerMapper,
     private readonly teamRepository: TeamRepository,
     private readonly prisma: PrismaService,
   ) {}
@@ -129,7 +129,6 @@ class PackageService {
           })),
         },
         updatedBy: identity.id,
-        updatedAt: new Date(),
       },
     })
   }
@@ -213,7 +212,6 @@ class PackageService {
         id: packageId,
       },
       data: {
-        updatedAt: new Date(),
         updatedBy: identity.id,
       },
     })
@@ -232,7 +230,6 @@ class PackageService {
         id: packageId,
       },
       data: {
-        updatedAt: new Date(),
         updatedBy: identity.id,
         environments: {
           update: {
@@ -256,7 +253,6 @@ class PackageService {
         id: packageId,
       },
       data: {
-        updatedAt: new Date(),
         updatedBy: identity.id,
         environments: {
           delete: {
@@ -367,6 +363,7 @@ class PackageService {
             ],
           },
           include: {
+            config: true,
             instances: {
               include: {
                 config: true,
@@ -380,32 +377,42 @@ class PackageService {
     if (sourceVersion.deployments.length < 1) {
       // create a new empty deployment
 
-      const deployment = await this.prisma.deployment.create({
-        data: {
-          nodeId: env.nodeId,
-          prefix: env.prefix,
-          versionId: target.id,
-          status: DeploymentStatusEnum.preparing,
-          createdBy: identity.id,
-          instances: {
-            createMany: {
-              data: sourceVersion.images.map(it => ({
-                imageId: it.id,
-              })),
+      const deploy = await this.prisma.$transaction(async prisma => {
+        const deployment = await prisma.deployment.create({
+          data: {
+            version: { connect: { id: target.id } },
+            node: { connect: { id: env.nodeId } },
+            config: { create: { type: 'deployment' } },
+            prefix: env.prefix,
+            status: DeploymentStatusEnum.preparing,
+            createdBy: identity.id,
+          },
+          include: {
+            node: true,
+            version: {
+              include: {
+                project: true,
+              },
             },
           },
-        },
-        include: {
-          node: true,
-          version: {
-            include: {
-              project: true,
-            },
-          },
-        },
+        })
+
+        await Promise.all(
+          sourceVersion.images.map(async image => {
+            await prisma.instance.create({
+              data: {
+                deployment: { connect: { id: deployment.id } },
+                image: { connect: { id: image.id } },
+                config: { create: { type: 'instance' } },
+              },
+            })
+          }),
+        )
+
+        return deployment
       })
 
-      return this.deployMapper.toDto(deployment)
+      return this.deployMapper.toDto(deploy)
     }
 
     // copy deployment from target
@@ -417,12 +424,27 @@ class PackageService {
       sourceVersion.deployments.at(0)
 
     const copiedDeployment = copyDeployment(sourceDeployment)
+    const data = this.deployMapper.dbDeploymentToCreateDeploymentStatement(copiedDeployment)
 
     const newDeployment = await this.prisma.deployment.create({
       data: {
-        ...copiedDeployment,
+        ...data,
         createdBy: identity.id,
-        versionId: target.id,
+        version: {
+          connect: {
+            id: target.id,
+          },
+        },
+        node: {
+          connect: {
+            id: copiedDeployment.nodeId,
+          },
+        },
+        config: !copiedDeployment.config
+          ? undefined
+          : {
+              create: this.containerMapper.dbConfigToCreateConfigStatement(copiedDeployment.config),
+            },
         instances: undefined,
       },
       include: {
@@ -479,8 +501,9 @@ class PackageService {
         if (!instance) {
           await this.prisma.instance.create({
             data: {
-              deploymentId: newDeployment.id,
-              imageId: image.id,
+              deployment: { connect: { id: newDeployment.id } },
+              image: { connect: { id: image.id } },
+              config: { create: { type: 'instance' } },
             },
           })
         }
@@ -503,10 +526,8 @@ class PackageService {
             config: !instance.config
               ? undefined
               : {
-                  create: this.imageMapper.dbContainerConfigToCreateImageStatement({
+                  create: this.containerMapper.dbConfigToCreateConfigStatement({
                     ...instance.config,
-                    id: undefined,
-                    instanceId: undefined,
                   }),
                 },
           },

@@ -1,22 +1,37 @@
-import { Injectable } from '@nestjs/common'
-import { ConfigBundle } from '@prisma/client'
-import { UniqueKeyValue } from 'src/domain/container'
+import { forwardRef, Inject, Injectable } from '@nestjs/common'
+import { ConfigBundle, ContainerConfig } from '@prisma/client'
+import { ContainerConfigData } from 'src/domain/container'
+import ContainerMapper from '../container/container.mapper'
 import { ConfigBundleDetailsDto, ConfigBundleDto } from './config.bundle.dto'
 
 @Injectable()
 export default class ConfigBundleMapper {
-  listItemToDto(configBundle: ConfigBundle): ConfigBundleDto {
+  constructor(
+    @Inject(forwardRef(() => ContainerMapper))
+    private readonly containerMapper: ContainerMapper,
+  ) {}
+
+  toDto(it: ConfigBundle): ConfigBundleDto {
     return {
-      id: configBundle.id,
-      name: configBundle.name,
-      description: configBundle.description,
+      id: it.id,
+      name: it.name,
+      description: it.description,
+      configId: it.configId,
     }
   }
 
-  detailsToDto(configBundle: ConfigBundle): ConfigBundleDetailsDto {
+  detailsToDto(configBundle: ConfigBundleDetails): ConfigBundleDetailsDto {
     return {
-      ...this.listItemToDto(configBundle),
-      environment: configBundle.data as UniqueKeyValue[],
+      ...this.toDto(configBundle),
+      config: this.containerMapper.configDataToDto(
+        configBundle.configId,
+        'configBundle',
+        configBundle.config as any as ContainerConfigData,
+      ),
     }
   }
+}
+
+type ConfigBundleDetails = ConfigBundle & {
+  config: ContainerConfig
 }

@@ -195,8 +195,10 @@ export class ContainerPort {
 }
 
 export class ContainerDto {
+  @ValidateNested()
   id: ContainerIdentifierDto
 
+  @IsString()
   command: string
 
   @Type(() => Date)
@@ -208,14 +210,19 @@ export class ContainerDto {
   state: ContainerState
 
   // kubernetes reason (like crashloop backoff) or docker state
+  @IsString()
   reason: string
 
+  @IsString()
   imageName: string
 
+  @IsString()
   imageTag: string
 
+  @ValidateNested({ each: true })
   ports: ContainerPort[]
 
+  @IsObject()
   labels: Record<string, string>
 }
 

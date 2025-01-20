@@ -19,7 +19,7 @@ const EditDeploymentInstances = (props: EditDeploymentInstancesProps) => {
       </div>
 
       {viewMode === 'tile' ? (
-        <DeploymentViewTile state={state} actions={actions} />
+        <DeploymentViewTile state={state} />
       ) : (
         <DeploymentViewList state={state} actions={actions} />
       )}

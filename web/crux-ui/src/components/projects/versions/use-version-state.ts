@@ -14,12 +14,11 @@ import {
   ImageMessage,
   ImagesAddedMessage,
   ImagesWereReorderedMessage,
-  ImageUpdateMessage,
+  ImageTagMessage,
   OrderImagesMessage,
-  PatchImageMessage,
   PatchVersionImage,
   RegistryImages,
-  RegistryImageTags,
+  RegistryImageTag,
   RegistryImageTagsMessage,
   VersionDetails,
   VersionImage,
@@ -28,15 +27,16 @@ import {
   WS_TYPE_ADD_IMAGES,
   WS_TYPE_GET_IMAGE,
   WS_TYPE_IMAGE,
+  WS_TYPE_IMAGE_DELETED,
+  WS_TYPE_IMAGE_TAG_UPDATED,
   WS_TYPE_IMAGES_ADDED,
   WS_TYPE_IMAGES_WERE_REORDERED,
-  WS_TYPE_IMAGE_DELETED,
-  WS_TYPE_IMAGE_UPDATED,
   WS_TYPE_ORDER_IMAGES,
-  WS_TYPE_PATCH_IMAGE,
+  WS_TYPE_PATCH_CONFIG,
   WS_TYPE_PATCH_RECEIVED,
   WS_TYPE_REGISTRY_FETCH_IMAGE_TAGS,
   WS_TYPE_REGISTRY_IMAGE_TAGS,
+  WS_TYPE_SET_IMAGE_TAG,
 } from '@app/models'
 import WebSocketClientEndpoint from '@app/websockets/websocket-client-endpoint'
 import useTranslation from 'next-translate/useTranslation'
@@ -44,7 +44,7 @@ import { useEffect, useState } from 'react'
 import useCopyDeploymentState from '../../deployments/use-copy-deployment-state'
 
 // state
-export type ImageTagsMap = { [key: string]: RegistryImageTags } // image key to RegistryImageTags
+export type ImageTagsMap = Record<string, Record<string, RegistryImageTag[]>> // registryId to imageName to RegistryImageTag list
 
 export type VersionAddSection = 'image' | 'deployment' | 'copy-deployment' | 'none'
 
@@ -86,8 +86,6 @@ export type VersionActions = {
   onDeploymentDeleted: (deploymentId: string) => void
 }
 
-export const imageTagKey = (registryId: string, imageName: string) => `${registryId}/${imageName}`
-
 const mergeImagePatch = (oldImage: VersionImage, newImage: PatchVersionImage): VersionImage => ({
   ...oldImage,
   ...newImage,
@@ -126,9 +124,14 @@ const refreshImageTags = (registriesSock: WebSocketClientEndpoint, images: Versi
   })
 }
 
-export const selectTagsOfImage = (state: VerionState, image: VersionImage): string[] => {
-  const regImgTags = state.tags[imageTagKey(image.registry.id, image.name)]
-  return regImgTags ? regImgTags.tags : image.tag ? [image.tag] : []
+export const selectTagsOfImage = (state: VerionState, image: VersionImage): RegistryImageTag[] | null => {
+  const images = state.tags[image.registry.id]
+  if (!images) {
+    return null
+  }
+
+  const tags = images[image.name]
+  return tags ?? null
 }
 
 export const useVersionState = (options: VersionStateOptions): [VerionState, VersionActions] => {
@@ -159,7 +162,7 @@ export const useVersionState = (options: VersionStateOptions): [VerionState, Ver
     onOpen: viewMode !== 'tile' ? null : () => setSaveState('connected'),
     onClose: viewMode !== 'tile' ? null : () => setSaveState('disconnected'),
     onSend: message => {
-      if (message.type === WS_TYPE_PATCH_IMAGE) {
+      if (message.type === WS_TYPE_SET_IMAGE_TAG || message.type === WS_TYPE_PATCH_CONFIG) {
         setSaveState('saving')
       }
     },
@@ -185,12 +188,18 @@ export const useVersionState = (options: VersionStateOptions): [VerionState, Ver
       return
     }
 
-    const newTags = { ...tags }
-    message.images.forEach(it => {
-      const key = imageTagKey(message.registryId, it.name)
-      newTags[key] = it
+    const newTagMap = { ...tags }
+    let images = newTagMap[message.registryId]
+    if (!images) {
+      images = {}
+      newTagMap[message.registryId] = images
+    }
+
+    message.images.forEach(img => {
+      images[img.name] = img.tags
     })
-    setTags(newTags)
+
+    setTags(newTagMap)
   })
 
   versionSock.on(WS_TYPE_IMAGES_WERE_REORDERED, (message: ImagesWereReorderedMessage) => {
@@ -217,17 +226,20 @@ export const useVersionState = (options: VersionStateOptions): [VerionState, Ver
     setVersion({ ...version, images: newImages })
   })
 
-  versionSock.on(WS_TYPE_IMAGE_UPDATED, (message: ImageUpdateMessage) => {
-    const index = version.images.findIndex(it => it.id === message.id)
+  versionSock.on(WS_TYPE_IMAGE_TAG_UPDATED, (message: ImageTagMessage) => {
+    const index = version.images.findIndex(it => it.id === message.imageId)
     if (index < 0) {
       versionSock.send(WS_TYPE_GET_IMAGE, {
-        id: message.id,
+        id: message.imageId,
       } as GetImageMessage)
       return
     }
 
     const oldImage = version.images[index]
-    const image = mergeImagePatch(oldImage, message)
+
+    const image = mergeImagePatch(oldImage, {
+      tag: message.tag,
+    })
 
     const newImages = [...version.images]
     newImages[index] = image
@@ -273,15 +285,13 @@ export const useVersionState = (options: VersionStateOptions): [VerionState, Ver
     setSection('images')
   }
 
-  const fetchImageTags = (image: VersionImage): RegistryImageTags => {
+  const fetchImageTags = (image: VersionImage) => {
     if (image.registry.type === 'unchecked') {
       return
     }
 
-    const key = imageTagKey(image.registry.id, image.name)
-    const imgTags = tags[key]
-
-    if (imgTags) {
+    const images = tags[image.registry.id]
+    if (images && images[image.name]) {
       return
     }
 
@@ -314,10 +324,10 @@ export const useVersionState = (options: VersionStateOptions): [VerionState, Ver
 
     setVersion({ ...version, images: newImages })
 
-    versionSock.send(WS_TYPE_PATCH_IMAGE, {
-      id: image.id,
+    versionSock.send(WS_TYPE_SET_IMAGE_TAG, {
+      imageId: image.id,
       tag,
-    } as PatchImageMessage)
+    } as ImageTagMessage)
   }
 
   const updateImageConfig = (image: VersionImage, config: Partial<ContainerConfigData>) => {

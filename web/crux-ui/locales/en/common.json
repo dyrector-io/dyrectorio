@@ -113,6 +113,7 @@
   "version": "Version",
   "pipeline": "Pipeline",
   "token": "Token",
+  "branch": "Branch",
 
   "changeToken": "Change token",
 
@@ -250,5 +251,6 @@
   },
 
   "imageConfig": "Image config",
-  "instanceConfig": "Container config"
+  "instanceConfig": "Instance config",
+  "deploymentConfig": "Deployment config"
 }

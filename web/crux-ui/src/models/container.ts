@@ -1,4 +1,5 @@
 import { v4 as uuid } from 'uuid'
+import { imageName } from './registry'
 
 export const CONTAINER_STATE_VALUES = ['running', 'waiting', 'exited', 'removed'] as const
 export type ContainerState = (typeof CONTAINER_STATE_VALUES)[number]
@@ -57,7 +58,7 @@ export type UniqueSecretKeyValue = UniqueSecretKey &
     encrypted: boolean
   }
 
-export type ContainerConfigPort = {
+export type Port = {
   id: string
   internal: number
   external?: number
@@ -68,7 +69,7 @@ export type PortRange = {
   to: number
 }
 
-export type ContainerConfigPortRange = {
+export type ContainerPortRange = {
   id: string
   internal: PortRange
   external: PortRange
@@ -99,7 +100,7 @@ export type ContainerConfigRouting = {
   port?: number
 }
 
-export type ContainerConfigVolume = {
+export type Volume = {
   id: string
   name: string
   path: string
@@ -125,7 +126,7 @@ export const CONTAINER_LOG_DRIVER_VALUES = [
 ] as const
 export type ContainerLogDriverType = (typeof CONTAINER_LOG_DRIVER_VALUES)[number]
 
-export type ContainerConfigLog = {
+export type Log = {
   driver: ContainerLogDriverType
   options: UniqueKeyValue[]
 }
@@ -142,7 +143,7 @@ export type ContainerConfigResource = {
   memory?: string
 }
 
-export type ContainerConfigResourceConfig = {
+export type ResourceConfig = {
   limits?: ContainerConfigResource
   requests?: ContainerConfigResource
 }
@@ -195,79 +196,126 @@ export type ExpectedContainerState = {
   exitCode?: number
 }
 
+export type ContainerConfigType = 'image' | 'instance' | 'deployment' | 'config-bundle'
+export type ContainerConfigSectionType = 'base' | 'concrete'
+
+export type ContainerConfig = (ContainerConfigData | ConcreteContainerConfigData) & {
+  id: string
+  type: ContainerConfigType
+}
+
+export type ContainerConfigDataWithId = ContainerConfig
+
 export type ContainerConfigData = {
   // common
-  name: string
+  name?: string
   environment?: UniqueKeyValue[]
   secrets?: UniqueSecretKey[]
   routing?: ContainerConfigRouting
-  expose: ContainerConfigExposeStrategy
+  expose?: ContainerConfigExposeStrategy
   user?: number
   workingDirectory?: string
-  tty: boolean
+  tty?: boolean
   configContainer?: ContainerConfigContainer
-  ports?: ContainerConfigPort[]
-  portRanges?: ContainerConfigPortRange[]
-  volumes?: ContainerConfigVolume[]
+  ports?: Port[]
+  portRanges?: ContainerPortRange[]
+  volumes?: Volume[]
   commands?: UniqueKey[]
   args?: UniqueKey[]
   initContainers?: InitContainer[]
-  capabilities: UniqueKeyValue[]
+  capabilities?: UniqueKeyValue[]
   storage?: ContainerStorage
 
   // dagent
-  logConfig?: ContainerConfigLog
-  restartPolicy: ContainerRestartPolicyType
-  networkMode: ContainerNetworkMode
+  logConfig?: Log
+  restartPolicy?: ContainerRestartPolicyType
+  networkMode?: ContainerNetworkMode
   networks?: UniqueKey[]
   dockerLabels?: UniqueKeyValue[]
   expectedState?: ExpectedContainerState
 
   // crane
-  deploymentStrategy: ContainerDeploymentStrategyType
+  deploymentStrategy?: ContainerDeploymentStrategyType
   customHeaders?: UniqueKey[]
-  proxyHeaders: boolean
-  useLoadBalancer: boolean
+  proxyHeaders?: boolean
+  useLoadBalancer?: boolean
   extraLBAnnotations?: UniqueKeyValue[]
   healthCheckConfig?: ContainerConfigHealthCheck
-  resourceConfig?: ContainerConfigResourceConfig
+  resourceConfig?: ResourceConfig
   annotations?: Marker
   labels?: Marker
   metrics?: Metrics
 }
 
-type DagentSpecificConfig =
-  | 'logConfig'
-  | 'restartPolicy'
-  | 'networkMode'
-  | 'networks'
-  | 'dockerLabels'
-  | 'expectedState'
-type CraneSpecificConfig =
-  | 'deploymentStrategy'
-  | 'customHeaders'
-  | 'proxyHeaders'
-  | 'useLoadBalancer'
-  | 'extraLBAnnotations'
-  | 'healthCheckConfig'
-  | 'resourceConfig'
-  | 'labels'
-  | 'annotations'
-  | 'metrics'
+export const COMMON_CONFIG_KEYS = [
+  'name',
+  'environment',
+  'secrets',
+  'routing',
+  'expose',
+  'user',
+  'tty',
+  'workingDirectory',
+  'configContainer',
+  'ports',
+  'portRanges',
+  'volumes',
+  'commands',
+  'args',
+  'initContainers',
+  'storage',
+] as const
 
-export type DagentConfigDetails = Pick<ContainerConfigData, DagentSpecificConfig>
-export type CraneConfigDetails = Pick<ContainerConfigData, CraneSpecificConfig>
-export type CommonConfigDetails = Omit<ContainerConfigData, DagentSpecificConfig | CraneSpecificConfig>
+export const CRANE_CONFIG_KEYS = [
+  'deploymentStrategy',
+  'customHeaders',
+  'proxyHeaders',
+  'useLoadBalancer',
+  'extraLBAnnotations',
+  'healthCheckConfig',
+  'resourceConfig',
+  'labels',
+  'annotations',
+  'metrics',
+] as const
 
-export type InstanceDagentConfigDetails = Pick<InstanceContainerConfigData, DagentSpecificConfig>
-export type InstanceCraneConfigDetails = Pick<InstanceContainerConfigData, CraneSpecificConfig>
-export type InstanceCommonConfigDetails = Omit<InstanceContainerConfigData, DagentSpecificConfig | CraneSpecificConfig>
+export const DAGENT_CONFIG_KEYS = [
+  'logConfig',
+  'restartPolicy',
+  'networkMode',
+  'networks',
+  'dockerLabels',
+  'expectedState',
+] as const
 
-export type MergedContainerConfigData = Omit<ContainerConfigData, 'secrets'> & {
-  secrets: UniqueSecretKeyValue[]
+export const CONTAINER_CONFIG_KEYS = [...COMMON_CONFIG_KEYS, ...CRANE_CONFIG_KEYS, ...DAGENT_CONFIG_KEYS] as const
+
+export type CommonConfigKey = (typeof COMMON_CONFIG_KEYS)[number]
+export type CraneConfigKey = (typeof CRANE_CONFIG_KEYS)[number]
+export type DagentConfigKey = (typeof DAGENT_CONFIG_KEYS)[number]
+export type ContainerConfigKey = (typeof CONTAINER_CONFIG_KEYS)[number]
+
+export type ConcreteContainerConfigData = Omit<ContainerConfigData, 'secrets'> & {
+  secrets?: UniqueSecretKeyValue[]
 }
 
-export type InstanceContainerConfigData = Partial<MergedContainerConfigData>
+export type ConcreteContainerConfig = ConcreteContainerConfigData & {
+  id: string
+  type: ContainerConfigType
+}
+
+export const CRANE_CONFIG_FILTER_VALUES = CRANE_CONFIG_KEYS.filter(it => it !== 'extraLBAnnotations')
+
+export type ContainerConfigFilterType = 'all' | 'common' | 'dagent' | 'crane'
+
+export const filterContains = (
+  filter: CommonConfigKey | CraneConfigKey | DagentConfigKey,
+  filters: ContainerConfigKey[],
+): boolean => filters.includes(filter)
+
+export const filterEmpty = (filterValues: string[], filters: ContainerConfigKey[]): boolean =>
+  filterValues.filter(x => filters.includes(x as ContainerConfigKey)).length > 0
+
 export type JsonInitContainer = {
   name: string
   image: string
@@ -290,9 +338,9 @@ export type JsonMarker = {
 }
 
 export type JsonInitContainerVolumeLink = Omit<InitContainerVolumeLink, 'id'>
-export type JsonContainerConfigPortRange = Omit<ContainerConfigPortRange, 'id'>
-export type JsonContainerConfigPort = Omit<ContainerConfigPort, 'id'>
-export type JsonContainerConfigVolume = Omit<ContainerConfigVolume, 'id'>
+export type JsonContainerConfigPortRange = Omit<ContainerPortRange, 'id'>
+export type JsonContainerConfigPort = Omit<Port, 'id'>
+export type JsonContainerConfigVolume = Omit<Volume, 'id'>
 export type JsonContainerConfigSecretKey = Omit<UniqueSecretKey, 'id'>
 
 export type JsonContainerConfig = {
@@ -303,6 +351,7 @@ export type JsonContainerConfig = {
   routing?: ContainerConfigRouting
   expose?: ContainerConfigExposeStrategy
   user?: number
+  workingDirectory?: string
   tty?: boolean
   configContainer?: ContainerConfigContainer
   ports?: JsonContainerConfigPort[]
@@ -320,7 +369,7 @@ export type JsonContainerConfig = {
   restartPolicy?: ContainerRestartPolicyType
   networkMode?: ContainerNetworkMode
   networks?: string[]
-  dockerLabels: JsonKeyValue
+  dockerLabels?: JsonKeyValue
 
   // crane
   deploymentStrategy?: ContainerDeploymentStrategyType
@@ -329,109 +378,47 @@ export type JsonContainerConfig = {
   useLoadBalancer?: boolean
   extraLBAnnotations?: JsonKeyValue
   healthCheckConfig?: ContainerConfigHealthCheck
-  resourceConfig?: ContainerConfigResourceConfig
-  annotations: JsonMarker
-  labels: JsonMarker
+  resourceConfig?: ResourceConfig
+  annotations?: JsonMarker
+  labels?: JsonMarker
 }
 
-export type InstanceJsonContainerConfig = Omit<JsonContainerConfig, 'secrets'>
+export type ConcreteJsonContainerConfig = Omit<JsonContainerConfig, 'secrets'>
 
-const mergeSecrets = (
-  imageSecrets: UniqueSecretKey[],
-  instanceSecrets: UniqueSecretKeyValue[],
-): UniqueSecretKeyValue[] => {
-  imageSecrets = imageSecrets ?? []
-  instanceSecrets = instanceSecrets ?? []
+export const stringResettable = (base: string, concrete: string): boolean => {
+  if (!concrete) {
+    return false
+  }
 
-  const overriddenIds: Set<string> = new Set(instanceSecrets?.map(it => it.id))
+  if (!base) {
+    return true
+  }
 
-  const missing: UniqueSecretKeyValue[] = imageSecrets
-    .filter(it => !overriddenIds.has(it.id))
-    .map(it => ({
-      ...it,
-      value: '',
-      encrypted: false,
-      publicKey: null,
-    }))
-
-  return [...missing, ...instanceSecrets]
+  return base !== concrete
 }
 
-const mergeMarker = (image: Marker, instance: Marker): Marker => {
-  if (!instance) {
-    return image
+export const numberResettable = (base: number, concrete: number): boolean => {
+  if (typeof concrete !== 'number') {
+    return false
   }
 
-  if (!image) {
-    return null
+  if (typeof base !== 'number') {
+    return true
   }
 
-  return {
-    deployment: instance.deployment ?? image.deployment,
-    ingress: instance.ingress ?? image.ingress,
-    service: instance.service ?? image.service,
-  }
+  return base !== concrete
 }
 
-const mergeMetrics = (image: Metrics, instance: Metrics): Metrics => {
-  if (!instance) {
-    return image?.enabled ? image : null
+export const booleanResettable = (base: boolean, concrete: boolean): boolean => {
+  if (typeof concrete !== 'boolean') {
+    return false
   }
 
-  return instance
-}
-
-export const mergeConfigs = (
-  image: ContainerConfigData,
-  instance: InstanceContainerConfigData,
-): MergedContainerConfigData => {
-  instance = instance ?? {}
-
-  return {
-    name: instance.name ?? image.name,
-    environment: instance.environment ?? image.environment,
-    secrets: mergeSecrets(image.secrets, instance.secrets),
-    ports: instance.ports ?? image.ports,
-    user: instance.user ?? image.user,
-    workingDirectory: instance.workingDirectory ?? image.workingDirectory,
-    tty: instance.tty ?? image.tty,
-    portRanges: instance.portRanges ?? image.portRanges,
-    args: instance.args ?? image.args,
-    commands: instance.commands ?? image.commands,
-    expose: instance.expose ?? image.expose,
-    configContainer: instance.configContainer ?? image.configContainer,
-    routing: instance.routing ?? image.routing,
-    volumes: instance.volumes ?? image.volumes,
-    initContainers: instance.initContainers ?? image.initContainers,
-    capabilities: null,
-    storage: instance.storage ?? image.storage,
-
-    // crane
-    customHeaders: instance.customHeaders ?? image.customHeaders,
-    proxyHeaders: instance.proxyHeaders ?? image.proxyHeaders,
-    extraLBAnnotations: instance.extraLBAnnotations ?? image.extraLBAnnotations,
-    healthCheckConfig: instance.healthCheckConfig ?? image.healthCheckConfig,
-    resourceConfig: instance.resourceConfig ?? image.resourceConfig,
-    useLoadBalancer: instance.useLoadBalancer ?? image.useLoadBalancer,
-    deploymentStrategy: instance.deploymentStrategy ?? instance.deploymentStrategy ?? 'recreate',
-    labels: mergeMarker(image.labels, instance.labels),
-    annotations: mergeMarker(image.annotations, instance.annotations),
-    metrics: mergeMetrics(image.metrics, instance.metrics),
-
-    // dagent
-    logConfig: instance.logConfig ?? image.logConfig,
-    networkMode: instance.networkMode ?? image.networkMode ?? 'none',
-    restartPolicy: instance.restartPolicy ?? image.restartPolicy ?? 'unlessStopped',
-    networks: instance.networks ?? image.networks,
-    dockerLabels: instance.dockerLabels ?? image.dockerLabels,
-    expectedState:
-      !!image.expectedState || !!instance.expectedState
-        ? {
-            ...image.expectedState,
-            ...instance.expectedState,
-          }
-        : null,
+  if (typeof base !== 'boolean') {
+    return true
   }
+
+  return base !== concrete
 }
 
 const keyValueArrayToJson = (list: UniqueKeyValue[]): JsonKeyValue =>
@@ -446,62 +433,71 @@ const removeId = <T extends { id: string }>(item: T): Omit<T, 'id'> => {
   return newItem
 }
 
-export const imageConfigToJsonContainerConfig = (config: Partial<ContainerConfigData>): JsonContainerConfig => {
-  const jsonConfig = {
-    ...config,
-    commands: keyArrayToJson(config.commands),
-    args: keyArrayToJson(config.args),
-    networks: keyArrayToJson(config.networks),
-    customHeaders: keyArrayToJson(config.customHeaders),
-    extraLBAnnotations: keyValueArrayToJson(config.extraLBAnnotations),
-    environment: keyValueArrayToJson(config.environment),
-    capabilities: keyValueArrayToJson(config.capabilities),
-    secrets: config.secrets?.map(it => ({ key: it.key, required: it.required })),
-    portRanges: config.portRanges?.map(it => removeId(it)),
-    ports: config.ports?.map(it => removeId(it)),
-    storage: config.storage,
-    logConfig: config.logConfig
-      ? {
-          ...config.logConfig,
-          options: keyValueArrayToJson(config.logConfig?.options),
-        }
-      : null,
-    initContainers: config.initContainers?.map(container => ({
-      ...removeId(container),
-      command: keyArrayToJson(container.command),
-      args: keyArrayToJson(container.args),
-      environment: keyValueArrayToJson(container.environment),
-      volumes: container.volumes?.map(vit => removeId(vit)),
-    })),
-    volumes: config.volumes?.map(it => removeId(it)),
-    dockerLabels: keyValueArrayToJson(config.dockerLabels),
-    annotations: config.annotations
-      ? {
-          deployment: keyValueArrayToJson(config.annotations.deployment),
-          service: keyValueArrayToJson(config.annotations.service),
-          ingress: keyValueArrayToJson(config.annotations.ingress),
-        }
-      : null,
-    labels: config.labels
-      ? {
-          deployment: keyValueArrayToJson(config.labels.deployment),
-          service: keyValueArrayToJson(config.labels.service),
-          ingress: keyValueArrayToJson(config.labels.ingress),
-        }
-      : null,
-  }
+export const containerConfigToJsonConfig = (config: ContainerConfigData): JsonContainerConfig => ({
+  // common
+  name: config.name,
+  environment: keyValueArrayToJson(config.environment),
+  // secrets are ommited
+  routing: config.routing,
+  expose: config.expose,
+  user: config.user,
+  workingDirectory: config.workingDirectory,
+  tty: config.tty,
+  configContainer: config.configContainer,
+  ports: config.ports?.map(it => removeId(it)),
+  portRanges: config.portRanges?.map(it => removeId(it)),
+  volumes: config.volumes?.map(it => removeId(it)),
+  commands: keyArrayToJson(config.commands),
+  args: keyArrayToJson(config.args),
+  initContainers: config.initContainers?.map(container => ({
+    ...removeId(container),
+    command: keyArrayToJson(container.command),
+    args: keyArrayToJson(container.args),
+    environment: keyValueArrayToJson(container.environment),
+    volumes: container.volumes?.map(vit => removeId(vit)),
+  })),
+  capabilities: keyValueArrayToJson(config.capabilities),
+  storage: config.storage,
 
-  const configObject = jsonConfig as any
-  delete configObject.id
-  delete configObject.imageId
+  // dagent
+  logConfig: config.logConfig
+    ? {
+        ...config.logConfig,
+        options: keyValueArrayToJson(config.logConfig?.options),
+      }
+    : null,
+  restartPolicy: config.restartPolicy,
+  networkMode: config.networkMode,
+  networks: keyArrayToJson(config.networks),
+  dockerLabels: keyValueArrayToJson(config.dockerLabels),
+  expectedState: config.expectedState,
 
-  return jsonConfig
-}
+  // crane
+  deploymentStrategy: config.deploymentStrategy,
+  customHeaders: keyArrayToJson(config.customHeaders),
+  proxyHeaders: config.proxyHeaders,
+  useLoadBalancer: config.useLoadBalancer,
+  extraLBAnnotations: keyValueArrayToJson(config.extraLBAnnotations),
+  healthCheckConfig: config.healthCheckConfig,
+  resourceConfig: config.resourceConfig,
+  annotations: config.annotations
+    ? {
+        deployment: keyValueArrayToJson(config.annotations.deployment),
+        service: keyValueArrayToJson(config.annotations.service),
+        ingress: keyValueArrayToJson(config.annotations.ingress),
+      }
+    : null,
+  labels: config.labels
+    ? {
+        deployment: keyValueArrayToJson(config.labels.deployment),
+        service: keyValueArrayToJson(config.labels.service),
+        ingress: keyValueArrayToJson(config.labels.ingress),
+      }
+    : null,
+})
 
-export const instanceConfigToJsonInstanceConfig = (
-  config: InstanceContainerConfigData,
-): InstanceJsonContainerConfig => {
-  const json = imageConfigToJsonContainerConfig(config)
+export const concreteContainerConfigToJsonConfig = (config: ConcreteContainerConfig): ConcreteJsonContainerConfig => {
+  const json = containerConfigToJsonConfig(config)
 
   delete json.secrets
 
@@ -664,11 +660,11 @@ const mergeInitContainersWithJson = (containers: InitContainer[], json: JsonInit
   return containers
 }
 
-export const mergeJsonConfigToInstanceContainerConfig = (
-  config: InstanceContainerConfigData,
-  json: InstanceJsonContainerConfig,
-): InstanceContainerConfigData => {
-  const result: InstanceContainerConfigData = {
+export const mergeJsonConfigToConcreteContainerConfig = (
+  config: ConcreteContainerConfig,
+  json: ConcreteJsonContainerConfig,
+): ConcreteContainerConfig => {
+  const result: ConcreteContainerConfig = {
     ...config,
     ...json,
     environment: mergeKeyValuesWithJson(config.environment, json.environment),
@@ -728,19 +724,16 @@ export const mergeJsonConfigToInstanceContainerConfig = (
   return result
 }
 
-export const mergeJsonConfigToImageContainerConfig = (
-  config: ContainerConfigData,
-  json: JsonContainerConfig,
-): ContainerConfigData => {
-  const asInstanceConfig = {
+export const mergeJsonWithContainerConfig = (config: ContainerConfig, json: JsonContainerConfig): ContainerConfig => {
+  const concreteConfig: ConcreteContainerConfig = {
     ...config,
     secrets: null,
   }
 
-  const instanceConf = mergeJsonConfigToInstanceContainerConfig(asInstanceConfig, json)
+  const mergedConf = mergeJsonConfigToConcreteContainerConfig(concreteConfig, json)
   return {
     ...config,
-    ...instanceConf,
+    ...mergedConf,
     secrets: mergeSecretsWithJson(config.secrets, json.secrets),
   }
 }
@@ -799,6 +792,7 @@ export const containerPortsToString = (ports: ContainerPort[], truncateAfter: nu
   return result.join(', ')
 }
 
+export const imageNameOfContainer = (container: Container): string => imageName(container.imageName, container.imageTag)
 export const containerPrefixNameOf = (id: ContainerIdentifier): string =>
   !id.prefix ? id.name : `${id.prefix}-${id.name}`
 
@@ -813,4 +807,12 @@ export const containerIsHidden = (it: Container) => {
   const kubeNamespace = it.labels['io.kubernetes.pod.namespace']
 
   return serviceCategoryIsHidden(serviceCategory) || kubeNamespaceIsSystem(kubeNamespace)
+}
+
+export const containerConfigTypeToSectionType = (type: ContainerConfigType): ContainerConfigSectionType => {
+  if (type === 'instance' || type === 'deployment') {
+    return 'concrete'
+  }
+
+  return 'base'
 }

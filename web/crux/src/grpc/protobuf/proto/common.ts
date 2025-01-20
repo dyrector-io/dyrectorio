@@ -668,11 +668,14 @@ export interface KeyValue {
   value: string
 }
 
+export interface ContainerOrPrefix {
+  container?: ContainerIdentifier | undefined
+  prefix?: string | undefined
+}
+
 export interface ListSecretsResponse {
-  prefix: string
-  name: string
+  target: ContainerOrPrefix | undefined
   publicKey: string
-  hasKeys: boolean
   keys: string[]
 }
 
@@ -692,8 +695,7 @@ export interface ContainerCommandRequest {
 }
 
 export interface DeleteContainersRequest {
-  container?: ContainerIdentifier | undefined
-  prefix?: string | undefined
+  target: ContainerOrPrefix | undefined
 }
 
 export const COMMON_PACKAGE_NAME = 'common'
@@ -1101,27 +1103,44 @@ export const KeyValue = {
   },
 }
 
+function createBaseContainerOrPrefix(): ContainerOrPrefix {
+  return {}
+}
+
+export const ContainerOrPrefix = {
+  fromJSON(object: any): ContainerOrPrefix {
+    return {
+      container: isSet(object.container) ? ContainerIdentifier.fromJSON(object.container) : undefined,
+      prefix: isSet(object.prefix) ? String(object.prefix) : undefined,
+    }
+  },
+
+  toJSON(message: ContainerOrPrefix): unknown {
+    const obj: any = {}
+    message.container !== undefined &&
+      (obj.container = message.container ? ContainerIdentifier.toJSON(message.container) : undefined)
+    message.prefix !== undefined && (obj.prefix = message.prefix)
+    return obj
+  },
+}
+
 function createBaseListSecretsResponse(): ListSecretsResponse {
-  return { prefix: '', name: '', publicKey: '', hasKeys: false, keys: [] }
+  return { target: undefined, publicKey: '', keys: [] }
 }
 
 export const ListSecretsResponse = {
   fromJSON(object: any): ListSecretsResponse {
     return {
-      prefix: isSet(object.prefix) ? String(object.prefix) : '',
-      name: isSet(object.name) ? String(object.name) : '',
+      target: isSet(object.target) ? ContainerOrPrefix.fromJSON(object.target) : undefined,
       publicKey: isSet(object.publicKey) ? String(object.publicKey) : '',
-      hasKeys: isSet(object.hasKeys) ? Boolean(object.hasKeys) : false,
       keys: Array.isArray(object?.keys) ? object.keys.map((e: any) => String(e)) : [],
     }
   },
 
   toJSON(message: ListSecretsResponse): unknown {
     const obj: any = {}
-    message.prefix !== undefined && (obj.prefix = message.prefix)
-    message.name !== undefined && (obj.name = message.name)
+    message.target !== undefined && (obj.target = message.target ? ContainerOrPrefix.toJSON(message.target) : undefined)
     message.publicKey !== undefined && (obj.publicKey = message.publicKey)
-    message.hasKeys !== undefined && (obj.hasKeys = message.hasKeys)
     if (message.keys) {
       obj.keys = message.keys.map(e => e)
     } else {
@@ -1190,22 +1209,17 @@ export const ContainerCommandRequest = {
 }
 
 function createBaseDeleteContainersRequest(): DeleteContainersRequest {
-  return {}
+  return { target: undefined }
 }
 
 export const DeleteContainersRequest = {
   fromJSON(object: any): DeleteContainersRequest {
-    return {
-      container: isSet(object.container) ? ContainerIdentifier.fromJSON(object.container) : undefined,
-      prefix: isSet(object.prefix) ? String(object.prefix) : undefined,
-    }
+    return { target: isSet(object.target) ? ContainerOrPrefix.fromJSON(object.target) : undefined }
   },
 
   toJSON(message: DeleteContainersRequest): unknown {
     const obj: any = {}
-    message.container !== undefined &&
-      (obj.container = message.container ? ContainerIdentifier.toJSON(message.container) : undefined)
-    message.prefix !== undefined && (obj.prefix = message.prefix)
+    message.target !== undefined && (obj.target = message.target ? ContainerOrPrefix.toJSON(message.target) : undefined)
     return obj
   },
 }

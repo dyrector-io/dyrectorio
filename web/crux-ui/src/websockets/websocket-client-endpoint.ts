@@ -1,7 +1,7 @@
-import { WebSocketClientOptions, WebSocketSendMessage, WsMessage, WsMessageCallback } from './common'
+import { WebSocketClientOptions, WebSocketClientSendMessage, WsMessage, WsMessageCallback } from './common'
 
 class WebSocketClientEndpoint {
-  private sendClientMessage: WebSocketSendMessage = null
+  private sendClientMessage: WebSocketClientSendMessage = null
 
   private callbacks: Map<string, Array<WsMessageCallback>> = new Map()
 
@@ -78,7 +78,7 @@ class WebSocketClientEndpoint {
     callbacks?.forEach(it => it(msg.data))
   }
 
-  onSubscribed(sendClientMessage: WebSocketSendMessage): void {
+  onSubscribed(sendClientMessage: WebSocketClientSendMessage): void {
     this.sendClientMessage = sendClientMessage
 
     if (this.readyStateChanged) {

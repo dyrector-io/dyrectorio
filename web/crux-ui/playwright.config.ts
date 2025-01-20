@@ -10,13 +10,14 @@ export const BASE_URL = process.env.E2E_BASE_URL || 'http://localhost:8000'
 export const STORAGE_STATE = path.join(__dirname, 'storageState.json')
 
 const DEBUG = !!process.env.DEBUG || !!process.env.PWDEBUG
+const IGNORE_DEPS = !!process.env.IGNORE_DEPS
 const CI = !!process.env.CI
 
 const createProject = (name: string, testMatch: string | RegExp | (string | RegExp)[], deps?: string[]) => ({
   name,
   testMatch,
   // If running in DEBUG mode only depend on 'global-setup' so any test can run without running the whole project structure
-  dependencies: DEBUG ? ['global-setup'] : deps ?? ['global-setup'],
+  dependencies: DEBUG || IGNORE_DEPS ? ['global-setup'] : deps ?? ['global-setup'],
   use: {
     ...devices['Desktop Chromium'],
     storageState: STORAGE_STATE,
@@ -93,8 +94,8 @@ const config: PlaywrightTestConfig = {
     createProject('template', 'with-login/template.spec.ts'),
     createProject('project', 'with-login/project.spec.ts'),
     createProject('version', 'with-login/version.spec.ts'),
-    createProject('image-config', /with-login\/image-config\/(.*)/, ['registry', 'template', 'version']),
-    createProject('deployment', /with-login\/deployment(.*)\.spec\.ts/, ['image-config', 'nodes']),
+    createProject('container-config', /with-login\/container-config\/(.*)/, ['registry', 'template', 'version']),
+    createProject('deployment', /with-login\/deployment(.*)\.spec\.ts/, ['container-config', 'nodes']),
     createProject('dagent-deploy', 'with-login/nodes-deploy.spec.ts', ['deployment']),
     createProject('resource-copy', 'with-login/resource-copy.spec.ts', ['template', 'version', 'deployment', 'nodes']),
     createProject('dashboard', 'with-login/dashboard.spec.ts'),

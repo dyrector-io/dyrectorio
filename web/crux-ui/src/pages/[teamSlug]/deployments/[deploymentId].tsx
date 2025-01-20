@@ -221,7 +221,7 @@ const DeploymentDetailsPage = (props: DeploymentDetailsPageProps) => {
               )}
             </div>
 
-            <DeploymentDetailsSection state={state} actions={actions} className="w-2/3 p-6 ml-2" />
+            <DeploymentDetailsSection state={state} className="w-2/3 p-6 ml-2" />
           </div>
 
           <EditDeploymentInstances state={state} actions={actions} />

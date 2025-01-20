@@ -6,8 +6,6 @@
   "imageNameAndTag": "Image name and tag",
   "containerName": "Container name",
   "tag": "Tag",
-  "json": "JSON",
-  "editor": "Editor",
   "filterMinChars": "Minimum filter length is {{length}} character",
   "availableTags": "Available tags",
   "environment": "Environment",

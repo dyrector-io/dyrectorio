@@ -18,12 +18,12 @@ import {
   containerIsStopable,
   containerPortsToString,
   containerPrefixNameOf,
-  imageName,
+  imageNameOfContainer,
 } from '@app/models'
 import { utcDateToLocale } from '@app/utils'
 import useTranslation from 'next-translate/useTranslation'
 
-interface NodeContainersListProps {
+type NodeContainersListProps = {
   state: NodeDetailsState
   actions: NodeDetailsActions
   showHidden?: boolean
@@ -57,12 +57,13 @@ const NodeContainersList = (props: NodeContainersListProps) => {
             header={t('images:imageTag')}
             className="w-3/12"
             sortable
-            sortField={(it: Container) => imageName(it.imageName, it.imageTag)}
+            sortField={imageNameOfContainer}
             sort={sortString}
             bodyClassName="truncate"
-            body={(it: Container) => (
-              <span title={imageName(it.imageName, it.imageTag)}>{imageName(it.imageName, it.imageTag)}</span>
-            )}
+            body={(it: Container) => {
+              const name = imageNameOfContainer(it)
+              return <span title={name}>{name}</span>
+            }}
           />
           <DyoColumn
             header={t('common:state')}

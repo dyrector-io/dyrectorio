@@ -55,7 +55,6 @@ import DeployService from '../deploy/deploy.service'
 import { DagentTraefikOptionsDto, NodeConnectionStatus, NodeScriptTypeDto } from '../node/node.dto'
 import AgentConnectionStrategyProvider from './agent.connection-strategy.provider'
 import { AgentKickReason } from './agent.dto'
-import AgentConnectionLegacyStrategy from './connection-strategies/agent.connection.legacy.strategy'
 
 @Injectable()
 export default class AgentService {
@@ -535,15 +534,6 @@ export default class AgentService {
     const strategy = this.connectionStrategies.select(connection)
     const agent = await strategy.execute(connection, request)
     this.logger.verbose('Connection strategy completed')
-
-    if (agent.id === AgentConnectionLegacyStrategy.LEGACY_NONCE) {
-      // self destruct message is already in the queue
-      // we just have to return the command channel
-
-      // command channel is already completed so no need for onDisconnected() call
-      this.logger.verbose('Crashing legacy agent intercepted.')
-      return agent.onConnected(AgentConnectionLegacyStrategy.CONNECTION_STATUS_LISTENER)
-    }
 
     await this.onAgentConnectionStatusChange(agent, agent.outdated ? 'outdated' : 'connected')
 

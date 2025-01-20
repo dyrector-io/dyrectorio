@@ -113,7 +113,7 @@ const DashboardPage = (props: DashboardPageProps) => {
   const formatCount = (count: number) => Intl.NumberFormat(lang, { notation: 'compact' }).format(count)
 
   const statisticItem = (property: string, count: number) => (
-    <DyoLink href={getStatisticRedirect(property)} qaLabel={`dashboard-statistic-item-${property}`}>
+    <DyoLink key={property} href={getStatisticRedirect(property)} qaLabel={`dashboard-statistic-item-${property}`}>
       <DyoCard className="flex flex-col p-4 justify-items-center items-center mb-4 break-inside-avoid" key={property}>
         <Image
           src={`/dashboard/${getStatisticIcon(property)}.svg`}

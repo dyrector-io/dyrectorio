@@ -6,8 +6,8 @@ import {
   HttpCode,
   HttpStatus,
   Param,
+  Patch,
   Post,
-  Put,
   UseGuards,
   UseInterceptors,
 } from '@nestjs/common'
@@ -26,11 +26,12 @@ import {
 import { Identity } from '@ory/kratos-client'
 import UuidParams from 'src/decorators/api-params.decorator'
 import { CreatedResponse, CreatedWithLocation } from '../../interceptors/created-with-location.decorator'
+import { DeploymentDto } from '../deploy/deploy.dto'
+import DeployService from '../deploy/deploy.service'
 import { IdentityFromRequest } from '../token/jwt-auth.guard'
 import {
   ConfigBundleDetailsDto,
   ConfigBundleDto,
-  ConfigBundleOptionDto,
   CreateConfigBundleDto,
   PatchConfigBundleDto,
 } from './config.bundle.dto'
@@ -51,7 +52,10 @@ const ROUTE_CONFIG_BUNDLE_ID = ':configBundleId'
 @ApiTags(ROUTE_CONFIG_BUNDLES)
 @UseGuards(ConfigBundleTeamAccessGuard)
 export default class ConfigBundlesHttpController {
-  constructor(private service: ConfigBundleService) {}
+  constructor(
+    private readonly service: ConfigBundleService,
+    private readonly deployService: DeployService,
+  ) {}
 
   @Get()
   @HttpCode(HttpStatus.OK)
@@ -69,24 +73,6 @@ export default class ConfigBundlesHttpController {
     return this.service.getConfigBundles(teamSlug)
   }
 
-  @Get('options')
-  @HttpCode(HttpStatus.OK)
-  @ApiOperation({
-    description: 'Response should include `id`, and `name`.',
-    summary: 'Fetch the name and ID of available config bundle options.',
-  })
-  @ApiOkResponse({
-    type: ConfigBundleOptionDto,
-    isArray: true,
-    description: 'Name and ID of config bundle options listed.',
-  })
-  @ApiBadRequestResponse({ description: 'Bad request for config bundle options.' })
-  @ApiForbiddenResponse({ description: 'Unauthorized request for config bundle options.' })
-  @ApiNotFoundResponse({ description: 'Config bundle options not found.' })
-  async getConfigBundleOptions(@TeamSlug() teamSlug: string): Promise<ConfigBundleOptionDto[]> {
-    return this.service.getConfigBundleOptions(teamSlug)
-  }
-
   @Get(ROUTE_CONFIG_BUNDLE_ID)
   @HttpCode(HttpStatus.OK)
   @ApiOperation({
@@ -101,6 +87,28 @@ export default class ConfigBundlesHttpController {
   @UuidParams(PARAM_CONFIG_BUNDLE_ID)
   async getConfigBundleDetails(@TeamSlug() _: string, @ConfigBundleId() id: string): Promise<ConfigBundleDetailsDto> {
     return this.service.getConfigBundleDetails(id)
+  }
+
+  @Get(`${ROUTE_CONFIG_BUNDLE_ID}/deployments`)
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({
+    description:
+      'Get the list of deployments. Request needs to include `teamSlug` in URL. A deployment should include `id`, `prefix`, `status`, `note`, `audit` log details, project `name`, `id`, `type`, version `name`, `type`, `id`, and node `name`, `id`, `type`.',
+    summary: 'Fetch the list of deployments.',
+  })
+  @ApiOkResponse({
+    type: DeploymentDto,
+    isArray: true,
+    description: 'List of deployments.',
+  })
+  @ApiForbiddenResponse({ description: 'Unauthorized request for deployments.' })
+  async getDeployments(
+    @TeamSlug() teamSlug: string,
+    @ConfigBundleId() configBundleId: string,
+  ): Promise<DeploymentDto[]> {
+    const deployments = await this.deployService.getDeploymentsByConfigBundleId(configBundleId)
+
+    return deployments
   }
 
   @Post()
@@ -128,10 +136,10 @@ export default class ConfigBundlesHttpController {
     }
   }
 
-  @Put(ROUTE_CONFIG_BUNDLE_ID)
+  @Patch(ROUTE_CONFIG_BUNDLE_ID)
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({
-    description: 'Updates a config bundle. Request must include `id`, `name`, and `data`',
+    description: 'Updates a config bundle.',
     summary: 'Modify a config bundle.',
   })
   @ApiNoContentResponse({ description: 'Config bundle updated.' })
@@ -140,7 +148,7 @@ export default class ConfigBundlesHttpController {
   @ApiNotFoundResponse({ description: 'Config bundle not found.' })
   @ApiConflictResponse({ description: 'Config bundle name taken.' })
   @UuidParams(PARAM_CONFIG_BUNDLE_ID)
-  async updateConfigBundle(
+  async patchConfigBundle(
     @TeamSlug() _: string,
     @ConfigBundleId() id: string,
     @Body() request: PatchConfigBundleDto,

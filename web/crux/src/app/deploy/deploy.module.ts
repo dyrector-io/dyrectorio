@@ -7,6 +7,7 @@ import PrismaService from 'src/services/prisma.service'
 import AgentModule from '../agent/agent.module'
 import AuditLoggerModule from '../audit.logger/audit.logger.module'
 import AuditMapper from '../audit/audit.mapper'
+import ConfigBundleModule from '../config.bundle/config.bundle.module'
 import ContainerModule from '../container/container.module'
 import EditorModule from '../editor/editor.module'
 import ImageModule from '../image/image.module'
@@ -15,6 +16,7 @@ import ProjectMapper from '../project/project.mapper'
 import RegistryModule from '../registry/registry.module'
 import TeamRepository from '../team/team.repository'
 import VersionMapper from '../version/version.mapper'
+import DeployDomainEventListener from './deploy.domain-event.listener'
 import DeployHttpController from './deploy.http.controller'
 import { DeployJwtStrategy } from './deploy.jwt.strategy'
 import DeployMapper from './deploy.mapper'
@@ -24,11 +26,12 @@ import DeployWebSocketGateway from './deploy.ws.gateway'
 @Module({
   imports: [
     forwardRef(() => AgentModule),
-    ImageModule,
+    forwardRef(() => ImageModule),
     EditorModule,
     RegistryModule,
-    ContainerModule,
+    forwardRef(() => ContainerModule),
     ConfigModule,
+    forwardRef(() => ConfigBundleModule),
     AuditLoggerModule,
     ...CruxJwtModuleImports,
   ],
@@ -37,6 +40,7 @@ import DeployWebSocketGateway from './deploy.ws.gateway'
   providers: [
     PrismaService,
     DeployService,
+    DeployDomainEventListener,
     DeployMapper,
     TeamRepository,
     KratosService,

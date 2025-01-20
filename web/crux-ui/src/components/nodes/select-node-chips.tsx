@@ -12,13 +12,14 @@ type SelectNodeChipsProps = {
   className?: string
   name: string
   selection: DyoNode | null
-  onSelectionChange: (node: DyoNode) => Promise<void>
   errorMessage?: string | null
+  allowNull?: boolean
+  onSelectionChange: (node: DyoNode | null) => Promise<void>
   onNodesFetched?: (nodes: DyoNode[] | null) => void
 }
 
 const SelectNodeChips = (props: SelectNodeChipsProps) => {
-  const { className, name, selection, onSelectionChange, errorMessage, onNodesFetched } = props
+  const { className, name, selection, onSelectionChange, errorMessage, onNodesFetched, allowNull } = props
 
   const { t } = useTranslation('common')
   const routes = useTeamRoutes()
@@ -30,6 +31,9 @@ const SelectNodeChips = (props: SelectNodeChipsProps) => {
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [nodes])
+
+  const baseChoices = allowNull ? [null] : []
+  const choices = [...baseChoices, ...(nodes ?? [])]
 
   return fetchError ? (
     <DyoLabel>
@@ -46,8 +50,8 @@ const SelectNodeChips = (props: SelectNodeChipsProps) => {
       <DyoChips
         className={className}
         name={name}
-        choices={nodes ?? []}
-        converter={(it: DyoNode) => it.name}
+        choices={choices}
+        converter={(it: DyoNode | null) => (allowNull === true && it == null ? t('none') : it.name)}
         selection={selection}
         onSelectionChange={onSelectionChange}
       />

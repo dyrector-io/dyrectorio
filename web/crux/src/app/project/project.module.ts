@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common'
+import { forwardRef, Module } from '@nestjs/common'
 import KratosService from 'src/services/kratos.service'
 import PrismaService from 'src/services/prisma.service'
 import AuditLoggerModule from '../audit.logger/audit.logger.module'
@@ -12,7 +12,7 @@ import ProjectMapper from './project.mapper'
 import ProjectService from './project.service'
 
 @Module({
-  imports: [VersionModule, TeamModule, TokenModule, AuditLoggerModule],
+  imports: [forwardRef(() => VersionModule), TeamModule, TokenModule, AuditLoggerModule],
   exports: [ProjectMapper, ProjectService],
   controllers: [ProjectHttpController],
   providers: [PrismaService, ProjectService, ProjectMapper, TeamRepository, KratosService, AuditMapper],

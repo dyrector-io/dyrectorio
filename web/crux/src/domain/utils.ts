@@ -91,6 +91,22 @@ export const toPrismaJson = <T>(val: T): T | JsonNull => {
   return val
 }
 
+export const toNullableNumber = (val: number): number | null => {
+  if (typeof val === 'number') {
+    return val
+  }
+
+  return null
+}
+
+export const toNullableBoolean = (val: boolean): boolean | null => {
+  if (typeof val === 'boolean') {
+    return val
+  }
+
+  return null
+}
+
 export const generateNonce = () => randomBytes(128).toString('hex')
 
 export const tapOnce = <T>(

@@ -77,6 +77,7 @@ export default class PipelineMapper {
       repository: {
         organization: repo.organization,
         project: repo.project,
+        branch: repo.branch,
       },
       audit: this.auditMapper.toDto(pipeline),
       trigger: pipeline.trigger as AzureTrigger,
@@ -185,6 +186,7 @@ export default class PipelineMapper {
       organization: it.organization,
       project: it.project,
       projectId,
+      branch: it.branch && it.branch.length > 0 ? it.branch : null,
     }
   }
 

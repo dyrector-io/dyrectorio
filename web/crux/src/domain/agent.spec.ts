@@ -200,7 +200,9 @@ describe('agent', () => {
         const commandChannel = firstValueFrom(agent.onConnected(jest.fn()))
 
         const deleteRequest: DeleteContainersRequest = {
-          prefix: 'prefix',
+          target: {
+            prefix: 'prefix',
+          },
         }
 
         const deleteRes = agent.deleteContainers(deleteRequest)
@@ -213,7 +215,7 @@ describe('agent', () => {
         agent.onCallback(
           'deleteContainers',
           Agent.containerPrefixNameOf({
-            prefix: deleteRequest.prefix,
+            prefix: deleteRequest.target.prefix,
             name: '',
           }),
           Empty,
@@ -230,7 +232,9 @@ describe('agent', () => {
         const commandChannel = firstValueFrom(agent.onConnected(jest.fn()))
 
         const deleteRequest: DeleteContainersRequest = {
-          prefix: 'prefix',
+          target: {
+            prefix: 'prefix',
+          },
         }
 
         const deleteRes = agent.deleteContainers(deleteRequest)
@@ -306,9 +310,11 @@ describe('agent', () => {
       const commandChannel = firstValueFrom(agent.onConnected(jest.fn()))
 
       const req: ListSecretsRequest = {
-        container: {
-          prefix: 'prefix',
-          name: 'name',
+        target: {
+          container: {
+            prefix: 'prefix',
+            name: 'name',
+          },
         },
       }
 
@@ -320,14 +326,17 @@ describe('agent', () => {
       })
 
       const message: ListSecretsResponse = {
-        prefix: 'prefix',
-        name: 'name',
+        target: {
+          container: {
+            prefix: 'prefix',
+            name: 'name',
+          },
+        },
         publicKey: 'key',
-        hasKeys: true,
         keys: ['k1', 'k2', 'k3'],
       }
 
-      agent.onCallback('listSecrets', Agent.containerPrefixNameOf(req.container), message)
+      agent.onCallback('listSecrets', Agent.containerPrefixNameOf(req.target.container), message)
 
       const secretsActual = await secrets
       expect(secretsActual).toEqual(message)
@@ -339,9 +348,11 @@ describe('agent', () => {
         const commandChannel = firstValueFrom(agent.onConnected(jest.fn()))
 
         const req: ListSecretsRequest = {
-          container: {
-            prefix: 'prefix',
-            name: 'name',
+          target: {
+            container: {
+              prefix: 'prefix',
+              name: 'name',
+            },
           },
         }
 

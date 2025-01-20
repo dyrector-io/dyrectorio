@@ -1,6 +1,8 @@
-import { ApiProperty, PartialType } from '@nestjs/swagger'
+import { ApiProperty, OmitType } from '@nestjs/swagger'
+import { Type } from 'class-transformer'
 import {
   IsBoolean,
+  IsDate,
   IsIn,
   IsInt,
   IsNumber,
@@ -29,7 +31,16 @@ import {
   PORT_MAX,
   PORT_MIN,
 } from 'src/domain/container'
-import { UID_MAX } from 'src/shared/const'
+import { UID_MAX, UID_MIN } from 'src/shared/const'
+import { ConfigBundleDto } from '../config.bundle/config.bundle.dto'
+import { DeploymentWithConfigDto } from '../deploy/deploy.dto'
+import { ImageDto } from '../image/image.dto'
+import { BasicProjectDto } from '../project/project.dto'
+import { BasicVersionDto } from '../version/version.dto'
+import { ContainerConfigProperty } from './container.const'
+
+export const CONTAINER_CONFIG_TYPE_VALUES = ['image', 'instance', 'deployment', 'config-bundle'] as const
+export type ContainerConfigTypeDto = (typeof CONTAINER_CONFIG_TYPE_VALUES)[number]
 
 export class UniqueKeyDto {
   @IsUUID()
@@ -304,9 +315,18 @@ export class ExpectedContainerStateDto {
 }
 
 export class ContainerConfigDto {
+  @IsString()
+  id: string
+
+  @ApiProperty({ enum: CONTAINER_CONFIG_TYPE_VALUES })
+  @IsIn(CONTAINER_CONFIG_TYPE_VALUES)
+  @IsOptional()
+  type: ContainerConfigTypeDto
+
   // common
   @IsString()
-  name: string
+  @IsOptional()
+  name?: string
 
   @IsOptional()
   @ValidateNested({ each: true })
@@ -322,11 +342,12 @@ export class ContainerConfigDto {
 
   @ApiProperty({ enum: CONTAINER_EXPOSE_STRATEGY_VALUES })
   @IsIn(CONTAINER_EXPOSE_STRATEGY_VALUES)
-  expose: ContainerExposeStrategy
+  @IsOptional()
+  expose?: ContainerExposeStrategy
 
   @IsOptional()
   @IsInt()
-  @Min(-1)
+  @Min(UID_MIN)
   @Max(UID_MAX)
   user?: number
 
@@ -335,7 +356,8 @@ export class ContainerConfigDto {
   workingDirectory?: string
 
   @IsBoolean()
-  tty: boolean
+  @IsOptional()
+  tty?: boolean
 
   @IsOptional()
   @ValidateNested()
@@ -380,11 +402,13 @@ export class ContainerConfigDto {
 
   @ApiProperty({ enum: CONTAINER_RESTART_POLICY_TYPE_VALUES })
   @IsIn(CONTAINER_RESTART_POLICY_TYPE_VALUES)
-  restartPolicy: ContainerRestartPolicyType
+  @IsOptional()
+  restartPolicy?: ContainerRestartPolicyType
 
   @ApiProperty({ enum: CONTAINER_NETWORK_MODE_VALUES })
   @IsIn(CONTAINER_NETWORK_MODE_VALUES)
-  networkMode: ContainerNetworkMode
+  @IsOptional()
+  networkMode?: ContainerNetworkMode
 
   @IsOptional()
   @ValidateNested({ each: true })
@@ -401,17 +425,20 @@ export class ContainerConfigDto {
   // crane
   @ApiProperty({ enum: CONTAINER_DEPLOYMENT_STRATEGY_VALUES })
   @IsIn(CONTAINER_DEPLOYMENT_STRATEGY_VALUES)
-  deploymentStrategy: ContainerDeploymentStrategyType
+  @IsOptional()
+  deploymentStrategy?: ContainerDeploymentStrategyType
 
   @IsOptional()
   @ValidateNested({ each: true })
   customHeaders?: UniqueKeyDto[]
 
   @IsBoolean()
-  proxyHeaders: boolean
+  @IsOptional()
+  proxyHeaders?: boolean
 
   @IsBoolean()
-  useLoadBalancer: boolean
+  @IsOptional()
+  useLoadBalancer?: boolean
 
   @IsOptional()
   @ValidateNested({ each: true })
@@ -438,7 +465,72 @@ export class ContainerConfigDto {
   metrics?: MetricsDto
 }
 
-export class PartialContainerConfigDto extends PartialType(ContainerConfigDto) {}
+export class ContainerConfigRelationsDto {
+  @ValidateNested()
+  @IsOptional()
+  project?: BasicProjectDto
+
+  @ValidateNested()
+  @IsOptional()
+  version?: BasicVersionDto
+
+  @ValidateNested()
+  @IsOptional()
+  image?: ImageDto
+
+  @ValidateNested()
+  @IsOptional()
+  deployment?: DeploymentWithConfigDto
+
+  @ValidateNested()
+  @IsOptional()
+  configBundle?: ConfigBundleDto
+}
+
+export class ContainerConfigParentDto {
+  @IsUUID()
+  id: string
+
+  @IsString()
+  name: string
+
+  @IsBoolean()
+  mutable: boolean
+}
+
+export class ContainerConfigDetailsDto extends ContainerConfigDto {
+  @ValidateNested()
+  parent: ContainerConfigParentDto
+
+  @Type(() => Date)
+  @IsDate()
+  @IsOptional()
+  updatedAt?: Date
+
+  @IsString()
+  @IsOptional()
+  updatedBy?: string
+}
+
+export class ContainerConfigDataDto extends OmitType(ContainerConfigDto, ['id', 'type']) {}
+
+export class PatchContainerConfigDto {
+  @IsOptional()
+  @ValidateNested()
+  config?: ContainerConfigDataDto
+
+  @IsOptional()
+  @IsString()
+  resetSection?: ContainerConfigProperty
+}
+
+export class ConcreteContainerConfigDto extends OmitType(ContainerConfigDto, ['secrets']) {
+  @IsOptional()
+  @ValidateNested({ each: true })
+  secrets?: UniqueSecretKeyValueDto[]
+}
+
+export class ConcreteContainerConfigDataDto extends OmitType(ConcreteContainerConfigDto, ['id', 'type']) {}
 
 export class ContainerIdentifierDto {
   @IsString()
@@ -446,4 +538,12 @@ export class ContainerIdentifierDto {
 
   @IsString()
   name: string
+}
+
+export class ContainerSecretsDto {
+  @IsString()
+  publicKey: string
+
+  @IsString({ each: true })
+  keys: string[]
 }

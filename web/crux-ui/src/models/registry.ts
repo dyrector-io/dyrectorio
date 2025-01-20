@@ -194,15 +194,20 @@ export type FindImageResultMessage = {
 export const WS_TYPE_REGISTRY_FETCH_IMAGE_TAGS = 'fetch-image-tags'
 export type FetchImageTagsMessage = RegistryImages
 
-export type RegistryImageTags = {
+export type RegistryImageTag = {
   name: string
-  tags: string[]
+  created: string
+}
+
+export type RegistryImageWithTags = {
+  name: string
+  tags: RegistryImageTag[]
 }
 
 export const WS_TYPE_REGISTRY_IMAGE_TAGS = 'registry-image-tags'
 export type RegistryImageTagsMessage = {
   registryId: string
-  images: RegistryImageTags[]
+  images: RegistryImageWithTags[]
 }
 
 // mappers
@@ -406,3 +411,11 @@ export const findRegistryByUrl = (registries: Registry[], url: string): Registry
   !registries || !url
     ? null
     : registries.filter(it => it.type !== 'unchecked').find(it => url.startsWith(it.imageUrlPrefix))
+
+export const imageName = (name: string, tag?: string): string => {
+  if (!tag) {
+    return name
+  }
+
+  return `${name}:${tag}`
+}

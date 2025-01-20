@@ -187,12 +187,17 @@ message KeyValue {
   string value = 101;
 }
 
+message ContainerOrPrefix {
+  oneof target {
+    common.ContainerIdentifier container = 1;
+    string prefix = 2;
+  }
+}
+
 message ListSecretsResponse {
-  string prefix = 1;
-  string name = 2;
+  ContainerOrPrefix target = 1;
   string publicKey = 3;
-  bool hasKeys = 4;
-  repeated string keys = 5;
+  repeated string keys = 4;
 }
 
 message UniqueKey {
@@ -218,8 +223,5 @@ message ContainerCommandRequest {
 }
 
 message DeleteContainersRequest {
-  oneof target {
-    common.ContainerIdentifier container = 201;
-    string prefix = 202;
-  }
+  ContainerOrPrefix target = 1;
 }

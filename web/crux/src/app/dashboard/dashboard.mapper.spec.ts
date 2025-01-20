@@ -21,7 +21,9 @@ describe('DashboardMapper', () => {
       nodes: [],
       project: null,
       version: null,
-      image: null,
+      image: {
+        config: null,
+      },
       deployment: null,
     }
   })
@@ -140,9 +142,9 @@ describe('DashboardMapper', () => {
       })
 
       test('should be done when there is an image', () => {
-        const IMAGE_ID = 'imageId'
+        const IMAGE_CONFIG_ID = 'imageConfigId'
 
-        const expected: OnboardingItemDto = { done: true, resourceId: IMAGE_ID }
+        const expected: OnboardingItemDto = { done: true, resourceId: IMAGE_CONFIG_ID }
 
         team.project = {
           id: 'projectId',
@@ -151,7 +153,9 @@ describe('DashboardMapper', () => {
           id: 'versionid',
         }
         team.image = {
-          id: IMAGE_ID,
+          config: {
+            id: IMAGE_CONFIG_ID,
+          },
         }
 
         const actual = mapper.teamToOnboard(team)
@@ -186,7 +190,9 @@ describe('DashboardMapper', () => {
           id: 'versionid',
         }
         team.image = {
-          id: 'imageId',
+          config: {
+            id: 'imageConfigId',
+          },
         }
         team.deployment = {
           id: DEPLOYMENT_ID,
@@ -226,7 +232,9 @@ describe('DashboardMapper', () => {
           id: 'versionid',
         }
         team.image = {
-          id: 'imageId',
+          config: {
+            id: 'imageConfigId',
+          },
         }
         team.deployment = {
           id: DEPLOYMENT_ID,
@@ -253,7 +261,9 @@ describe('DashboardMapper', () => {
           id: 'versionid',
         }
         team.image = {
-          id: 'imageId',
+          config: {
+            id: 'imageConfigId',
+          },
         }
         team.deployment = {
           id: DEPLOYMENT_ID,

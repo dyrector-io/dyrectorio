@@ -42,7 +42,9 @@ export default class DashboardService {
       ...team,
       project: null,
       version: null,
-      image: null,
+      image: {
+        config: null,
+      },
       deployment: null,
     }
 
@@ -131,6 +133,7 @@ export default class DashboardService {
             images: {
               select: {
                 id: true,
+                config: true,
               },
               take: 1,
               orderBy: {
@@ -151,18 +154,13 @@ export default class DashboardService {
       return null
     }
 
-    const {
-      version,
-      version: {
-        images: [image],
-        project,
-      },
-    } = deployment
+    const { version } = deployment
+    const { project, images } = version
 
     return {
       project,
       version,
-      image,
+      image: images.find(Boolean),
       deployment,
     }
   }
@@ -190,7 +188,11 @@ export default class DashboardService {
         id: true,
         images: {
           select: {
-            id: true,
+            config: {
+              select: {
+                id: true,
+              },
+            },
           },
           take: 1,
           orderBy: {

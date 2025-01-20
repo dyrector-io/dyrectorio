@@ -1,6 +1,13 @@
 /* eslint-disable no-underscore-dangle */
 import { GetServerSidePropsContext } from 'next'
-import { AuditLogQuery, ContainerIdentifier, ContainerOperation, PaginationQuery, VersionSectionsState } from './models'
+import {
+  AuditLogQuery,
+  ContainerIdentifier,
+  ContainerOperation,
+  DeploymentQuery,
+  PaginationQuery,
+  VersionSectionsState,
+} from './models'
 
 // Routes:
 export const ROUTE_DOCS = 'https://docs.dyrector.io'
@@ -116,6 +123,10 @@ const appendUrlParams = (url: string, params?: AnchorUrlParams): string => {
 }
 
 const urlQuery = (url: string, query: object) => {
+  if (!query) {
+    return url
+  }
+
   const params = Object.entries(query)
     .map(it => {
       const [key, value] = it
@@ -369,8 +380,6 @@ class VersionRoutes {
   details = (id: string, params?: VersionUrlParams) => appendUrlParams(`${this.root}/${id}`, params)
 
   deployments = (versionId: string) => `${this.details(versionId)}/deployments`
-
-  imageDetails = (versionId: string, imageId: string) => `${this.details(versionId)}/images/${imageId}`
 }
 
 // project
@@ -436,7 +445,7 @@ class DeploymentApi {
     this.root = `/api${root}`
   }
 
-  list = () => this.root
+  list = (query?: DeploymentQuery) => urlQuery(this.root, query)
 
   details = (id: string) => `${this.root}/${id}`
 
@@ -480,9 +489,6 @@ class DeploymentRoutes {
   details = (id: string) => `${this.root}/${id}`
 
   deploy = (id: string) => `${this.details(id)}/deploy`
-
-  instanceDetails = (deploymentId: string, instanceId: string) =>
-    `${this.details(deploymentId)}/instances/${instanceId}`
 }
 
 // notification
@@ -625,8 +631,42 @@ class PipelineRoutes {
   socket = () => this.root
 }
 
-// config bundle
+// container config
+class ContainerConfigApi {
+  private readonly root: string
 
+  constructor(root: string) {
+    this.root = `/api${root}`
+  }
+
+  details = (id: string) => `${this.root}/${id}`
+
+  relations = (configId: string) => `${this.details(configId)}/relations`
+}
+
+class ContainerConfigRoutes {
+  private readonly root: string
+
+  constructor(root: string) {
+    this.root = `${root}/container-configurations`
+  }
+
+  private _api: ContainerConfigApi
+
+  get api() {
+    if (!this._api) {
+      this._api = new ContainerConfigApi(this.root)
+    }
+
+    return this._api
+  }
+
+  details = (id: string) => `${this.root}/${id}`
+
+  detailsSocket = (id: string) => this.details(id)
+}
+
+// config bundle
 class ConfigBundleApi {
   private readonly root: string
 
@@ -638,7 +678,7 @@ class ConfigBundleApi {
 
   details = (id: string) => `${this.root}/${id}`
 
-  options = () => `${this.root}/options`
+  deployments = (id: string) => `${this.details(id)}/deployments`
 }
 
 class ConfigBundleRoutes {
@@ -661,8 +701,6 @@ class ConfigBundleRoutes {
   list = (options?: ListRouteOptions) => appendAnchorWhenDeclared(this.root, ANCHOR_NEW, options?.new)
 
   details = (id: string) => `${this.root}/${id}`
-
-  detailsSocket = (id: string) => this.details(id)
 }
 
 export class PackageApi {
@@ -733,6 +771,8 @@ export class TeamRoutes {
   private _storage: StorageRoutes
 
   private _pipeline: PipelineRoutes
+
+  private _containerConfig: ContainerConfigRoutes
 
   private _configBundle: ConfigBundleRoutes
 
@@ -808,6 +848,14 @@ export class TeamRoutes {
     }
 
     return this._pipeline
+  }
+
+  get containerConfig() {
+    if (!this._containerConfig) {
+      this._containerConfig = new ContainerConfigRoutes(this.root)
+    }
+
+    return this._containerConfig
   }
 
   get configBundle() {

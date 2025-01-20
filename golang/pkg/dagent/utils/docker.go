@@ -316,6 +316,21 @@ func waitForContainer(
 	return <-errorChannel
 }
 
+func DeploySharedSecrets(ctx context.Context,
+	prefix string,
+	secrets map[string]string,
+) error {
+	cfg := grpc.GetConfigFromContext(ctx).(*config.Configuration)
+
+	pf := NewSecretsPrefixFile(cfg.InternalMountPath, prefix)
+	err := pf.WriteVariables(secrets)
+	if err != nil {
+		return fmt.Errorf("could not write secrets, aborting: %w", err)
+	}
+
+	return nil
+}
+
 //nolint:funlen,gocyclo // TODO(@nandor-magyar): refactor this function into smaller parts
 func DeployImage(ctx context.Context,
 	dog *dogger.DeploymentLogger,
@@ -347,11 +362,9 @@ func DeployImage(ctx context.Context,
 	log.Debug().Str("name", deployImageRequest.ImageName).Str("full", expandedImageName).Msg("Image name parsed")
 	logDeployInfo(dog, deployImageRequest, expandedImageName, containerName)
 
+	pf := NewSharedEnvPrefixFile(cfg.InternalMountPath, prefix)
 	if len(deployImageRequest.InstanceConfig.SharedEnvironment) > 0 {
-		err = WriteSharedEnvironmentVariables(
-			cfg.InternalMountPath,
-			prefix,
-			deployImageRequest.InstanceConfig.SharedEnvironment)
+		err = pf.WriteVariables(deployImageRequest.InstanceConfig.SharedEnvironment)
 		if err != nil {
 			dog.WriteError("could not write shared environment variables, aborting...", err.Error())
 			return err
@@ -361,8 +374,7 @@ func DeployImage(ctx context.Context,
 	var envMap map[string]string
 
 	if deployImageRequest.InstanceConfig.UseSharedEnvs {
-		envMap, err = ReadSharedEnvironmentVariables(cfg.InternalMountPath,
-			prefix)
+		envMap, err = pf.ReadVariables()
 		if err != nil {
 			dog.WriteError("could not load shared environment variables, while useSharedEnvs is on, aborting...", err.Error())
 			return err
@@ -539,6 +551,8 @@ func getContainerName(deployImageRequest *v1.DeployImageRequest) string {
 func getContainerPrefix(deployImageRequest *v1.DeployImageRequest) string {
 	containerPrefix := ""
 
+	// TODO (@nandor-magyar): the line below is probably wrong, fix it if you dare
+	// soon to be removed though, as merging is done by crux
 	if deployImageRequest.ContainerConfig.Container != "" {
 		if deployImageRequest.InstanceConfig.MountPath != "" {
 			containerPrefix = deployImageRequest.InstanceConfig.MountPath
@@ -546,6 +560,11 @@ func getContainerPrefix(deployImageRequest *v1.DeployImageRequest) string {
 			containerPrefix = deployImageRequest.InstanceConfig.ContainerPreName
 		}
 	}
+
+	if containerPrefix == "" {
+		containerPrefix = deployImageRequest.ContainerConfig.ContainerPreName
+	}
+
 	return containerPrefix
 }
 
@@ -710,6 +729,18 @@ func setImageLabels(expandedImageName string,
 }
 
 func SecretList(ctx context.Context, prefix, name string) ([]string, error) {
+	if name == "" {
+		cfg := grpc.GetConfigFromContext(ctx).(*config.Configuration)
+
+		pf := NewSecretsPrefixFile(cfg.InternalMountPath, prefix)
+		secrets, err := pf.ReadVariables()
+		if err != nil {
+			return []string{}, fmt.Errorf("could not read secrets, aborting: %w", err)
+		}
+
+		return maps.Keys(secrets), nil
+	}
+
 	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
 	if err != nil {
 		return nil, err
@@ -717,7 +748,7 @@ func SecretList(ctx context.Context, prefix, name string) ([]string, error) {
 
 	containers, err := cli.ContainerList(ctx, container.ListOptions{
 		All:     true,
-		Filters: filters.NewArgs(filters.KeyValuePair{Key: "name", Value: fmt.Sprintf("^/?%s-%s$", prefix, name)}),
+		Filters: filters.NewArgs(filters.KeyValuePair{Key: "name", Value: fmt.Sprintf("^/?%s$", util.JoinV("-", prefix, name))}),
 	})
 	if err != nil {
 		return nil, err
@@ -771,13 +802,15 @@ func ContainerCommand(ctx context.Context, command *common.ContainerCommandReque
 }
 
 func DeleteContainers(ctx context.Context, request *common.DeleteContainersRequest) error {
-	var err error
-	if request.GetContainer() != nil {
-		err = DeleteContainerByPrefixAndName(ctx, request.GetContainer().Prefix, request.GetContainer().Name)
-	} else if request.GetPrefix() != "" {
-		err = dockerHelper.DeleteContainersByLabel(ctx, label.GetPrefixLabelFilter(request.GetPrefix()))
+	prefix, name, err := mapper.MapContainerOrPrefixToPrefixName(request.Target)
+	if err != nil {
+		return err
+	}
+
+	if name != "" {
+		err = DeleteContainerByPrefixAndName(ctx, prefix, name)
 	} else {
-		log.Error().Msg("Unknown DeleteContainers request")
+		err = dockerHelper.DeleteContainersByLabel(ctx, label.GetPrefixLabelFilter(prefix))
 	}
 
 	return err

@@ -1,13 +1,19 @@
+import { Cache } from 'cache-manager'
 import { getRegistryApiException } from 'src/exception/registry-exception'
 import { GitlabNamespace } from '../registry.dto'
-import { RegistryImageTags } from '../registry.message'
-import { RegistryApiClient } from './registry-api-client'
-import RegistryV2ApiClient, { RegistryV2ApiClientOptions } from './v2-api-client'
-import V2Labels from './v2-labels'
+import { RegistryImageWithTags } from '../registry.message'
+import { RegistryApiClient, RegistryImageTagInfo, fetchInfoForTags } from './registry-api-client'
+import V2HttpApiClient from './v2-http-api-client'
+import RegistryV2ApiClient, { RegistryV2ApiClientOptions } from './v2-registry-api-client'
 
 export type GitlabRegistryClientUrls = {
   apiUrl: string
   registryUrl: string
+}
+
+type TagsList = {
+  name: string
+  tags: string[]
 }
 
 export class GitlabRegistryClient implements RegistryApiClient {
@@ -22,6 +28,7 @@ export class GitlabRegistryClient implements RegistryApiClient {
     options: RegistryV2ApiClientOptions,
     private urls: GitlabRegistryClientUrls,
     namespace: GitlabNamespace,
+    private readonly cache: Cache | null,
   ) {
     this.basicAuthHeaders = {
       Authorization: `Basic ${Buffer.from(`${options.username}:${options.password}`).toString('base64')}`,
@@ -51,7 +58,7 @@ export class GitlabRegistryClient implements RegistryApiClient {
     return repositories.filter(it => it.includes(text))
   }
 
-  async tags(image: string): Promise<RegistryImageTags> {
+  async tags(image: string): Promise<RegistryImageWithTags> {
     const tokenRes = await fetch(
       `https://${this.urls.apiUrl}/jwt/auth?service=container_registry&scope=repository:${image}:pull`,
       {
@@ -76,18 +83,33 @@ export class GitlabRegistryClient implements RegistryApiClient {
       throw getRegistryApiException(res, `Gitlab tags for image ${image}`)
     }
 
-    const json = (await res.json()) as RegistryImageTags[]
+    const json = (await res.json()) as TagsList[]
+    const tags = json.flatMap(it => it.tags)
+    const tagInfo = await fetchInfoForTags(image, tags, this)
+
     return {
       name: image,
-      tags: json.flatMap(it => it.tags),
+      tags: tagInfo,
     }
   }
 
-  async labels(image: string, tag: string): Promise<Record<string, string>> {
-    const labelClient = new V2Labels(this.urls.registryUrl, null, null, null, {
-      headers: this.basicAuthHeaders,
-    })
+  private createApiClient(): V2HttpApiClient {
+    return new V2HttpApiClient(
+      {
+        baseUrl: this.urls.registryUrl,
+        tokenInit: {
+          headers: this.basicAuthHeaders,
+        },
+      },
+      this.cache,
+    )
+  }
 
-    return labelClient.fetchLabels(image, tag)
+  async labels(image: string, tag: string): Promise<Record<string, string>> {
+    return this.createApiClient().fetchLabels(image, tag)
+  }
+
+  async tagInfo(image: string, tag: string): Promise<RegistryImageTagInfo> {
+    return this.createApiClient().fetchTagInfo(image, tag)
   }
 }

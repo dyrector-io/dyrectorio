@@ -5,7 +5,7 @@ import DyoModal, { DyoConfirmationModal } from '@app/elements/dyo-modal'
 import DyoTable, { DyoColumn, sortDate, sortNumber, sortString } from '@app/elements/dyo-table'
 import useConfirmation from '@app/hooks/use-confirmation'
 import useTeamRoutes from '@app/hooks/use-team-routes'
-import { DeleteImageMessage, VersionImage, WS_TYPE_DELETE_IMAGE } from '@app/models'
+import { DeleteImageMessage, containerNameOfImage, VersionImage, WS_TYPE_DELETE_IMAGE } from '@app/models'
 import { utcDateToLocale } from '@app/utils'
 import useTranslation from 'next-translate/useTranslation'
 import { QA_DIALOG_LABEL_DELETE_IMAGE, QA_MODAL_LABEL_IMAGE_TAGS } from 'quality-assurance'
@@ -50,6 +50,8 @@ const VersionViewList = (props: VersionViewListProps) => {
     actions.fetchImageTags(it)
   }
 
+  const imageTags = tagsModalTarget ? selectTagsOfImage(state, tagsModalTarget) : null
+
   return (
     <>
       <DyoCard className="relative mt-4">
@@ -62,7 +64,13 @@ const VersionViewList = (props: VersionViewListProps) => {
             sort={sortNumber}
             body={data => `#${data.order + 1}`}
           />
-          <DyoColumn header={t('containerName')} field="config.name" sortable sort={sortString} />
+          <DyoColumn
+            header={t('containerName')}
+            sortField={containerNameOfImage}
+            body={containerNameOfImage}
+            sortable
+            sort={sortString}
+          />
           <DyoColumn
             header={t('common:registry')}
             field="registry.name"
@@ -106,6 +114,7 @@ const VersionViewList = (props: VersionViewListProps) => {
                     onClick={() => onOpenTagsDialog(it)}
                   />
                 </div>
+
                 <div className="inline-block">
                   <DyoIcon
                     className="cursor-pointer"
@@ -115,11 +124,9 @@ const VersionViewList = (props: VersionViewListProps) => {
                     onClick={() => onDelete(it)}
                   />
                 </div>
-                <DyoLink
-                  href={routes.project.versions(state.projectId).imageDetails(state.version.id, it.id)}
-                  qaLabel="version-list-image-config-icon"
-                >
-                  <DyoIcon src="/image_config_icon.svg" alt={t('common:imageConfig')} size="md" />
+
+                <DyoLink href={routes.containerConfig.details(it.config.id)} qaLabel="version-list-image-config-icon">
+                  <DyoIcon src="/container_config.svg" alt={t('common:imageConfig')} size="md" />
                 </DyoLink>
               </>
             )}
@@ -139,8 +146,9 @@ const VersionViewList = (props: VersionViewListProps) => {
           qaLabel={QA_MODAL_LABEL_IMAGE_TAGS}
         >
           <EditImageTags
-            selected={tagsModalTarget?.tag ?? ''}
-            tags={tagsModalTarget.registry.type === 'unchecked' ? null : selectTagsOfImage(state, tagsModalTarget)}
+            loadingTags={tagsModalTarget.registry.type === 'unchecked' ? false : !imageTags}
+            selected={tagsModalTarget.tag}
+            tags={tagsModalTarget.registry.type === 'unchecked' ? null : imageTags}
             onTagSelected={it => actions.selectTagForImage(tagsModalTarget, it)}
           />
         </DyoModal>
