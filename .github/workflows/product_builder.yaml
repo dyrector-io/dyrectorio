@@ -638,7 +638,7 @@ jobs:
         if: always()
         run: |
           docker ps
-          mkdir logs
+          mkdir -p logs
           CONTAINERS="dyo-e2e_crux-ui dyo-e2e_crux dyo-e2e_kratos dyo-e2e_traefik dagent"
           for cont in $CONTAINERS
           do
