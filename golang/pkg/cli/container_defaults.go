@@ -660,7 +660,7 @@ func healthProbe(ctx context.Context, address string) error {
 
 func RenderTraefikHostRules(hosts ...string) string {
 	hostRules := []string{}
-	for _, v := range hosts {
+	for _, v := range util.RemoveDuplicates(hosts) {
 		hostRules = append(hostRules, fmt.Sprintf("Host(`%s`)", v))
 	}
 
