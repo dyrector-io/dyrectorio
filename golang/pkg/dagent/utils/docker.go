@@ -18,6 +18,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/na4ma4/go-permbits"
 	"github.com/rs/zerolog/log"
 	"golang.org/x/exp/maps"
 
@@ -47,8 +48,6 @@ import (
 )
 
 const DockerLogHeaderLength = 8
-
-const RWOwnerROther = 0o644
 
 type DockerVersion struct {
 	ServerVersion string
@@ -115,7 +114,7 @@ func WriteContainerFile(ctx context.Context, cli *client.Client,
 
 	tarHeader := &tar.Header{
 		Name:    filename,
-		Mode:    RWOwnerROther,
+		Mode:    int64(permbits.UserReadWrite + permbits.GroupRead + permbits.OtherRead),
 		Size:    fileSize,
 		Uid:     meta.UID,
 		Gid:     meta.GID,
@@ -623,6 +622,7 @@ func createRuntimeConfigFileOnHost(mounts []mount.Mount, containerName, containe
 				panic(err)
 			}
 		}
+		//#nosec 304 -- this should be read-used by anyone, mostly the app container
 		if err := os.WriteFile(path.Join(configDir, "appsettings.json"), []byte(runtimeConfig), os.ModePerm); err != nil {
 			return mounts, err
 		}

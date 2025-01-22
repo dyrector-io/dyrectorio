@@ -53,10 +53,11 @@ down:
 
 # target `upd` is for development purposes it defaults to the latest images
 # and expects crux and crux-ui to run locally
+# for host name overrides you can define: --host localhost,yourdomain.com
 .PHONY: upd
 upd:
 	cd cmd/dyo && \
-	go run . --disable-crux --disable-crux-ui --image-tag latest --prefix dyo-latest up
+	go run . --disable-crux --disable-crux-ui --image-tag latest --prefix dyo-latest --host localhost up
 
 .PHONY: downd
 downd:
@@ -65,7 +66,7 @@ downd:
 
 .PHONY: go-crane
 go-crane:
-	air --build.cmd "" --build.bin "cd cmd/crane && go run ."
+	air --build.cmd "" --build.bin "cd cmd/crane && ${GRPC_DEBUG_FLAGS} go run ."
 
 .PHONY: go-crane-init
 go-crane-init:
@@ -74,7 +75,7 @@ go-crane-init:
 
 .PHONY: go-dagent
 go-dagent:
-	air --build.cmd "" --build.bin "cd cmd/dagent && go run ."
+	air --build.cmd "" --build.bin "cd cmd/dagent && ${GRPC_DEBUG_FLAGS} go run ."
 
 .PHONY: cli
 cli:

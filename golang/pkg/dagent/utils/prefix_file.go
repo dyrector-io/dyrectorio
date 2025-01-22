@@ -3,14 +3,12 @@ package utils
 import (
 	"errors"
 	"fmt"
-	"io/fs"
 	"os"
 	"path/filepath"
 
 	"github.com/joho/godotenv"
+	"github.com/na4ma4/go-permbits"
 )
-
-const dirPerm = 0o700
 
 type PrefixFileParamError struct {
 	variable string
@@ -98,12 +96,12 @@ func (pf *PrefixFile) WriteVariables(in map[string]string) error {
 	dirPath := pf.getDirectory()
 	filePath := pf.getFilePath()
 
-	err = os.MkdirAll(dirPath, dirPerm)
+	err = os.MkdirAll(dirPath, permbits.UserAll)
 	if err != nil {
 		return err
 	}
 
-	err = os.WriteFile(filePath, []byte(out), fs.ModePerm)
+	err = os.WriteFile(filePath, []byte(out), permbits.UserReadWrite)
 	if err != nil {
 		return err
 	}

@@ -32,7 +32,7 @@ const config: PlaywrightTestConfig = {
   outputDir: path.join(__dirname, 'e2e_results/'),
   testDir: path.join(__dirname, 'e2e'),
   webServer: {
-    command: 'npm run start:prod',
+    command: '>&2 echo "this should never happen, running UI is expected"',
     url: BASE_URL,
     timeout: 60 * 1000, // 1 min
     reuseExistingServer: true,

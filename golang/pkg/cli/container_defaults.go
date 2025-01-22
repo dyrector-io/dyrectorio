@@ -22,6 +22,7 @@ import (
 	"github.com/dyrector-io/dyrectorio/golang/internal/helper/image"
 	"github.com/dyrector-io/dyrectorio/golang/internal/label"
 	"github.com/dyrector-io/dyrectorio/golang/internal/logdefer"
+	"github.com/dyrector-io/dyrectorio/golang/internal/util"
 	containerbuilder "github.com/dyrector-io/dyrectorio/golang/pkg/builder/container"
 	dagentutils "github.com/dyrector-io/dyrectorio/golang/pkg/dagent/utils"
 )
@@ -70,9 +71,9 @@ func GetCrux(state *State, args *ArgsFlags) containerbuilder.Builder {
 		WithCmd([]string{"serve"}).
 		WithLabels(map[string]string{
 			"traefik.enable": "true",
-			"traefik.http.routers.crux.rule": fmt.Sprintf("(Host(`localhost`) || Host(`%s`) || Host(`%s`)) && "+
+			"traefik.http.routers.crux.rule": fmt.Sprintf("(%s) && "+
 				"PathPrefix(`/api`) && !PathPrefix(`/api/auth`) && !PathPrefix(`/api/status`) ",
-				state.Containers.Traefik.Name, state.InternalHostDomain),
+				RenderTraefikHostRules(append(args.Hosts, state.Containers.Traefik.Name, state.InternalHostDomain)...)),
 			"traefik.http.routers.crux.entrypoints":               "web",
 			"traefik.http.services.crux.loadbalancer.server.port": fmt.Sprintf("%d", defaultCruxHTTPPort),
 			"com.docker.compose.project":                          args.Prefix,
@@ -220,8 +221,8 @@ func GetCruxUI(state *State, args *ArgsFlags) containerbuilder.Builder {
 		WithNetworkAliases(state.Containers.CruxUI.Name).
 		WithLabels(map[string]string{
 			"traefik.enable": "true",
-			"traefik.http.routers.crux-ui.rule": fmt.Sprintf("Host(`%s`) || Host(`%s`) || Host(`%s`)", traefikHost, state.InternalHostDomain,
-				state.Containers.Traefik.Name),
+			"traefik.http.routers.crux-ui.rule": RenderTraefikHostRules(
+				append(args.Hosts, traefikHost, state.InternalHostDomain, state.Containers.Traefik.Name)...),
 			"traefik.http.routers.crux-ui.entrypoints":               "web",
 			"traefik.http.services.crux-ui.loadbalancer.server.port": fmt.Sprintf("%d", defaultCruxUIPort),
 			"com.docker.compose.project":                             args.Prefix,
@@ -270,7 +271,7 @@ func GetTraefik(state *State, args *ArgsFlags) containerbuilder.Builder {
 		fmt.Sprintf("--entrypoints.web.address=:%d", defaultTraefikInternalPort),
 	}
 
-	if args.CruxUIDisabled {
+	if args.CruxUIDisabled || args.CruxDisabled {
 		commands = append(commands, "--providers.file.directory=/etc/traefik", "--providers.file.watch=true")
 	}
 
@@ -303,9 +304,14 @@ func GetTraefik(state *State, args *ArgsFlags) containerbuilder.Builder {
 			return CopyTraefikConfiguration(
 				ctx,
 				cont.Name,
-				state.InternalHostDomain,
-				state.SettingsFile.CruxHTTPPort,
-				state.SettingsFile.CruxUIPort,
+				traefikFileProviderData{
+					InternalHost:   state.InternalHostDomain,
+					HostRules:      RenderTraefikHostRules(append(args.Hosts, state.InternalHostDomain, cont.Name)...),
+					CruxUIPort:     state.SettingsFile.CruxUIPort,
+					CruxPort:       state.SettingsFile.CruxHTTPPort,
+					CruxUIDisabled: args.CruxUIDisabled,
+					CruxDisabled:   args.CruxDisabled,
+				},
 			)
 		})
 
@@ -345,8 +351,9 @@ func GetKratos(state *State, args *ArgsFlags) containerbuilder.Builder {
 		WithNetworkAliases(state.Containers.Kratos.Name).
 		WithLabels(map[string]string{
 			"traefik.enable": "true",
-			"traefik.http.routers.kratos.rule": fmt.Sprintf("(Host(`localhost`) || Host(`%s`) || Host(`%s`)) && "+
-				"PathPrefix(`/kratos`)", state.Containers.Traefik.Name, state.InternalHostDomain),
+			"traefik.http.routers.kratos.rule": fmt.Sprintf("(%s) && "+
+				"PathPrefix(`/kratos`)",
+				RenderTraefikHostRules(append(args.Hosts, state.Containers.Traefik.Name, state.InternalHostDomain)...)),
 			"traefik.http.routers.kratos.entrypoints":                    "web",
 			"traefik.http.services.kratos.loadbalancer.server.port":      fmt.Sprintf("%d", defaultKratosPublicPort),
 			"traefik.http.middlewares.kratos-strip.stripprefix.prefixes": "/kratos",
@@ -569,7 +576,7 @@ func getBasePostgres(state *State, args *ArgsFlags) containerbuilder.Builder {
 }
 
 // CopyTraefikConfiguration copies a config file to Traefik Container
-func CopyTraefikConfiguration(ctx context.Context, name, internalHostDomain string, cruxPort, cruxUIPort uint) error {
+func CopyTraefikConfiguration(ctx context.Context, containerName string, traefikTmplConfig traefikFileProviderData) error {
 	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
 	if err != nil {
 		return err
@@ -586,13 +593,7 @@ func CopyTraefikConfiguration(ctx context.Context, name, internalHostDomain stri
 
 	var result bytes.Buffer
 
-	traefikData := traefikFileProviderData{
-		InternalHost: internalHostDomain,
-		CruxUIPort:   cruxUIPort,
-		CruxPort:     cruxPort,
-	}
-
-	err = traefikConfig.Execute(&result, traefikData)
+	err = traefikConfig.Execute(&result, traefikTmplConfig)
 	if err != nil {
 		return err
 	}
@@ -606,7 +607,7 @@ func CopyTraefikConfiguration(ctx context.Context, name, internalHostDomain stri
 	err = dagentutils.WriteContainerFile(
 		ctx,
 		cli,
-		name,
+		containerName,
 		"traefik/dynamic_conf.yml",
 		data,
 		int64(len([]rune(result.String()))),
@@ -655,4 +656,13 @@ func healthProbe(ctx context.Context, address string) error {
 			return fmt.Errorf("health probe timeout for %s, last status code: %d", address, lastStatusCode)
 		}
 	}
+}
+
+func RenderTraefikHostRules(hosts ...string) string {
+	hostRules := []string{}
+	for _, v := range util.RemoveDuplicates(hosts) {
+		hostRules = append(hostRules, fmt.Sprintf("Host(`%s`)", v))
+	}
+
+	return util.JoinV(" || ", hostRules...)
 }

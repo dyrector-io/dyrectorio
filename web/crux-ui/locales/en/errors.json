@@ -1,5 +1,5 @@
 {
-  "oops": "Opps, something went wrong.",
+  "oops": "Oops, something went wrong.",
   "connectionLost": "Connection lost.",
   "invalid": "There are some errors. Please fix them.",
   "fetchFailed": "Failed to fetch {{type}}",

@@ -1,6 +1,8 @@
 module github.com/dyrector-io/dyrectorio
 
-go 1.21
+go 1.22.2
+
+toolchain go1.23.3
 
 require (
 	github.com/ProtonMail/gopenpgp/v2 v2.7.1
@@ -99,6 +101,7 @@ require (
 	github.com/modern-go/reflect2 v1.0.2 // indirect
 	github.com/morikuni/aec v1.0.0 // indirect
 	github.com/munnerz/goautoneg v0.0.0-20191010083416-a7dc8b61c822 // indirect
+	github.com/na4ma4/go-permbits v0.5.1
 	github.com/opencontainers/go-digest v1.0.0 // indirect
 	github.com/opencontainers/image-spec v1.1.0-rc3
 	github.com/pmezard/go-difflib v1.0.0 // indirect

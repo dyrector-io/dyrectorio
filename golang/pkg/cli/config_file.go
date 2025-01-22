@@ -18,6 +18,7 @@ import (
 
 	"github.com/docker/docker/client"
 	"github.com/ilyakaznacheev/cleanenv"
+	"github.com/na4ma4/go-permbits"
 	"github.com/rs/zerolog/log"
 	"gopkg.in/yaml.v3"
 )
@@ -40,6 +41,7 @@ type ArgsFlags struct {
 	Command            string
 	ImageTag           string
 	Prefix             string
+	Hosts              []string
 	CruxDisabled       bool
 	CruxUIDisabled     bool
 	LocalAgent         bool
@@ -118,8 +120,6 @@ const (
 )
 
 const (
-	filePerms               = 0o600
-	dirPerms                = 0o750
 	secretLength            = 32
 	cruxEncryptionKeyLength = 32
 	bufferMultiplier        = 2
@@ -252,7 +252,7 @@ func SaveSettings(state *State, args *ArgsFlags) {
 	// If settingsPath is default, we create the directory for it
 	if args.SettingsFilePath == settingsPath {
 		if _, err := os.Stat(path.Dir(settingsPath)); errors.Is(err, os.ErrNotExist) {
-			err = os.MkdirAll(path.Dir(settingsPath), dirPerms)
+			err = os.MkdirAll(path.Dir(settingsPath), permbits.UserAll+permbits.GroupRead+permbits.GroupExecute)
 			if err != nil {
 				log.Fatal().Err(err).Stack().Send()
 			}
@@ -271,7 +271,7 @@ func SaveSettings(state *State, args *ArgsFlags) {
 		log.Fatal().Err(err).Stack().Send()
 	}
 
-	err = os.WriteFile(args.SettingsFilePath, filedata, filePerms)
+	err = os.WriteFile(args.SettingsFilePath, filedata, permbits.UserReadWrite)
 	if err != nil {
 		log.Fatal().Err(err).Stack().Send()
 	}

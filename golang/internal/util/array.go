@@ -23,3 +23,17 @@ func ContainsMatcher[T comparable](arr []T, item T, comp func(T, T) bool) bool {
 
 	return false
 }
+
+func RemoveDuplicates(strings []string) []string {
+	seen := make(map[string]bool)
+	result := []string{}
+
+	for _, str := range strings {
+		if !seen[str] {
+			seen[str] = true
+			result = append(result, str)
+		}
+	}
+
+	return result
+}
