@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/dyrector-io/dyrectorio/golang/internal/util"
+
 	"github.com/stretchr/testify/assert"
 )
 
