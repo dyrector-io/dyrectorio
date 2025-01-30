@@ -2,6 +2,8 @@ package crane
 
 import (
 	"context"
+	"errors"
+	"fmt"
 	"os"
 
 	"github.com/rs/zerolog/log"
@@ -19,25 +21,29 @@ import (
 
 // checks before start
 // all the runtime dependencies to be checked
-func preflightChecks(cfg *config.Configuration) {
+func preflightChecks(cfg *config.Configuration) error {
 	size := cfg.DefaultVolumeSize
 	if size != "" {
 		_, err := resource.ParseQuantity(size)
 		if err != nil {
-			log.Panic().Err(err).Stack().Str("DEFAULT_VOLUME_SIZE", size).Msg("Provided env var has errnous value")
+			return errors.Join(err, fmt.Errorf("env var DEFAULT_VOLUME_SIZE has errnous value: %s", size))
 		}
 	}
+	return nil
 }
 
-func Serve(cfg *config.Configuration, secretStore commonConfig.SecretStore) {
-	preflightChecks(cfg)
+func Serve(cfg *config.Configuration, secretStore commonConfig.SecretStore) error {
+	err := preflightChecks(cfg)
+	if err != nil {
+		return err
+	}
 	log.Info().Msg("Starting dyrector.io crane service.")
 
 	// TODO(robot9706): Implement updater
 	log.Debug().Msg("No update was set up")
 
 	grpcContext := grpc.WithGRPCConfig(context.Background(), cfg)
-	grpc.Init(grpcContext, &cfg.CommonConfiguration, secretStore, &grpc.WorkerFunctions{
+	return grpc.Init(grpcContext, &cfg.CommonConfiguration, secretStore, &grpc.WorkerFunctions{
 		Deploy:               k8s.Deploy,
 		DeploySharedSecrets:  k8s.DeploySharedSecrets,
 		WatchContainerStatus: crux.WatchDeploymentsByPrefix,
