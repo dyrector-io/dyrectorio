@@ -2,6 +2,8 @@ package dagent
 
 import (
 	"context"
+	"errors"
+	"fmt"
 	"os"
 
 	"github.com/rs/zerolog/log"
@@ -13,7 +15,7 @@ import (
 	"github.com/dyrector-io/dyrectorio/protobuf/go/agent"
 )
 
-func Serve(cfg *config.Configuration) {
+func Serve(cfg *config.Configuration) error {
 	utils.PreflightChecks()
 	log.Info().Msg("Starting dyrector.io DAgent service")
 
@@ -29,12 +31,12 @@ func Serve(cfg *config.Configuration) {
 		err := utils.ExecTraefik(context.Background(), params, cfg)
 		if err != nil {
 			// we wanted to start traefik, but something is not ok, thus panic!
-			log.Panic().Err(err).Msg("Failed to start Traefik")
+			return errors.Join(err, fmt.Errorf("failed to start Traefik"))
 		}
 	}
 
 	grpcContext := grpc.WithGRPCConfig(context.Background(), cfg)
-	grpc.Init(grpcContext, &cfg.CommonConfiguration, cfg, &grpc.WorkerFunctions{
+	return grpc.Init(grpcContext, &cfg.CommonConfiguration, cfg, &grpc.WorkerFunctions{
 		Deploy:               utils.DeployImage,
 		DeploySharedSecrets:  utils.DeploySharedSecrets,
 		WatchContainerStatus: utils.ContainerStateStream,

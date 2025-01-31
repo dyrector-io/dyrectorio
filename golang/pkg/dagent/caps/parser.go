@@ -32,7 +32,7 @@ func ParseLabelsIntoContainerConfig(labels map[string]string, config *v1.Contain
 		}
 
 		ports := []builder.PortBinding{}
-		if config.Ports != nil && len(config.Ports) > 0 {
+		if config != nil && len(config.Ports) > 0 {
 			ports = config.Ports
 		}
 		for i := range network.Ports {
