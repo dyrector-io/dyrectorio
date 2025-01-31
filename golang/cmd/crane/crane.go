@@ -2,6 +2,8 @@ package main
 
 import (
 	"context"
+	"errors"
+	"fmt"
 	"os"
 
 	"github.com/rs/zerolog/log"
@@ -45,12 +47,12 @@ func main() {
 	}
 }
 
-func loadConfiguration() (*config.Configuration, *k8s.Secret) {
+func loadConfiguration() (*config.Configuration, *k8s.Secret, error) {
 	cfg := &config.Configuration{}
 
 	err := util.ReadConfig(cfg)
 	if err != nil {
-		log.Panic().Err(err).Msg("Failed to load configuration")
+		return nil, nil, errors.Join(err, fmt.Errorf("failed to load configuration"))
 	}
 
 	client := k8s.NewClient(cfg)
@@ -58,32 +60,37 @@ func loadConfiguration() (*config.Configuration, *k8s.Secret) {
 
 	err = cfg.InjectPrivateKey(secretHandler)
 	if err != nil {
-		log.Panic().Err(err).Msg("Failed to load private key")
+		return nil, nil, errors.Join(err, fmt.Errorf("failed to load private key"))
 	}
 
 	err = cfg.InjectGrpcToken(secretHandler)
 	if err != nil {
-		log.Panic().Err(err).Msg("Failed to load gRPC token")
+		return nil, nil, errors.Join(err, fmt.Errorf("failed to load gRPC token"))
 	}
 
 	log.Info().Msg("Configuration loaded.")
-	return cfg, secretHandler
+	return cfg, secretHandler, nil
 }
 
 func serve(_ *cli.Context) error {
-	cfg, secretHandler := loadConfiguration()
+	cfg, secretHandler, err := loadConfiguration()
+	if err != nil {
+		return err
+	}
 
-	crane.Serve(cfg, secretHandler)
-	return nil
+	return crane.Serve(cfg, secretHandler)
 }
 
 func initKey(cCtx *cli.Context) error {
-	cfg, secretHandler := loadConfiguration()
+	cfg, secretHandler, err := loadConfiguration()
+	if err != nil {
+		return err
+	}
 
 	client := k8s.NewClient(cfg)
 	namespace := cfg.Namespace
 	namespaceHandler := k8s.NewNamespaceClient(cCtx.Context, namespace, client)
-	err := namespaceHandler.EnsureExists(namespace)
+	err = namespaceHandler.EnsureExists(namespace)
 	if err != nil {
 		log.Error().Err(err).Send()
 		return err

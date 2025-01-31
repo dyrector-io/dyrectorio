@@ -1,6 +1,8 @@
 package main
 
 import (
+	"errors"
+	"fmt"
 	"os"
 
 	"github.com/rs/zerolog/log"
@@ -19,24 +21,22 @@ func serve(_ *cli.Context) error {
 
 	err := util.ReadConfig(&cfg)
 	if err != nil {
-		log.Panic().Err(err).Msg("Failed to load configuration")
+		return errors.Join(err, fmt.Errorf("failed to load configuration"))
 	}
 
 	err = cfg.InjectPrivateKey(&cfg)
 	if err != nil {
-		log.Panic().Err(err).Msg("Failed to load secrets private key")
+		return errors.Join(err, fmt.Errorf("failed to load secrets private key"))
 	}
 
 	err = cfg.InjectGrpcToken(&cfg)
 	if err != nil {
-		log.Panic().Err(err).Msg("Failed to load gRPC token")
+		return errors.Join(err, fmt.Errorf("failed to load gRPC token"))
 	}
 
 	log.Info().Msg("Configuration loaded.")
 
-	dagent.Serve(&cfg)
-
-	return nil
+	return dagent.Serve(&cfg)
 }
 
 func getHealth(_ *cli.Context) error {

@@ -287,7 +287,7 @@ func (cl *ClientLoop) grpcLoop(token *config.ValidJWT) error {
 			publicKey, keyErr := config.GetPublicKey(cl.AppConfig.SecretPrivateKey)
 
 			if keyErr != nil {
-				log.Panic().Stack().Err(keyErr).Str("publicKey", publicKey).Msg("gRPC public key error")
+				return errors.Join(keyErr, fmt.Errorf("gRPC public key error, key: %s", publicKey))
 			}
 
 			containerName := ""
@@ -369,7 +369,7 @@ func initWithToken(
 			log.Warn().Err(err).Msg("Secure mode is disabled in demo/dev environment, falling back to plain-text gRPC")
 			creds = insecure.NewCredentials()
 		} else {
-			log.Panic().Err(err).Msg("Could not fetch valid certificate")
+			return errors.Join(err, fmt.Errorf("could not fetch valid certificate"))
 		}
 	} else {
 		creds = credentials.NewClientTLSFromCert(certPool, "")
@@ -409,7 +409,7 @@ func Init(grpcContext context.Context,
 	appConfig *config.CommonConfiguration,
 	secrets config.SecretStore,
 	workerFuncs *WorkerFunctions,
-) {
+) error {
 	log.Info().Msg("Spinning up gRPC Agent client...")
 	if grpcConn == nil {
 		grpcConn = &Connection{}
@@ -424,24 +424,27 @@ func Init(grpcContext context.Context,
 	}
 
 	err = initWithToken(grpcContext, appConfig, workerFuncs, secrets, appConfig.JwtToken)
+	// intentional check no errors => no fallback
 	if err == nil {
-		return
+		return nil
 	}
 
 	if !errors.Is(err, ErrConnectionRefused) {
-		log.Panic().Err(err).Msg("Connection refused")
+		return errors.Join(err, fmt.Errorf("connection refused"))
 	}
 
 	if appConfig.FallbackJwtToken == nil {
-		return
+		return nil
 	}
 
 	log.Warn().Msg("Connection failed, trying fallback token")
 
 	err = initWithToken(grpcContext, appConfig, workerFuncs, secrets, appConfig.FallbackJwtToken)
 	if err != nil {
-		log.Panic().Err(err).Msg("Connection refused with fallback token")
+		return errors.Join(err, fmt.Errorf("connection refused with fallback token"))
 	}
+
+	return nil
 }
 
 func (cl *ClientLoop) handleGrpcTokenError(err error, token *config.ValidJWT) {
@@ -1176,7 +1179,7 @@ func (cl *ClientLoop) executeReplaceToken(command *agent.ReplaceTokenRequest) er
 	err = cl.Secrets.SaveConnectionToken(command.GetToken())
 	if err != nil {
 		// NOTE(@m8vago): For example, out of space?
-		log.Panic().Err(err).Msg("Failed to write the JWT token.")
+		return errors.Join(err, fmt.Errorf("failed to write the JWT token"))
 	}
 
 	md, ok := metadata.FromOutgoingContext(cl.Ctx)
