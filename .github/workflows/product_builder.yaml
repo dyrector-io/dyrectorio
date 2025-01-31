@@ -249,9 +249,9 @@ jobs:
       - name: Merge coverage
         run: gocovmerge ./builder.cov ./cli.cov ./crane.cov ./dagent.cov ./internal.cov ./unit.cov  > ./merged.cov
       - name: Upload coverage reports to Codecov with GitHub Action
-        uses: codecov/codecov-action@v3
+        uses: codecov/codecov-action@v5
         with:
-          files: ./merged.cov
+          file: ./merged.cov
           name: golang-coverage
   go_build:
     runs-on: ubuntu-22.04
