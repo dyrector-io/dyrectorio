@@ -1,6 +1,39 @@
 # CHANGELOG
 
 
+<a name="0.15.0"></a>
+## [0.15.0](https://github.com/dyrector-io/dyrectorio/compare/0.14.1...0.15.0) (2025-01-31)
+
+### Doc
+
+* fix the links in the README ([#1039](https://github.com/dyrector-io/dyrectorio/issues/1039))
+
+### Feat
+
+* **(cli):** add host override for any number of hosts ([#1014](https://github.com/dyrector-io/dyrectorio/issues/1014))
+* **(web):** specify pipeline target branch ([#1023](https://github.com/dyrector-io/dyrectorio/issues/1023))
+* **(web):** deployments list pagination & filtering ([#1021](https://github.com/dyrector-io/dyrectorio/issues/1021))
+* sso setup ([#1026](https://github.com/dyrector-io/dyrectorio/issues/1026))
+* agent install name ([#1016](https://github.com/dyrector-io/dyrectorio/issues/1016))
+* add image order column ([#1020](https://github.com/dyrector-io/dyrectorio/issues/1020))
+* **(crux-ui):** add redirects to cards ([#1011](https://github.com/dyrector-io/dyrectorio/issues/1011))
+* add validation to /api/$/projects/$/versions/$/images API ([#1008](https://github.com/dyrector-io/dyrectorio/issues/1008))
+
+### Fix
+
+* override nestjs-modules/mailer with new mjml version ([#1038](https://github.com/dyrector-io/dyrectorio/issues/1038))
+* docker labels ([#1024](https://github.com/dyrector-io/dyrectorio/issues/1024))
+* agent update image ([#1017](https://github.com/dyrector-io/dyrectorio/issues/1017))
+* **(crux-ui):** For Next.js, Node.js version >= v18.17.0 is required. ([#1015](https://github.com/dyrector-io/dyrectorio/issues/1015))
+* add client & server side keepalive ([#1013](https://github.com/dyrector-io/dyrectorio/issues/1013))
+* **(crux-ui):** add some contrast 3rd party login options ([#1010](https://github.com/dyrector-io/dyrectorio/issues/1010))
+
+### Refactor
+
+* **(agent):** remove unnecessary panic calls ([#1036](https://github.com/dyrector-io/dyrectorio/issues/1036))
+* configurations ([#1018](https://github.com/dyrector-io/dyrectorio/issues/1018))
+
+
 <a name="0.14.1"></a>
 ## [0.14.1](https://github.com/dyrector-io/dyrectorio/compare/0.14.0...0.14.1) (2024-10-03)
 
@@ -110,11 +143,7 @@
 
 
 <a name="0.11.5"></a>
-## [0.11.5](https://github.com/dyrector-io/dyrectorio/compare/help...0.11.5) (2024-04-05)
-
-
-<a name="help"></a>
-## [help](https://github.com/dyrector-io/dyrectorio/compare/0.11.4...help) (2024-04-05)
+## [0.11.5](https://github.com/dyrector-io/dyrectorio/compare/0.11.4...0.11.5) (2024-04-05)
 
 ### Feat
 
@@ -148,20 +177,7 @@
 
 
 <a name="0.11.3"></a>
-## [0.11.3](https://github.com/dyrector-io/dyrectorio/compare/ls...0.11.3) (2024-03-11)
-
-### Feat
-
-* container log api ([#931](https://github.com/dyrector-io/dyrectorio/issues/931))
-
-### Fix
-
-* container log new line ([#932](https://github.com/dyrector-io/dyrectorio/issues/932))
-* add ENCRYPTION_SECRET_KEY to compose files ([#927](https://github.com/dyrector-io/dyrectorio/issues/927))
-
-
-<a name="ls"></a>
-## [ls](https://github.com/dyrector-io/dyrectorio/compare/0.11.2...ls) (2024-02-26)
+## [0.11.3](https://github.com/dyrector-io/dyrectorio/compare/0.11.2...0.11.3) (2024-03-11)
 
 ### Doc
 
@@ -169,7 +185,13 @@
 
 ### Feat
 
+* container log api ([#931](https://github.com/dyrector-io/dyrectorio/issues/931))
 * **(web):** update kratos to 1.1.0 ([#925](https://github.com/dyrector-io/dyrectorio/issues/925))
+
+### Fix
+
+* container log new line ([#932](https://github.com/dyrector-io/dyrectorio/issues/932))
+* add ENCRYPTION_SECRET_KEY to compose files ([#927](https://github.com/dyrector-io/dyrectorio/issues/927))
 
 
 <a name="0.11.2"></a>
@@ -1042,7 +1064,7 @@
 
 
 <a name="0.2.1"></a>
-## [0.2.1](https://github.com/dyrector-io/dyrectorio/compare/v0.1.1...0.2.1) (2022-09-27)
+## [0.2.1](https://github.com/dyrector-io/dyrectorio/compare/0.1.1...0.2.1) (2022-09-27)
 
 ### Chore
 
@@ -1195,12 +1217,8 @@
 * websocket message routing
 
 
-<a name="v0.1.1"></a>
-## [v0.1.1](https://github.com/dyrector-io/dyrectorio/compare/0.1.1...v0.1.1) (2022-08-03)
-
-
 <a name="0.1.1"></a>
-## [0.1.1](https://github.com/dyrector-io/dyrectorio/compare/v0.1.0...0.1.1) (2022-08-03)
+## [0.1.1](https://github.com/dyrector-io/dyrectorio/compare/0.1.0...0.1.1) (2022-08-03)
 
 ### Chore
 
@@ -1214,10 +1232,6 @@
 ### Refactor
 
 * **(agent):** tests ([#54](https://github.com/dyrector-io/dyrectorio/issues/54))
-
-
-<a name="v0.1.0"></a>
-## [v0.1.0](https://github.com/dyrector-io/dyrectorio/compare/0.1.0...v0.1.0) (2022-08-01)
 
 
 <a name="0.1.0"></a>
