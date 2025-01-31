@@ -39,7 +39,7 @@ export default class PrismaErrorInterceptor implements NestInterceptor {
       const { target } = meta
 
       const hasName = target && target.includes('name')
-      const property = hasName ? 'name' : target?.toString() ?? 'unknown'
+      const property = hasName ? 'name' : (target?.toString() ?? 'unknown')
 
       const error: CruxExceptionOptions = {
         message: `${property} taken`,

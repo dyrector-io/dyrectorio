@@ -138,14 +138,14 @@ export default class RegistryClientProvider {
         connInfo.type === 'v2'
           ? createV2()
           : connInfo.type === 'hub'
-          ? await createHub()
-          : connInfo.type === 'github'
-          ? createGithub()
-          : connInfo.type === 'gitlab'
-          ? createGitlab()
-          : connInfo.type === 'google'
-          ? createGoogle()
-          : createUnchecked(),
+            ? await createHub()
+            : connInfo.type === 'github'
+              ? createGithub()
+              : connInfo.type === 'gitlab'
+                ? createGitlab()
+                : connInfo.type === 'google'
+                  ? createGoogle()
+                  : createUnchecked(),
     }
 
     this.clients.set(connInfo.id, entry)
