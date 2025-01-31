@@ -193,7 +193,7 @@ jobs:
           export KUBECONFIG="$(pwd)/k3d-auth.yaml" && \
           make test-integration
       - name: Upload integration test results
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: golang-integration-coverage
           path: ${{ env.GOLANG_WORKING_DIRECTORY }}/**.cov
@@ -222,7 +222,7 @@ jobs:
       - name: Run unit tests with coverage
         run: make test-unit-with-coverage
       - name: Upload unit test results
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: golang-unit-coverage
           path: ${{ env.GOLANG_WORKING_DIRECTORY }}/**.cov
@@ -302,17 +302,17 @@ jobs:
           docker save ${GITHUB_REGISTRY}/${DAGENT_IMAGE_NAME}:${{ needs.gather_changes.outputs.tag }} | zstd > dagent.zstd
           docker save ${GITHUB_REGISTRY}/${CLI_IMAGE_NAME}:${{ needs.gather_changes.outputs.tag }} | zstd > cli.zstd
       - name: artifact upload
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: crane
           path: ${{ env.GOLANG_WORKING_DIRECTORY }}/crane.zstd
       - name: artifact upload
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: dagent
           path: ${{ env.GOLANG_WORKING_DIRECTORY }}/dagent.zstd
       - name: artifact upload
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: cli
           path: ${{ env.GOLANG_WORKING_DIRECTORY }}/cli.zstd
@@ -410,7 +410,7 @@ jobs:
       - name: Docker save
         run: docker save ${GITHUB_REGISTRY}/${CRUX_IMAGE_NAME}:${{ needs.gather_changes.outputs.tag }} | zstd > crux.zstd
       - name: artifact upload
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: crux
           path: ${{ env.CRUX_WORKING_DIRECTORY }}/crux.zstd
@@ -490,7 +490,7 @@ jobs:
       - name: Docker save
         run: docker save ${GITHUB_REGISTRY}/${CRUX_UI_IMAGE_NAME}:${{ needs.gather_changes.outputs.tag }} | zstd > crux-ui.zstd
       - name: artifact upload
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: crux-ui
           path: ${{ env.CRUX_UI_WORKING_DIRECTORY }}/crux-ui.zstd
@@ -512,7 +512,7 @@ jobs:
       - name: Docker save
         run: docker save ${GITHUB_REGISTRY}/${KRATOS_IMAGE_NAME}:${{ needs.gather_changes.outputs.tag }} | zstd > kratos.zstd
       - name: artifact upload
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: kratos
           path: ${{ env.KRATOS_WORKING_DIRECTORY }}/kratos.zstd
@@ -645,17 +645,17 @@ jobs:
             docker logs $cont > logs/$cont.log 2>&1
             docker inspect $cont > logs/$cont.inspect 2>&1
           done
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         if: failure()
         with:
           name: e2e-logs
           path: ${{ env.CRUX_UI_WORKING_DIRECTORY }}/logs
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         if: always()
         with:
           name: e2e-screenshots
           path: ${{ env.CRUX_UI_WORKING_DIRECTORY }}/e2e/screenshots/
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         if: failure()
         with:
           name: e2e-trace
