@@ -239,11 +239,11 @@ jobs:
       - name: Install coverage merger
         run: go install go.shabbyrobe.org/gocovmerge/cmd/gocovmerge@latest
       - name: Download integration test results from artifacts
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: golang-integration-coverage
       - name: Download unit test results from artifacts
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: golang-unit-coverage
       - name: Merge coverage
@@ -544,13 +544,13 @@ jobs:
         uses: actions/checkout@v3
       # - name: crane - artifact download
       #   if: needs.gather_changes.outputs.agents == 'true'
-      #   uses: actions/download-artifact@v3
+      #   uses: actions/download-artifact@v4
       #   with:
       #     name: crane
       #     path: artifacts
       - name: dagent - artifact download
         if: ${{ (needs.gather_changes.outputs.agents == 'true') || (github.ref_type == 'tag')  || (needs.gather_changes.outputs.release == 'true') }}
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: dagent
           path: artifacts
@@ -561,7 +561,7 @@ jobs:
         # zstd -dc artifacts/crane.zstd | docker load
       - name: crux - artifact download
         if: ${{ (needs.gather_changes.outputs.crux == 'true') || (github.ref_type == 'tag')  || (needs.gather_changes.outputs.release == 'true') }}
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: crux
           path: artifacts
@@ -570,7 +570,7 @@ jobs:
         run: zstd -dc artifacts/crux.zstd | docker load
       - name: crux-ui - artifact download
         if: ${{ (needs.gather_changes.outputs.cruxui == 'true') || (github.ref_type == 'tag')  || (needs.gather_changes.outputs.release == 'true') }}
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: crux-ui
           path: artifacts
@@ -579,7 +579,7 @@ jobs:
         run: zstd -dc artifacts/crux-ui.zstd | docker load
       - name: kratos - artifact download
         if: ${{ (needs.gather_changes.outputs.kratos == 'true') || (github.ref_type == 'tag')  || (needs.gather_changes.outputs.release == 'true') }}
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: kratos
           path: artifacts
@@ -588,7 +588,7 @@ jobs:
         run: zstd -dc artifacts/kratos.zstd | docker load
       - name: cli - artifact download
         if: ${{ (needs.gather_changes.outputs.agents == 'true') || (github.ref_type == 'tag')  || (needs.gather_changes.outputs.release == 'true') }}
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: cli
           path: artifacts
@@ -822,7 +822,7 @@ jobs:
     environment: Workflow - Protected
     steps:
       - name: artifact download
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: crux
           path: artifacts
@@ -885,7 +885,7 @@ jobs:
     environment: Workflow - Protected
     steps:
       - name: artifact download
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: crux-ui
           path: artifacts
@@ -948,7 +948,7 @@ jobs:
     environment: Workflow - Protected
     steps:
       - name: artifact download
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: kratos
           path: artifacts
