@@ -227,12 +227,12 @@ export default class ContainerMapper {
 
   configDataToDbPatch(config: ContainerConfigData): ContainerConfigDbPatch {
     return {
-      name: 'name' in config ? config.name ?? null : undefined,
-      expose: 'expose' in config ? config.expose ?? null : undefined,
+      name: 'name' in config ? (config.name ?? null) : undefined,
+      expose: 'expose' in config ? (config.expose ?? null) : undefined,
       routing: 'routing' in config ? toPrismaJson(config.routing) : undefined,
       configContainer: 'configContainer' in config ? toPrismaJson(config.configContainer) : undefined,
       user: 'user' in config ? toNullableNumber(config.user) : undefined,
-      workingDirectory: 'workingDirectory' in config ? config.workingDirectory ?? null : undefined,
+      workingDirectory: 'workingDirectory' in config ? (config.workingDirectory ?? null) : undefined,
       tty: 'tty' in config ? toNullableBoolean(config.tty) : undefined,
       ports: 'ports' in config ? toPrismaJson(config.ports) : undefined,
       portRanges: 'portRanges' in config ? toPrismaJson(config.portRanges) : undefined,
@@ -244,18 +244,18 @@ export default class ContainerMapper {
       initContainers: 'initContainers' in config ? toPrismaJson(config.initContainers) : undefined,
       logConfig: 'logConfig' in config ? toPrismaJson(config.logConfig) : undefined,
       storageSet: 'storageSet' in config ? toNullableBoolean(config.storageSet) : undefined,
-      storageId: 'storageId' in config ? config.storageId ?? null : undefined,
+      storageId: 'storageId' in config ? (config.storageId ?? null) : undefined,
       storageConfig: 'storageConfig' in config ? toPrismaJson(config.storageConfig) : undefined,
 
       // dagent
-      restartPolicy: 'restartPolicy' in config ? config.restartPolicy ?? null : undefined,
-      networkMode: 'networkMode' in config ? config.networkMode ?? null : undefined,
+      restartPolicy: 'restartPolicy' in config ? (config.restartPolicy ?? null) : undefined,
+      networkMode: 'networkMode' in config ? (config.networkMode ?? null) : undefined,
       networks: 'networks' in config ? toPrismaJson(config.networks) : undefined,
       dockerLabels: 'dockerLabels' in config ? toPrismaJson(config.dockerLabels) : undefined,
       expectedState: 'expectedState' in config ? toPrismaJson(config.expectedState) : undefined,
 
       // crane
-      deploymentStrategy: 'deploymentStrategy' in config ? config.deploymentStrategy ?? null : undefined,
+      deploymentStrategy: 'deploymentStrategy' in config ? (config.deploymentStrategy ?? null) : undefined,
       healthCheckConfig: 'healthCheckConfig' in config ? toPrismaJson(config.healthCheckConfig) : undefined,
       resourceConfig: 'resourceConfig' in config ? toPrismaJson(config.resourceConfig) : undefined,
       proxyHeaders: 'proxyHeaders' in config ? toNullableBoolean(config.proxyHeaders) : undefined,

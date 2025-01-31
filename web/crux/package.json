@@ -113,6 +113,9 @@
     "typescript": "^5.1.6"
   },
   "overrides": {
-    "degenerator": "5.0.0"
+    "degenerator": "5.0.0",
+    "@nestjs-modules/mailer": {
+      "mjml": "^5.0.0-alpha.4"
+    }
   }
 }
