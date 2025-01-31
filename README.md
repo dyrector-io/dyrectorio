@@ -36,8 +36,7 @@ Join our Discord and connect with other members to share and learn together. If 
 
 You have various options to set up the platform right away:
 
--   [CLI](./GETTING_STARTED.md)
--   [SaaS](#hosted-version-saas)
+-   [Getting started with CLI](./GETTING_STARTED.md)
 -   [docker-compose.yaml](./docker-compose.yaml)
 
 ## Use Cases
@@ -83,7 +82,7 @@ https://user-images.githubusercontent.com/9247788/219671903-41da385e-4f8f-4fba-a
 
 ## Deployment Options
 
-Besides the self-hosted instance, you can check out the platform's alpha at [app.dyrectorio.com](https://app.dyrectorio.com). The platform is still in the works, we might reset the database, so it's not recommended for production yet. If you are interested in using dyrector.io in production, reach out to us via [email](hello@dyrector.io) and we'll set up a stable instance for you.
+Besides the self-hosted instance, you can check out the platform's alpha at [app.dyrectorio.com](https://app.dyrectorio.com). The platform is still in the works, we might reset the database, so it's not recommended for production yet.
 
 ## How it Works
 
