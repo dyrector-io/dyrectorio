@@ -8,7 +8,7 @@ ENV GOCACHE $GOPATH/cache
 
 SHELL ["/bin/ash","-c"]
 WORKDIR /usr/work
-LABEL org.opencontainers.image.source="https://github.com/dyrector-io/dyrectorio/tree/develop/images/builder-protobuf"
+LABEL org.opencontainers.image.source="https://github.com/dyrector-io/dyrectorio/tree/develop/distrib/images/builder-protobuf"
 
 RUN mkdir -p $GOPATH/src && \
     mkdir -p $GOPATH/bin && \

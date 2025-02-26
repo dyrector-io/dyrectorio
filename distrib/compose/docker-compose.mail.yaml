@@ -1,0 +1,15 @@
+# If you don't have a mailserver you can use the provided mailslurper
+# but keep in mind, this one is insecure, only use it at your own risk!
+# docker compose up -f docker-compose.yaml -f distrib/compose/docker-compose.mail.yaml
+# Add this env to kratos:
+# - COURIER_SMTP_CONNECTION_URI=smtps://test:test@mailslurper:1025/?skip_ssl_verify=true&legacy_ssl=true
+# Add this env to crux:
+# - SMTP_URI=smtps://test:test@mailslurper:1025/?skip_ssl_verify=true&legacy_ssl=true
+services:
+  mailslurper:
+    container_name: mailslurper
+    image: docker.io/oryd/mailslurper:smtps-latest
+    ports: # port 1025 is used internally for smtp, you do not have to expose that
+      - 4436:4436 # web UI
+      - 4437:4437 # http API
+    restart: unless-stopped
