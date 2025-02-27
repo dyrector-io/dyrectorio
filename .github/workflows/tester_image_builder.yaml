@@ -25,7 +25,7 @@ jobs:
       - name: Docker save
         run: docker save ${GITHUB_REGISTRY}/${TESTER_IMAGE_NAME}:latest | gzip -f > tester.zstd
       - name: Artifact upload
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: tester
           path: ./tester.zstd
@@ -38,7 +38,7 @@ jobs:
     environment: Workflow - Protected
     steps:
       - name: Artifact download
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: tester
           path: artifacts
