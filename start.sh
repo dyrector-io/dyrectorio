@@ -17,7 +17,7 @@ ensure_compose() {
 }
 
 # Check if running in an interactive terminal
-if [ -t 0 ]; then
+if tty -s; then
     INTERACTIVE=true
 else
     INTERACTIVE=false
