@@ -123,7 +123,7 @@ install-go-tools:
 	go install github.com/securego/gosec/v2/cmd/gosec@${GOSEC}
 	go install mvdan.cc/gofumpt@${GOFUMPT}
 	go install github.com/google/yamlfmt/cmd/yamlfmt@${YAMLFMT}
-	go install go install golang.org/x/tools/go/analysis/passes/fieldalignment/cmd/fieldalignment@${FIELDALIGN}
+	go install golang.org/x/tools/go/analysis/passes/fieldalignment/cmd/fieldalignment@${FIELDALIGN}
 
 .PHONY: compile-agents
 compile-agents: compile-crane compile-dagent
