@@ -2,17 +2,9 @@ name: builder_image_golang
 on:
   push:
     branches: [develop]
-    paths:
-      [
-        distrib/images/builder-golang/**,
-        .github/workflows/image-builder-golang.yml,
-      ]
+    paths: [distrib/images/builder-golang/**, .github/workflows/image-builder-golang.yml]
   pull_request:
-    paths:
-      [
-        distrib/images/builder-golang/**,
-        .github/workflows/image-builder-golang.yml,
-      ]
+    paths: [distrib/images/builder-golang/**, .github/workflows/image-builder-golang.yml]
 permissions:
   contents: read
   pull-requests: read
@@ -26,7 +18,7 @@ jobs:
     runs-on: ubuntu-22.04
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: Add requirements and build the image
         run: |
           sudo apt update
@@ -38,7 +30,7 @@ jobs:
         run: |
           docker save ${GITHUB_REGISTRY}/${BUILDER_IMAGE_NAME}:${VERSION} | gzip -f > builder.zstd
       - name: Artifact upload
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: builder
           path: ./builder.zstd
@@ -49,7 +41,7 @@ jobs:
     environment: Workflow - Protected
     steps:
       - name: Artifact download
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: builder
           path: artifacts

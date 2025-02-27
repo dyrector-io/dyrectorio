@@ -75,7 +75,6 @@ services:
     depends_on:
       crux:
         condition: service_started
-
     restart: unless-stopped
     labels:
       - org.dyrectorio.service-category=_internal
@@ -95,7 +94,6 @@ services:
       - COURIER_SMTP_CONNECTION_URI=${SMTP_URI}
       - FROM_EMAIL=${FROM_EMAIL}
       - FROM_NAME=${FROM_NAME}
-
     depends_on:
       kratos-postgres:
         condition: service_healthy
@@ -120,7 +118,6 @@ services:
   kratos-postgres:
     container_name: kratos-postgres
     image: docker.io/library/postgres:13-alpine
-
     restart: unless-stopped
     volumes: ['kratos-db:/var/lib/postgresql/data']
     healthcheck:

@@ -20,4 +20,3 @@ services:
     restart: unless-stopped
     labels:
       - org.dyrectorio.service-category=_internal
- 
