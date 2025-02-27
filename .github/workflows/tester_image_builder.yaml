@@ -21,7 +21,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
       - name: Docker build
-        run: docker build -t ${GITHUB_REGISTRY}/${TESTER_IMAGE_NAME}:latest ./images/playwright
+        run: docker build -t ${GITHUB_REGISTRY}/${TESTER_IMAGE_NAME}:latest ./distrib/images/playwright
       - name: Docker save
         run: docker save ${GITHUB_REGISTRY}/${TESTER_IMAGE_NAME}:latest | gzip -f > tester.zstd
       - name: Artifact upload
