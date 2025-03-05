@@ -1,6 +1,6 @@
 # If you don't have a mailserver you can use the provided mailslurper
 # but keep in mind, this one is insecure, only use it at your own risk!
-# docker compose up -f docker-compose.yaml -f distrib/compose/docker-compose.mail-test.yaml
+# docker compose up -f docker-compose.yaml -f distribution/compose/docker-compose.mail-test.yaml
 # Add this env to kratos:
 # - COURIER_SMTP_CONNECTION_URI=smtps://test:test@mailslurper:1025/?skip_ssl_verify=true&legacy_ssl=true
 # Add this env to crux:

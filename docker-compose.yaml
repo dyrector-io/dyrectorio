@@ -1,4 +1,4 @@
-# This is a minimal compose file, meant to be extended using files from the distrib/compose folder
+# This is a minimal compose file, meant to be extended using files from the distribution/compose folder
 services:
   crux:
     container_name: crux
@@ -118,6 +118,10 @@ services:
   kratos-postgres:
     container_name: kratos-postgres
     image: docker.io/library/postgres:13-alpine
+    environment:
+      - POSTGRES_PASSWORD=${KRATOS_POSTGRES_PASSWORD}
+      - POSTGRES_USER=kratos
+      - POSTGRES_DB=kratos
     restart: unless-stopped
     volumes: ['kratos-db:/var/lib/postgresql/data']
     healthcheck:

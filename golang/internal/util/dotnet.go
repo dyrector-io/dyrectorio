@@ -2,9 +2,9 @@ package util
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 
-	"github.com/pkg/errors"
 	"github.com/rs/zerolog/log"
 )
 

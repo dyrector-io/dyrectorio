@@ -37,7 +37,7 @@ Join our Discord and connect with other members to share and learn together. If 
 You have various options to set up the platform right away:
 - our convenience script
   ```
-    curl -sL https://raw.githubusercontent.com/dyrector-io/dyrectorio/refs/heads/feat/simplified-install-script/start.sh | bash
+    curl -sL https://raw.githubusercontent.com/dyrector-io/dyrectorio/refs/heads/feat/simplified-install-script/start.sh | bash -i
   ```
 -   [Getting started with CLI](./GETTING_STARTED.md)
 -   [docker-compose.yaml](./docker-compose.yaml)

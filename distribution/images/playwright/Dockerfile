@@ -15,5 +15,5 @@ WORKDIR /
 
 RUN rm -rf playwright
 
-LABEL org.opencontainers.image.source="https://github.com/dyrector-io/dyrectorio/tree/develop/distrib/images/playwright"
+LABEL org.opencontainers.image.source="https://github.com/dyrector-io/dyrectorio/tree/develop/distribution/images/playwright"
 

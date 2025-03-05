@@ -11,9 +11,9 @@ ensure_compose() {
     BRANCH="feat/simplified-install-script"
   fi
   [ ! -f ./docker-compose.yaml ] && wget "https://raw.githubusercontent.com/dyrector-io/dyrectorio/refs/heads/$BRANCH/docker-compose.yaml"
-  [ "$DEPLOY_TEST_MAIL" == "y" ] && [ ! -f ./distrib/compose/docker-compose.mail-test.yaml ] && mkdir -p ./distrib/compose && wget "https://raw.githubusercontent.com/dyrector-io/dyrectorio/refs/heads/$BRANCH/docker-compose.mail-test.yaml" -O ./distrib/compose/docker-compose.mail-test.yaml
-  [ "$DEPLOY_TRAEFIK" == "y" ] && [ ! -f ./distrib/compose/docker-compose.traefik.yaml ] && mkdir -p ./distrib/compose && wget "https://raw.githubusercontent.com/dyrector-io/dyrectorio/refs/heads/$BRANCH/distrib/compose/docker-compose.traefik.yaml" -O ./distrib/compose/docker-compose.traefik.yaml
-  [ "$ADD_TRAEFIK_LABELS" == "y" ] && [ ! -f ./distrib/compose/docker-compose.traefik-labels.yaml ] && mkdir -p ./distrib/compose && wget "https://raw.githubusercontent.com/dyrector-io/dyrectorio/refs/heads/$BRANCH/distrib/compose/docker-compose.traefik-labels.yaml" -O ./distrib/compose/docker-compose.traefik-labels.yaml
+  [ "$DEPLOY_TEST_MAIL" == "y" ] && [ ! -f ./distribution/compose/docker-compose.mail-test.yaml ] && mkdir -p ./distribution/compose && wget "https://raw.githubusercontent.com/dyrector-io/dyrectorio/refs/heads/$BRANCH/docker-compose.mail-test.yaml" -O ./distribution/compose/docker-compose.mail-test.yaml
+  [ "$DEPLOY_TRAEFIK" == "y" ] && [ ! -f ./distribution/compose/docker-compose.traefik.yaml ] && mkdir -p ./distribution/compose && wget "https://raw.githubusercontent.com/dyrector-io/dyrectorio/refs/heads/$BRANCH/distribution/compose/docker-compose.traefik.yaml" -O ./distribution/compose/docker-compose.traefik.yaml
+  [ "$ADD_TRAEFIK_LABELS" == "y" ] && [ ! -f ./distribution/compose/docker-compose.traefik-labels.yaml ] && mkdir -p ./distribution/compose && wget "https://raw.githubusercontent.com/dyrector-io/dyrectorio/refs/heads/$BRANCH/distribution/compose/docker-compose.traefik-labels.yaml" -O ./distribution/compose/docker-compose.traefik-labels.yaml
 }
 
 # Check if running in an interactive terminal
@@ -101,9 +101,9 @@ Choose no if you have Traefik running already or you have other preferences (y/n
 
   # Compose concatenation for extra features
   COMPOSE_FILE="docker-compose.yaml"
-  [ "$DEPLOY_TRAEFIK" == "y" ] && COMPOSE_FILE+=":distrib/compose/docker-compose.traefik.yaml"
-  [ "$ADD_TRAEFIK_LABELS" == "y" ] && COMPOSE_FILE+=":distrib/compose/docker-compose.traefik-labels.yaml"
-  [ "$DEPLOY_TEST_MAIL" == "y" ] && COMPOSE_FILE+=":distrib/compose/docker-compose.mail-test.yaml"
+  [ "$DEPLOY_TRAEFIK" == "y" ] && COMPOSE_FILE+=":distribution/compose/docker-compose.traefik.yaml"
+  [ "$ADD_TRAEFIK_LABELS" == "y" ] && COMPOSE_FILE+=":distribution/compose/docker-compose.traefik-labels.yaml"
+  [ "$DEPLOY_TEST_MAIL" == "y" ] && COMPOSE_FILE+=":distribution/compose/docker-compose.mail-test.yaml"
 
   if [ -z "$DOMAIN" ]; then
       read -p "Enter domain (dyo.yourdomain.com): " DOMAIN

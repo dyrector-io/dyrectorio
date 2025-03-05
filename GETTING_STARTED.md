@@ -18,7 +18,7 @@ Stack:
 
 ## Option 0: Using our convinience script
 ```
-curl -sL https://raw.githubusercontent.com/dyrector-io/dyrectorio/refs/heads/feat/simplified-install-script/start.sh | bash
+curl -sL https://raw.githubusercontent.com/dyrector-io/dyrectorio/refs/heads/feat/simplified-install-script/start.sh | bash -i
 ```
 
 ## Option 1: Go install
