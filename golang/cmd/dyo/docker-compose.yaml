@@ -1,0 +1,137 @@
+# This is a minimal compose file, meant to be extended using files from the distribution/compose folder
+services:
+  crux:
+    container_name: crux
+    image: ghcr.io/dyrector-io/dyrectorio/web/crux:${DYO_VERSION:-stable}
+    command: [serve]
+    environment:
+      - TZ=${TIMEZONE:-UTC}
+      - LOG_LEVEL=${LOG_LEVEL:-debug}
+      - DATABASE_URL=postgresql://crux:${CRUX_POSTGRES_PASSWORD}@crux-postgres:5432/crux?schema=public
+      - KRATOS_ADMIN_URL=http://kratos:4434
+      - KRATOS_URL=http://kratos:4433
+      - CRUX_UI_URL=${EXTERNAL_PROTO}://${DOMAIN}
+      - CRUX_AGENT_ADDRESS=${DOMAIN}:443
+      - JWT_SECRET=${CRUX_SECRET}
+      - FROM_EMAIL=${FROM_EMAIL}
+      - FROM_NAME=${FROM_NAME}
+      - SMTP_URI=${SMTP_URI}
+      - DISABLE_RECAPTCHA=${DISABLE_RECAPTCHA:-true}
+      - RECAPTCHA_SECRET_KEY=${RECAPTCHA_SECRET_KEY}
+      - RECAPTCHA_SITE_KEY=${RECAPTCHA_SITE_KEY}
+      - QA_OPT_OUT=${QA_OPT_OUT:-false}
+      - ENCRYPTION_SECRET_KEY=${ENCRYPTION_SECRET_KEY}
+    depends_on:
+      crux-postgres:
+        condition: service_healthy
+      crux-migrate:
+        condition: service_completed_successfully
+    restart: unless-stopped
+    labels:
+      - org.dyrectorio.service-category=_internal
+      # ports:
+      #   - 1848:1848 # http API
+  crux-migrate:
+    container_name: crux-migrate
+    image: ghcr.io/dyrector-io/dyrectorio/web/crux:${DYO_VERSION:-stable}
+    command: [migrate]
+    environment:
+      - TZ=${TIMEZONE:-UTC}
+      - DATABASE_URL=postgresql://crux:${CRUX_POSTGRES_PASSWORD}@crux-postgres:5432/crux?schema=public&connect_timeout=5
+    depends_on:
+      crux-postgres:
+        condition: service_healthy
+    restart: 'no'
+    labels:
+      - org.dyrectorio.service-category=_internal
+  crux-postgres:
+    container_name: crux-postgres
+    image: docker.io/library/postgres:13-alpine
+    environment:
+      - POSTGRES_PASSWORD=${CRUX_POSTGRES_PASSWORD}
+      - POSTGRES_USER=crux
+      - POSTGRES_DB=crux
+    restart: unless-stopped
+    volumes: ['crux-db:/var/lib/postgresql/data']
+    healthcheck:
+      test: [CMD-SHELL, pg_isready -U crux]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    labels:
+      - org.dyrectorio.service-category=_internal
+  crux-ui:
+    container_name: crux-ui
+    image: ghcr.io/dyrector-io/dyrectorio/web/crux-ui:${DYO_VERSION:-stable}
+    environment:
+      - TZ=${TIMEZONE:-UTC}
+      - CRUX_UI_URL=${EXTERNAL_PROTO}://${DOMAIN}
+      - KRATOS_URL=http://kratos:4433
+      - KRATOS_ADMIN_URL=http://kratos:4434
+      - CRUX_API_ADDRESS=crux:5001
+      - DISABLE_RECAPTCHA=${DISABLE_RECAPTCHA:-true}
+      - RECAPTCHA_SECRET_KEY=${RECAPTCHA_SECRET_KEY}
+      - RECAPTCHA_SITE_KEY=${RECAPTCHA_SITE_KEY}
+    depends_on:
+      crux:
+        condition: service_started
+    restart: unless-stopped
+    labels:
+      - org.dyrectorio.service-category=_internal
+  kratos:
+    container_name: kratos
+    image: ghcr.io/dyrector-io/dyrectorio/web/kratos:${DYO_VERSION:-stable}
+    environment:
+      - SQA_OPT_OUT=true
+      - DSN=postgres://kratos:${KRATOS_POSTGRES_PASSWORD}@kratos-postgres:5432/kratos?sslmode=disable&max_conns=20&max_idle_conns=4&connect_timeout=5
+      - KRATOS_URL=${EXTERNAL_PROTO}://${DOMAIN}/kratos
+      - KRATOS_ADMIN_URL=http://kratos:4434
+      - AUTH_URL=${EXTERNAL_PROTO}://${DOMAIN}/auth
+      - CRUX_UI_URL=${EXTERNAL_PROTO}://${DOMAIN}
+      - LOG_LEVEL=info
+      - LOG_LEAK_SENSITIVE_VALUES=false
+      - SECRETS_COOKIE=${KRATOS_SECRET}
+      - COURIER_SMTP_CONNECTION_URI=${SMTP_URI}
+      - FROM_EMAIL=${FROM_EMAIL}
+      - FROM_NAME=${FROM_NAME}
+    depends_on:
+      kratos-postgres:
+        condition: service_healthy
+      kratos-migrate:
+        condition: service_completed_successfully
+    restart: unless-stopped
+    labels:
+      - org.dyrectorio.service-category=_internal
+  kratos-migrate:
+    container_name: kratos-migrate
+    image: ghcr.io/dyrector-io/dyrectorio/web/kratos:${DYO_VERSION:-stable}
+    command: -c /etc/config/kratos/kratos.yaml migrate sql -e --yes
+    environment:
+      - SQA_OPT_OUT=true
+      - DSN=postgres://kratos:${KRATOS_POSTGRES_PASSWORD}@kratos-postgres:5432/kratos?sslmode=disable&max_conns=20&max_idle_conns=4
+    depends_on:
+      kratos-postgres:
+        condition: service_healthy
+    restart: 'no'
+    labels:
+      - org.dyrectorio.service-category=_internal
+  kratos-postgres:
+    container_name: kratos-postgres
+    image: docker.io/library/postgres:13-alpine
+    environment:
+      - POSTGRES_PASSWORD=${KRATOS_POSTGRES_PASSWORD}
+      - POSTGRES_USER=kratos
+      - POSTGRES_DB=kratos
+    restart: unless-stopped
+    volumes: ['kratos-db:/var/lib/postgresql/data']
+    healthcheck:
+      test: [CMD-SHELL, pg_isready -U kratos]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    labels:
+      - org.dyrectorio.service-category=_internal
+volumes:
+  letsencrypt:
+  crux-db:
+  kratos-db:

@@ -6,15 +6,15 @@ services:
       - --providers.docker=true
       - --providers.docker.exposedbydefault=false
       - --entrypoints.web.address=:80
-      # - --entrypoints.web.http.redirections.entryPoint.to=websecure
-      # - --entrypoints.web.http.redirections.entrypoint.scheme=https
-      # - --entrypoints.web.http.redirections.entrypoint.permanent=true
+      - --entrypoints.web.http.redirections.entryPoint.to=websecure
+      - --entrypoints.web.http.redirections.entrypoint.scheme=https
+      - --entrypoints.web.http.redirections.entrypoint.permanent=true
       - --entrypoints.websecure.address=:443
       - --certificatesresolvers.letsencrypt.acme.httpchallenge.entrypoint=web
       - --certificatesresolvers.letsencrypt.acme.email=${ACME_EMAIL}
       - --certificatesresolvers.letsencrypt.acme.storage=/letsencrypt/acme.json
     ports:
-      - "${HTTP_PORT:-80}:80"
+      - "${HTTP_PORT-80}:80"
       - "${HTTPS_PORT:-443}:443"
     volumes:
       - letsencrypt:/letsencrypt

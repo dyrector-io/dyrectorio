@@ -14,11 +14,11 @@ const (
 func GetGenerateCommand() *ucli.Command {
 	return &ucli.Command{
 		Name:        GenerateCommand,
-		Aliases:     []string{"g", "gen"},
+		Aliases:     []string{"g", "gen", "generate"},
 		Action:      ucli.ShowSubcommandHelp,
-		Usage:       "dyo gen <component> <....>",
-		UsageText:   "dyo gen crux encryption-key",
-		Description: "Some components need tokens or keys, these helpers could be used to generate them",
+		Usage:       "dyo gen <component> <..options..>",
+		UsageText:   "dyo gen <component> help to discover possibilities",
+		Description: "Some components need tokens, or configuration files this helps to generate them",
 		Subcommands: []*ucli.Command{
 			{
 				Name:   "crux",
@@ -33,13 +33,7 @@ func GetGenerateCommand() *ucli.Command {
 					},
 				}},
 			},
-			{
-				Name:            "compose",
-				Action:          compose.GenerateComposeConfig,
-				Usage:           "dyo gen compose",
-				UsageText:       "Additional usage text",
-				SkipFlagParsing: true,
-			},
+			compose.ComposeGenerateCommand(),
 		},
 	}
 }

@@ -10,7 +10,6 @@ require (
 	github.com/golang-jwt/jwt/v4 v4.5.1
 	github.com/hashicorp/go-version v1.7.0
 	github.com/ilyakaznacheev/cleanenv v1.4.2
-	github.com/pkg/errors v0.9.1
 	github.com/rs/zerolog v1.29.1
 	github.com/stretchr/testify v1.9.0
 	github.com/thanhpk/randstr v1.0.5
@@ -47,6 +46,7 @@ require (
 	github.com/klauspost/compress v1.16.5 // indirect
 	github.com/mitchellh/go-homedir v1.1.0 // indirect
 	github.com/moby/docker-image-spec v1.3.1 // indirect
+	github.com/pkg/errors v0.9.1 // indirect
 	github.com/sirupsen/logrus v1.9.3 // indirect
 	github.com/vbatts/tar-split v0.11.3 // indirect
 	go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp v0.50.0 // indirect
@@ -113,7 +113,7 @@ require (
 	golang.org/x/mod v0.17.0 // indirect
 	golang.org/x/oauth2 v0.17.0 // indirect
 	golang.org/x/sys v0.28.0 // indirect
-	golang.org/x/term v0.27.0 // indirect
+	golang.org/x/term v0.27.0
 	golang.org/x/text v0.21.0 // indirect
 	golang.org/x/time v0.3.0 // indirect
 	golang.org/x/tools v0.21.1-0.20240508182429-e35e4ccd0d2d // indirect

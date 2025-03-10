@@ -3,27 +3,39 @@ services:
     labels:
       - traefik.enable=true
       - traefik.http.routers.crux.rule=(Host(`${DOMAIN}`) && Headers(`content-type`, `application/grpc`))
-      - traefik.http.routers.crux.entrypoints=web
+      - traefik.http.routers.crux.entrypoints=websecure
       - traefik.http.routers.crux.service=crux
       - traefik.http.services.crux.loadbalancer.server.port=5000
       - traefik.http.services.crux.loadbalancer.server.scheme=h2c
+      - traefik.http.routers.crux.tls=true
+      - traefik.http.routers.crux.tls.domains[0].main=${DOMAIN}
+      - traefik.http.routers.crux.tls.certresolver=letsencrypt
       - traefik.http.routers.crux-http.rule=Host(`${DOMAIN}`) && (PathPrefix(`/api`) && !PathPrefix(`/api/auth`) && !PathPrefix(`/api/status`))
-      - traefik.http.routers.crux-http.entrypoints=web
+      - traefik.http.routers.crux-http.entrypoints=websecure
       - traefik.http.routers.crux-http.service=crux-http
       - traefik.http.services.crux-http.loadbalancer.server.port=1848
+      - traefik.http.routers.crux-http.tls=true
+      - traefik.http.routers.crux-http.tls.domains[0].main=${DOMAIN}
+      - traefik.http.routers.crux-http.tls.certresolver=letsencrypt
       - org.dyrectorio.service-category=_internal
   crux-ui:
     labels:
       - traefik.enable=true
       - traefik.http.routers.crux-ui.rule=Host(`${DOMAIN}`)
-      - traefik.http.routers.crux-ui.entrypoints=web
+      - traefik.http.routers.crux-ui.entrypoints=websecure
       - traefik.http.services.crux-ui.loadbalancer.server.port=3000
+      - traefik.http.routers.crux-ui.tls=true
+      - traefik.http.routers.crux-ui.tls.domains[0].main=${DOMAIN}
+      - traefik.http.routers.crux-ui.tls.certresolver=letsencrypt
   kratos:
     labels:
       - traefik.enable=true
       - traefik.http.routers.kratos.rule=(Host(`${DOMAIN}`) && PathPrefix(`/kratos`))
-      - traefik.http.routers.kratos.entrypoints=web
+      - traefik.http.routers.kratos.entrypoints=websecure
       - traefik.http.services.kratos.loadbalancer.server.port=4433
       - traefik.http.middlewares.kratos-strip.stripprefix.prefixes=/kratos
       - traefik.http.middlewares.kratos-ratelimit.ratelimit.average=100
       - traefik.http.routers.kratos.middlewares=kratos-strip,kratos-ratelimit
+      - traefik.http.routers.kratos.tls=true
+      - traefik.http.routers.kratos.tls.domains[0].main=${DOMAIN}
+      - traefik.http.routers.kratos.tls.certresolver=letsencrypt

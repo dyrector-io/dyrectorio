@@ -17,8 +17,10 @@ Stack:
 -   Go Compiler to run the CLI from its source code. (Precompiled binaries are in the works.)
 
 ## Option 0: Using our convinience script
-```
-curl -sL https://raw.githubusercontent.com/dyrector-io/dyrectorio/refs/heads/feat/simplified-install-script/start.sh | bash -i
+```bash
+# make sure to be in a folder where docker compose and config files should be generated
+docker run --rm -it $PWD:/work --workspace /work ghcr.io/dyrector-io/dyrectorio/cli/dyo:stable generate compose
+docker-compose up -d
 ```
 
 ## Option 1: Go install

@@ -78,7 +78,7 @@ go-dagent:
 	air --build.cmd "" --build.bin "cd cmd/dagent && ${GRPC_DEBUG_FLAGS} go run ."
 
 .PHONY: cli
-cli:
+cli: init-cli
 	cd cmd/dyo && \
 	go run .
 
@@ -94,8 +94,13 @@ single-arch-check:
 		$(error Only one single architecture should be used. Use 'GOARCHS=<target-arch> make target')
 	endif
 
+.PHONY: init-cli
+init-cli:
+	cp -f ../distribution/compose/*.yaml pkg/cli/compose/files/
+	cp -f ../docker-compose.yaml pkg/cli/compose/files/
+
 .PHONY: compile-cli
-compile-cli:
+compile-cli: init-cli
 	cd cmd/dyo && \
 	$(foreach arch, $(GOARCHS), $(foreach os, $(GOOS), ${GOPARAMS} GOARCH=$(arch) GOOS=${os} go build ${LDFLAGS} -o ../../build/out/dyo-${os}-${arch}${OUT_EXT};))
 
