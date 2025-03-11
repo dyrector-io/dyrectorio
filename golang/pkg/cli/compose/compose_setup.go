@@ -29,6 +29,9 @@ var composeBase []byte
 //go:embed files/docker-compose.traefik.yaml
 var traefikCompose []byte
 
+//go:embed files/docker-compose.traefik-tls.yaml
+var traefikTLSCompose []byte
+
 //go:embed files/docker-compose.traefik-labels.yaml
 var traefikLabelsCompose []byte
 
@@ -63,8 +66,7 @@ type Config struct {
 	DeployTraefik          bool
 	AddTraefikLabels       bool
 	UseHTTPS               bool
-	HttpPort               string
-	HttpsPort              string
+	ExternalPort           string
 	DyoVersion             string
 	ComposeFile            string
 	ExternalProto          string
@@ -242,45 +244,50 @@ func (c ComposeItems) WriteToDisk() error {
 	return nil
 }
 
-func GetItems(cwd string, deployTestMail, deployTraefik, addTraefikLabels bool) ComposeItems {
+func GetItems(deployTestMail, deployTraefik, addTraefikLabels, tls bool) ComposeItems {
 	items := []ComposeItem{{
-		Path:    filepath.Join(cwd, "docker-compose.yaml"),
+		Path:    filepath.Join("docker-compose.yaml"),
 		Content: composeBase,
 	}}
 
 	if deployTestMail {
 		items = append(items,
 			ComposeItem{
-				Path:    filepath.Join(cwd, "compose", "docker-compose.mail-test.yaml"),
+				Path:    filepath.Join("compose", "docker-compose.mail-test.yaml"),
 				Content: mailCompose,
 			})
 	}
 	if deployTraefik {
-		items = append(items,
-			ComposeItem{
-				Path:    filepath.Join(cwd, "compose", "docker-compose.traefik.yaml"),
-				Content: traefikCompose,
-			})
+		if tls {
+			items = append(items,
+				ComposeItem{
+					Path:    filepath.Join("compose", "docker-compose.traefik-tls.yaml"),
+					Content: traefikCompose,
+				})
+		} else {
+			items = append(items,
+				ComposeItem{
+					Path:    filepath.Join("compose", "docker-compose.traefik.yaml"),
+					Content: traefikCompose,
+				})
+		}
 	}
 	if addTraefikLabels {
 		items = append(items,
 			ComposeItem{
-				Path:    filepath.Join(cwd, "compose", "docker-compose.traefik-labels.yaml"),
+				Path:    filepath.Join("compose", "docker-compose.traefik-labels.yaml"),
 				Content: traefikLabelsCompose,
 			})
+		if tls {
+			items = append(items,
+				ComposeItem{
+					Path:    filepath.Join("compose", "docker-compose.traefik-labels-tls.yaml"),
+					Content: traefikCompose,
+				})
+		}
 	}
 
 	return items
-}
-
-func ensureCompose(deployTestMail, deployTraefik, addTraefikLabels bool) (ComposeItems, error) {
-	cwd, err := os.Getwd()
-	if err != nil {
-		return nil, err
-	}
-	items := GetItems(cwd, deployTestMail, deployTraefik, addTraefikLabels)
-
-	return items, nil
 }
 
 func GenerateComposeConfig(cCtx *ucli.Context) error {
@@ -309,13 +316,10 @@ func GenerateComposeConfig(cCtx *ucli.Context) error {
 	}
 
 	if !cCtx.Bool(FlagNoCompose) {
-		composeFiles, err := ensureCompose(cfg.DeployTestMail, cfg.DeployTraefik, cfg.AddTraefikLabels)
+		composeFiles := GetItems(cfg.DeployTestMail, cfg.DeployTraefik, cfg.AddTraefikLabels, cfg.UseHTTPS)
 		cfg.ComposeFile = strings.Join(composeFiles.GetFileNames(), ":")
-		if err != nil {
-			return err
-		}
 
-		err = composeFiles.WriteToDisk()
+		err := composeFiles.WriteToDisk()
 		if err != nil {
 			return err
 		}
@@ -323,17 +327,17 @@ func GenerateComposeConfig(cCtx *ucli.Context) error {
 
 	if strings.Contains(cfg.Domain, ":") {
 		host, port, err := net.SplitHostPort(cfg.Domain)
+		cfg.Domain = host
 		if err != nil {
 			return err
 		}
 		if port != "443" && cfg.UseHTTPS {
 			// if it's not the default port for protocol
-			cfg.HttpsPort = port
+			cfg.ExternalPort = ":" + port
 		}
 		if port != "80" && !cfg.UseHTTPS {
 			// if it's not the default port for protocol
-			cfg.HttpPort = port
-			fmt.Printf("%v\nPort:%s\n", host, port)
+			cfg.ExternalPort = ":" + port
 		}
 	}
 
@@ -402,7 +406,7 @@ func ComposeGenerateCommand() *ucli.Command {
 			&ucli.StringFlag{
 				Name:        FlagCruxEncryptionKey,
 				DefaultText: "auto-generated",
-				Value:       util.Fallback(envMap[toEnvCase(FlagCruxEncryptionKey)], randomString(32)),
+				Value:       util.Fallback(envMap[toEnvCase(FlagCruxEncryptionKey)], randomString(43)),
 			},
 			&ucli.StringFlag{
 				Name:        FlagCruxPostgresPassword,

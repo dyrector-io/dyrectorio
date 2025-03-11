@@ -5,6 +5,7 @@
 # - COURIER_SMTP_CONNECTION_URI=smtps://test:test@mailslurper:1025/?skip_ssl_verify=true&legacy_ssl=true
 # Add this env to crux:
 # - SMTP_URI=smtps://test:test@mailslurper:1025/?skip_ssl_verify=true&legacy_ssl=true
+# the mail service UI you can reach at http://localhost:4436
 services:
   mailslurper:
     container_name: mailslurper

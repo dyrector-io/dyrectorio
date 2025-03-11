@@ -10,8 +10,8 @@ services:
       - DATABASE_URL=postgresql://crux:${CRUX_POSTGRES_PASSWORD}@crux-postgres:5432/crux?schema=public
       - KRATOS_ADMIN_URL=http://kratos:4434
       - KRATOS_URL=http://kratos:4433
-      - CRUX_UI_URL=${EXTERNAL_PROTO}://${DOMAIN}
-      - CRUX_AGENT_ADDRESS=${DOMAIN}:443
+      - CRUX_UI_URL=${EXTERNAL_PROTO}://${DOMAIN}${EXTERNAL_PORT}
+      - CRUX_AGENT_ADDRESS=${DOMAIN}${EXTERNAL_PORT}
       - JWT_SECRET=${CRUX_SECRET}
       - FROM_EMAIL=${FROM_EMAIL}
       - FROM_NAME=${FROM_NAME}
@@ -65,10 +65,10 @@ services:
     image: ghcr.io/dyrector-io/dyrectorio/web/crux-ui:${DYO_VERSION:-stable}
     environment:
       - TZ=${TIMEZONE:-UTC}
-      - CRUX_UI_URL=${EXTERNAL_PROTO}://${DOMAIN}
+      - CRUX_UI_URL=${EXTERNAL_PROTO}://${DOMAIN}${EXTERNAL_PORT}
       - KRATOS_URL=http://kratos:4433
       - KRATOS_ADMIN_URL=http://kratos:4434
-      - CRUX_API_ADDRESS=crux:5001
+      - CRUX_URL=http://crux:1848
       - DISABLE_RECAPTCHA=${DISABLE_RECAPTCHA:-true}
       - RECAPTCHA_SECRET_KEY=${RECAPTCHA_SECRET_KEY}
       - RECAPTCHA_SITE_KEY=${RECAPTCHA_SITE_KEY}
@@ -84,10 +84,10 @@ services:
     environment:
       - SQA_OPT_OUT=true
       - DSN=postgres://kratos:${KRATOS_POSTGRES_PASSWORD}@kratos-postgres:5432/kratos?sslmode=disable&max_conns=20&max_idle_conns=4&connect_timeout=5
-      - KRATOS_URL=${EXTERNAL_PROTO}://${DOMAIN}/kratos
+      - KRATOS_URL=${EXTERNAL_PROTO}://${DOMAIN}${EXTERNAL_PORT}/kratos
       - KRATOS_ADMIN_URL=http://kratos:4434
-      - AUTH_URL=${EXTERNAL_PROTO}://${DOMAIN}/auth
-      - CRUX_UI_URL=${EXTERNAL_PROTO}://${DOMAIN}
+      - AUTH_URL=${EXTERNAL_PROTO}://${DOMAIN}${EXTERNAL_PORT}/auth
+      - CRUX_UI_URL=${EXTERNAL_PROTO}://${DOMAIN}${EXTERNAL_PORT}
       - LOG_LEVEL=info
       - LOG_LEAK_SENSITIVE_VALUES=false
       - SECRETS_COOKIE=${KRATOS_SECRET}
@@ -132,6 +132,5 @@ services:
     labels:
       - org.dyrectorio.service-category=_internal
 volumes:
-  letsencrypt:
   crux-db:
   kratos-db:
