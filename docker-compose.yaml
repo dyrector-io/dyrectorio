@@ -1,4 +1,5 @@
 # This is a minimal compose file, meant to be extended using files from the distribution/compose folder
+# Consult the GETTING_STARTED.md
 services:
   crux:
     container_name: crux

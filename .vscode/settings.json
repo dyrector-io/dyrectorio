@@ -5,9 +5,9 @@
         "**/.git": true,
         "**/.svn": true,
         "**/.hg": true,
-        "**/CVS": true,
         "**/.DS_Store": true,
         "**/Thumbs.db": true,
+        "**/CVS": true,
         "**/node_modules": true
     },
     "eslint.workingDirectories": ["web/crux", "web/crux-ui"],

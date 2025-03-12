@@ -34,14 +34,8 @@ Join our Discord and connect with other members to share and learn together. If 
 
 ## Getting Started
 
-You have various options to set up the platform right away:
-- our convenience script
-  ```
-    docker run --rm -it $PWD:/work --workspace /work ghcr.io/dyrector-io/dyrectorio/cli/dyo:stable generate compose
-    docker-compose up -d
-  ```
--   [Getting started with CLI](./GETTING_STARTED.md)
--   [docker-compose.yaml](./docker-compose.yaml)
+You have various options to set up the platform right away, more info below:
+-   [Getting started](./GETTING_STARTED.md)
 
 ## Use Cases
 

@@ -23,6 +23,8 @@ import (
 // baking the files in ensures that we have files that works with the actual version and branch
 // but I couldn't find a way to make go:embed use files from the project root
 
+const mailURL = "http://localhost:4436"
+
 //go:embed files/docker-compose.yaml
 var composeBase []byte
 
@@ -152,6 +154,8 @@ func PromptText(sc *bufio.Scanner) string {
 func (cfg *Config) PromptUserInput() {
 	scanner := bufio.NewScanner(os.Stdin)
 
+	fmt.Print("We rely on custom reverse proxy configuration and for that we use Traefik.\n")
+	fmt.Print("You could use different proxies as well, if you do so you are on your own for now.\n")
 	fmt.Print("Deploy Traefik? (y/n) ")
 	cfg.DeployTraefik = PromptBoolOrExit(scanner)
 
@@ -169,7 +173,7 @@ func (cfg *Config) PromptUserInput() {
 		cfg.SmtpURI = "smtps://test:test@mailslurper:1025/?skip_ssl_verify=true&legacy_ssl=true"
 		cfg.FromEmail = "demo@test.dyrector.io"
 		cfg.FromName = "dyrectorio demo"
-		fmt.Printf("After deployment, you can reach the mail service at: http://localhost:4436\n")
+		fmt.Printf("After deployment, you can reach the mail service at: %s\n", mailURL)
 
 	} else {
 		fmt.Print("Enter SMTP URI: ")
@@ -346,6 +350,10 @@ func GenerateComposeConfig(cCtx *ucli.Context) error {
 	}
 
 	fmt.Print("You can start the project with the command: docker compose up -d\n")
+	if cfg.DeployTestMail {
+		fmt.Printf("The UI should be available at %s://%s%s\n", cfg.ExternalProto, cfg.Domain, cfg.ExternalPort)
+		fmt.Printf("The e-mail service should be available at %s location\n", mailURL)
+	}
 
 	return nil
 }
