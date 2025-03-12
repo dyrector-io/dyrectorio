@@ -15,6 +15,5 @@ services:
       - "${EXTERNAL_PORT:-443}:443"
     volumes:
       - letsencrypt:/letsencrypt
-
 volumes:
   letsencrypt:
