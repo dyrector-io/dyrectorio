@@ -1,0 +1,13 @@
+# Automatically assigns labels to pull requests based on their title
+# (commit message). The labels help categorize pull requests for better organization
+# and tracking in GitHub.
+
+pr:build: [^build]
+pr:ci: [^ci]
+pr:chore: [^chore]
+pr:doc: [^doc]
+pr:feat: [^feat]
+pr:fix: [^fix]
+pr:hotfix: [^hotfix]
+pr:refactor: [^refactor]
+pr:test: [^test]

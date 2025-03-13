@@ -1,3 +1,5 @@
+# Automatically label new pull requests based on the paths of files being changed or the branch name.
+
 source:web: [web/**]
 source:documentation: [docs/**]
 source:agent:
