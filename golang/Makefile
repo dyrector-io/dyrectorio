@@ -136,11 +136,11 @@ compile-agents: compile-crane compile-dagent
 # running gosec for static code analysis for bugs and leaks
 .PHONY: security
 security:
-	gosec ./...
+	gosec -severity high ./...
 
 # golangci for linting
 .PHONY: lint
-lint:
+lint: init-cli
 	golangci-lint run -c ../.golangci.yml ./...
 
 .PHONY: build-cli

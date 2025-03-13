@@ -61,8 +61,8 @@ const (
 	FlagFromEmail              = "from-email"
 	FlagFromName               = "from-name"
 	FlagCruxEncryptionKey      = "encryption-secret-key"
-	FlagKratosPostgresPassword = "kratos-postgres-password" //nolint:gosec // these are not passwords
-	FlagCruxPostgresPassword   = "crux-postgres-password"   //nolint:gosec // these are not passwords
+	FlagKratosPostgresPassword = "kratos-postgres-password" // #nosec 101 // these are not passwords
+	FlagCruxPostgresPassword   = "crux-postgres-password"   // #nosec 101 // these are not passwords
 	FlagCruxSecret             = "crux-secret"
 	FlagKratosSecret           = "kratos-secret"
 )
