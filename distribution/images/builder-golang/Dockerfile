@@ -13,7 +13,7 @@ RUN mkdir -p $GOPATH/src && \
     mkdir -p $GOPATH/cache && \
     mkdir -p $GOPATH/pkg
 
-RUN apk add alpine-sdk docker git zstd bash
+RUN apk add alpine-sdk docker git zstd bash curl
 
 # Need these for integration tests
 RUN curl -s https://raw.githubusercontent.com/k3d-io/k3d/main/install.sh | bash
