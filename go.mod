@@ -1,6 +1,6 @@
 module github.com/dyrector-io/dyrectorio
 
-go 1.22.2
+go 1.23.7
 
 require (
 	github.com/ProtonMail/gopenpgp/v2 v2.7.1
@@ -108,10 +108,10 @@ require (
 	github.com/spf13/pflag v1.0.5 // indirect
 	github.com/xrash/smetrics v0.0.0-20201216005158-039620a65673 // indirect
 	golang.org/x/crypto v0.35.0 // indirect
-	golang.org/x/mod v0.17.0 // indirect
+	golang.org/x/mod v0.21.0 // indirect
 	golang.org/x/oauth2 v0.17.0 // indirect
 	golang.org/x/sys v0.30.0 // indirect
-	golang.org/x/term v0.29.0 // indirect
+	golang.org/x/term v0.29.0
 	golang.org/x/text v0.22.0 // indirect
 	golang.org/x/time v0.3.0 // indirect
 	golang.org/x/tools v0.25.1-0.20240919230923-d09d36b49f6c // indirect
