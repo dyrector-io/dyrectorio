@@ -1,17 +1,15 @@
 # Development resources
 
-The internal details of dyrector.io's components.
+The internal details of `dyrector.io`'s components.
 
 ## Agent versioning
 
-Crux considers two things to determine if an agent is outdated:
+Agent is a service that can be installed in your Kubernetes cluster or VPS to communicate with the dyrector.io platform. `crux` considers two things to determine if an agent is outdated:
 
--   The `AGENT_PROTO_COMPATIBILITY_MINIMUM_VERSION` in the [web/crux/src/const.ts](./web/crux/src/shared/const.ts) file
--   And the version number in [Crux's package.json](./web/crux/package.json)
+-   `AGENT_PROTO_COMPATIBILITY_MINIMUM_VERSION` in the [web/crux/src/const.ts](./web/crux/src/shared/const.ts) file
+-   the version number in [crux's package.json](./web/crux/package.json)
 
-When the agent version is between `AGENT_PROTO_COMPATIBILITY_MINIMUM_VERSION` and the `package.json`'s version
-the agent's status will be connected, and it will be fully functional. Otherwise it going to be outdated,
-and can not be used unless an update is performed.
+When the agent version is between `AGENT_PROTO_COMPATIBILITY_MINIMUM_VERSION` and the `package.json`'s version the agent's status will be connected, and it will be fully functional. Otherwise, it will be considered outdated and, while still usable, some functionalities may not work properly until it is updated.
 
 ### Releasing a new agent
 
@@ -22,4 +20,8 @@ While creating a new release, the `AGENT_PROTO_COMPATIBILITY_MINIMUM_VERSION` sh
 
 ## Container labels
 
-Each container in the dyrector.io stack has an `org.dyrectorio.service-category` label. When `org.dyrectorio.service-category`:`_internal`, the running containers of dyrector.io stack will be hidden from Docker Desktop UI and other tools.
+##### `org.dyrectorio.service-category`
+
+Hide containers within your dyrector.io platform.
+
+Each container in the dyrector.io stack has an `org.dyrectorio.service-category` label. When `org.dyrectorio.service-category` is set to `_internal`, these containers will not be listed on the Node screen within the dyrector.io platform.
