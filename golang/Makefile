@@ -135,7 +135,7 @@ compile-agents: compile-crane compile-dagent
 
 # running gosec for static code analysis for bugs and leaks
 .PHONY: security
-security:
+security: init-cli
 	gosec -severity high ./...
 
 # golangci for linting
@@ -259,16 +259,16 @@ k3d-rm:
 
 # dependency: valid & working k8s configuration
 .PHONY: test-unit
-test-unit:
+test-unit: init-cli
 	go test -tags=unit -race ./...
 
 # dependency: valid & working k8s configuration
 .PHONY: test-unit-with-coverage
-test-unit-with-coverage:
+test-unit-with-coverage: init-cli
 	go test -tags=unit -race -coverpkg=./... -coverprofile=./unit.cov -covermode=atomic ./...
 
 .PHONY: test-integration
-test-integration: test-dagent test-crane test-cli test-internal
+test-integration: init-cli test-dagent test-crane test-cli test-internal
 
 .PHONY: test-crane
 test-crane:
