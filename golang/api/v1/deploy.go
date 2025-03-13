@@ -4,11 +4,11 @@ package v1
 import (
 	"encoding/base64"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"strings"
 
-	"github.com/go-playground/validator/v10"
-	"github.com/pkg/errors"
+	validator "github.com/go-playground/validator/v10"
 	"github.com/rs/zerolog/log"
 	"k8s.io/apimachinery/pkg/api/resource"
 
@@ -371,7 +371,7 @@ func (vt *VolumeType) UnmarshalJSON(b []byte) error {
 		*vt = volumeType
 		return nil
 	}
-	return errors.New("Invalid volume type")
+	return errors.New("invalid volume type")
 }
 
 // setting known defaults from constants

@@ -16,12 +16,12 @@ LDFLAGS := -ldflags "-X '${PACKAGE}/internal/version.BuildTimestamp=${BUILD_TIME
 # default tag is latest for building
 image_version ?= latest
 
-GOAIR=v1.51.0
-GOSEC=v2.19.0
-GOLANGCI=v1.57.2
-GOFUMPT=v0.6.0
-YAMLFMT=v0.11.0
-FIELDALIGN=v0.20.0
+GOAIR=v1.61.7
+GOSEC=v2.22.2
+GOLANGCI=v1.64.7
+GOFUMPT=v0.7.0
+YAMLFMT=v0.16.0
+FIELDALIGN=v0.31.0
 
 # support for: linux darwin windows
 GOOS?=linux
@@ -78,7 +78,7 @@ go-dagent:
 	air --build.cmd "" --build.bin "cd cmd/dagent && ${GRPC_DEBUG_FLAGS} go run ."
 
 .PHONY: cli
-cli:
+cli: init-cli
 	cd cmd/dyo && \
 	go run .
 
@@ -94,8 +94,13 @@ single-arch-check:
 		$(error Only one single architecture should be used. Use 'GOARCHS=<target-arch> make target')
 	endif
 
+.PHONY: init-cli
+init-cli:
+	cp -f ../distribution/compose/*.yaml pkg/cli/setup/files/
+	cp -f ../docker-compose.yaml pkg/cli/setup/files/
+
 .PHONY: compile-cli
-compile-cli:
+compile-cli: init-cli
 	cd cmd/dyo && \
 	$(foreach arch, $(GOARCHS), $(foreach os, $(GOOS), ${GOPARAMS} GOARCH=$(arch) GOOS=${os} go build ${LDFLAGS} -o ../../build/out/dyo-${os}-${arch}${OUT_EXT};))
 
@@ -118,24 +123,24 @@ compile-dagent:
 
 .PHONY: install-go-tools
 install-go-tools:
-	go install github.com/cosmtrek/air@${GOAIR}
+	go install github.com/air-verse/air@${GOAIR}
 	go install github.com/golangci/golangci-lint/cmd/golangci-lint@${GOLANGCI}
 	go install github.com/securego/gosec/v2/cmd/gosec@${GOSEC}
 	go install mvdan.cc/gofumpt@${GOFUMPT}
 	go install github.com/google/yamlfmt/cmd/yamlfmt@${YAMLFMT}
-	go install go install golang.org/x/tools/go/analysis/passes/fieldalignment/cmd/fieldalignment@${FIELDALIGN}
+	go install golang.org/x/tools/go/analysis/passes/fieldalignment/cmd/fieldalignment@${FIELDALIGN}
 
 .PHONY: compile-agents
 compile-agents: compile-crane compile-dagent
 
 # running gosec for static code analysis for bugs and leaks
 .PHONY: security
-security:
-	gosec ./...
+security: init-cli
+	gosec -severity high ./...
 
 # golangci for linting
 .PHONY: lint
-lint:
+lint: init-cli
 	golangci-lint run -c ../.golangci.yml ./...
 
 .PHONY: build-cli
@@ -254,16 +259,16 @@ k3d-rm:
 
 # dependency: valid & working k8s configuration
 .PHONY: test-unit
-test-unit:
+test-unit: init-cli
 	go test -tags=unit -race ./...
 
 # dependency: valid & working k8s configuration
 .PHONY: test-unit-with-coverage
-test-unit-with-coverage:
+test-unit-with-coverage: init-cli
 	go test -tags=unit -race -coverpkg=./... -coverprofile=./unit.cov -covermode=atomic ./...
 
 .PHONY: test-integration
-test-integration: test-dagent test-crane test-cli test-internal
+test-integration: init-cli test-dagent test-crane test-cli test-internal
 
 .PHONY: test-crane
 test-crane:

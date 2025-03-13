@@ -1,0 +1,15 @@
+services:
+  traefik:
+    container_name: traefik
+    image: docker.io/library/traefik:2.9
+    command:
+      - --providers.docker=true
+      - --providers.docker.exposedbydefault=false
+      - --entrypoints.web.address=:80
+    ports:
+      - "${EXTERNAL_PORT:-80}:80"
+    volumes:
+      - ${DOCKER_SOCKET:-/var/run/docker.sock}:/var/run/docker.sock:ro
+    restart: unless-stopped
+    labels:
+      - org.dyrectorio.service-category=_internal

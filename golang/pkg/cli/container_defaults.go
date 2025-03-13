@@ -59,6 +59,14 @@ func baseContainer(ctx context.Context, args *ArgsFlags) containerbuilder.Builde
 	return builder
 }
 
+func logUnsafePortConversion(n uint) uint16 {
+	port, err := util.SafeUIntToUInt16(n)
+	if err != nil {
+		log.Error().Err(err).Msg("overflow: port number is overflowing")
+	}
+	return port
+}
+
 // GetCrux services: db migrations and crux api service
 func GetCrux(state *State, args *ArgsFlags) containerbuilder.Builder {
 	crux := baseContainer(state.Ctx, args).
@@ -84,15 +92,24 @@ func GetCrux(state *State, args *ArgsFlags) containerbuilder.Builder {
 		WithPreStartHooks(getCruxInitContainer(state, args))
 
 	if !args.FullyContainerized {
+		httpPort, err := util.SafeUIntToUInt16(state.SettingsFile.CruxHTTPPort)
+		if err != nil {
+			log.Error().Err(err).Msg("overflow: port number is overflowing")
+		}
+		grpcPort, err := util.SafeUIntToUInt16(state.SettingsFile.CruxAgentGrpcPort)
+		if err != nil {
+			log.Error().Err(err).Msg("overflow: port number is overflowing")
+		}
+
 		crux = crux.
 			WithPortBindings([]containerbuilder.PortBinding{
 				{
 					ExposedPort: defaultCruxAgentGrpcPort,
-					PortBinding: pointer.ToUint16(uint16(state.SettingsFile.CruxAgentGrpcPort)),
+					PortBinding: pointer.ToUint16(grpcPort),
 				},
 				{
 					ExposedPort: defaultCruxHTTPPort,
-					PortBinding: pointer.ToUint16(uint16(state.SettingsFile.CruxHTTPPort)),
+					PortBinding: pointer.ToUint16(httpPort),
 				},
 			})
 	}
@@ -236,7 +253,7 @@ func GetCruxUI(state *State, args *ArgsFlags) containerbuilder.Builder {
 			WithPortBindings([]containerbuilder.PortBinding{
 				{
 					ExposedPort: defaultCruxUIPort,
-					PortBinding: pointer.ToUint16(uint16(state.SettingsFile.CruxUIPort)),
+					PortBinding: pointer.ToUint16(logUnsafePortConversion(state.SettingsFile.CruxUIPort)),
 				},
 			})
 	}
@@ -329,11 +346,11 @@ func GetTraefik(state *State, args *ArgsFlags) containerbuilder.Builder {
 			WithPortBindings([]containerbuilder.PortBinding{
 				{
 					ExposedPort: defaultTraefikInternalPort,
-					PortBinding: pointer.ToUint16(uint16(state.SettingsFile.TraefikWebPort)),
+					PortBinding: pointer.ToUint16(logUnsafePortConversion(state.SettingsFile.TraefikWebPort)),
 				},
 				{
 					ExposedPort: defaultTraefikUIPort,
-					PortBinding: pointer.ToUint16(uint16(state.SettingsFile.TraefikUIPort)),
+					PortBinding: pointer.ToUint16(logUnsafePortConversion(state.SettingsFile.TraefikUIPort)),
 				},
 			})
 	}
@@ -370,11 +387,11 @@ func GetKratos(state *State, args *ArgsFlags) containerbuilder.Builder {
 			WithPortBindings([]containerbuilder.PortBinding{
 				{
 					ExposedPort: defaultKratosPublicPort,
-					PortBinding: pointer.ToUint16(uint16(state.SettingsFile.KratosPublicPort)),
+					PortBinding: pointer.ToUint16(logUnsafePortConversion(state.SettingsFile.KratosPublicPort)),
 				},
 				{
 					ExposedPort: defaultKratosAdminPort,
-					PortBinding: pointer.ToUint16(uint16(state.SettingsFile.KratosAdminPort)),
+					PortBinding: pointer.ToUint16(logUnsafePortConversion(state.SettingsFile.KratosAdminPort)),
 				},
 			})
 	}
@@ -475,15 +492,15 @@ func GetMailSlurper(state *State, args *ArgsFlags) containerbuilder.Builder {
 			WithPortBindings([]containerbuilder.PortBinding{
 				{
 					ExposedPort: defaultMailSlurperSMTPPort,
-					PortBinding: pointer.ToUint16(uint16(state.SettingsFile.MailSlurperSMTPPort)),
+					PortBinding: pointer.ToUint16(logUnsafePortConversion(state.SettingsFile.MailSlurperSMTPPort)),
 				},
 				{
 					ExposedPort: defaultMailSlurperUIPort,
-					PortBinding: pointer.ToUint16(uint16(state.SettingsFile.MailSlurperUIPort)),
+					PortBinding: pointer.ToUint16(logUnsafePortConversion(state.SettingsFile.MailSlurperUIPort)),
 				},
 				{
 					ExposedPort: defaultMailSlurperAPIPort,
-					PortBinding: pointer.ToUint16(uint16(state.SettingsFile.MailSlurperAPIPort)),
+					PortBinding: pointer.ToUint16(logUnsafePortConversion(state.SettingsFile.MailSlurperAPIPort)),
 				},
 			})
 	}
@@ -514,7 +531,7 @@ func GetCruxPostgres(state *State, args *ArgsFlags) containerbuilder.Builder {
 			WithPortBindings([]containerbuilder.PortBinding{
 				{
 					ExposedPort: defaultPostgresPort,
-					PortBinding: pointer.ToUint16(uint16(state.SettingsFile.CruxPostgresPort)),
+					PortBinding: pointer.ToUint16(logUnsafePortConversion(state.SettingsFile.CruxPostgresPort)),
 				},
 			}).
 			WithMountPoints([]mount.Mount{{
@@ -551,7 +568,7 @@ func GetKratosPostgres(state *State, args *ArgsFlags) containerbuilder.Builder {
 			WithPortBindings([]containerbuilder.PortBinding{
 				{
 					ExposedPort: defaultPostgresPort,
-					PortBinding: pointer.ToUint16(uint16(state.SettingsFile.KratosPostgresPort)),
+					PortBinding: pointer.ToUint16(logUnsafePortConversion(state.SettingsFile.KratosPostgresPort)),
 				},
 			}).
 			WithMountPoints([]mount.Mount{

@@ -18,9 +18,9 @@ import (
 
 	"github.com/docker/docker/client"
 	"github.com/ilyakaznacheev/cleanenv"
-	"github.com/na4ma4/go-permbits"
+	permbits "github.com/na4ma4/go-permbits"
 	"github.com/rs/zerolog/log"
-	"gopkg.in/yaml.v3"
+	yaml "gopkg.in/yaml.v3"
 )
 
 // State itself exists per-execution, settingsFile is persisted

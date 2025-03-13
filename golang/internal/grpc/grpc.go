@@ -20,6 +20,7 @@ import (
 	"github.com/dyrector-io/dyrectorio/golang/internal/health"
 	"github.com/dyrector-io/dyrectorio/golang/internal/logdefer"
 	"github.com/dyrector-io/dyrectorio/golang/internal/mapper"
+	"github.com/dyrector-io/dyrectorio/golang/internal/util"
 	"github.com/dyrector-io/dyrectorio/golang/internal/version"
 	"github.com/dyrector-io/dyrectorio/protobuf/go/agent"
 	"github.com/dyrector-io/dyrectorio/protobuf/go/common"
@@ -251,16 +252,19 @@ func executeCallback(mapError func(*agent.AgentError) *agent.AgentCommandError, 
 		return
 	}
 
-	statusCode := statusCodeOf(grpcErr)
+	statusCode, err := util.SafeUInt32ToInt32(uint32(statusCodeOf(grpcErr)))
+	if err != nil {
+		log.Error().Err(err).Msg("integer overflow for statusCode")
+	}
 
 	agentError := agent.AgentError{
-		Status: int32(statusCode),
+		Status: statusCode,
 		Error:  grpcErr.Error(),
 	}
 
 	cmdErr := mapError(&agentError)
 
-	_, err := grpcConn.Client.CommandError(grpcErr.Context, cmdErr)
+	_, err = grpcConn.Client.CommandError(grpcErr.Context, cmdErr)
 	if err != nil {
 		log.Error().Stack().Err(err).Msg("Reporting callback error failed")
 	}

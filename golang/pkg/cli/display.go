@@ -12,7 +12,7 @@ import (
 	"github.com/rs/zerolog/log"
 
 	tm "github.com/buger/goterm"
-	"github.com/na4ma4/go-permbits"
+	permbits "github.com/na4ma4/go-permbits"
 )
 
 // PrintWelcomeMessage prints a welcome mesage before the command runs

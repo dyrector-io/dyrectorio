@@ -1,0 +1,23 @@
+services:
+  crux:
+    labels:
+      - traefik.http.routers.crux.entrypoints=websecure
+      - traefik.http.routers.crux.tls=true
+      - traefik.http.routers.crux.tls.domains[0].main=${DOMAIN}
+      - traefik.http.routers.crux.tls.certresolver=letsencrypt
+      - traefik.http.routers.crux-http.entrypoints=websecure
+      - traefik.http.routers.crux-http.tls=true
+      - traefik.http.routers.crux-http.tls.domains[0].main=${DOMAIN}
+      - traefik.http.routers.crux-http.tls.certresolver=letsencrypt
+  crux-ui:
+    labels:
+      - traefik.http.routers.crux-ui.entrypoints=websecure
+      - traefik.http.routers.crux-ui.tls=true
+      - traefik.http.routers.crux-ui.tls.domains[0].main=${DOMAIN}
+      - traefik.http.routers.crux-ui.tls.certresolver=letsencrypt
+  kratos:
+    labels:
+      - traefik.http.routers.kratos.entrypoints=websecure
+      - traefik.http.routers.kratos.tls=true
+      - traefik.http.routers.kratos.tls.domains[0].main=${DOMAIN}
+      - traefik.http.routers.kratos.tls.certresolver=letsencrypt

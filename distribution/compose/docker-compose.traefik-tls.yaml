@@ -1,0 +1,19 @@
+services:
+  traefik:
+    container_name: traefik
+    image: docker.io/library/traefik:2.9
+    command:
+      - --providers.docker=true
+      - --providers.docker.exposedbydefault=false
+      - --entrypoints.web.address=:80
+      - --entrypoints.websecure.address=:443
+      - --certificatesresolvers.letsencrypt.acme.httpchallenge.entrypoint=web
+      - --certificatesresolvers.letsencrypt.acme.email=${ACME_EMAIL}
+      - --certificatesresolvers.letsencrypt.acme.storage=/letsencrypt/acme.json
+    ports:
+      - "${CUSTOM_HTTP_PORT:-80}:80"
+      - "${EXTERNAL_PORT:-443}:443"
+    volumes:
+      - letsencrypt:/letsencrypt
+volumes:
+  letsencrypt:

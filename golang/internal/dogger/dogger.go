@@ -69,7 +69,7 @@ func (dog *DeploymentLogger) SetRequestID(requestID string) {
 func (dog *DeploymentLogger) Write(level Level, messages ...string) {
 	for i := range messages {
 		log.Info().Str("deployment", dog.deploymentID).Msg(messages[i])
-		dog.logs = append(dog.logs, messages...)
+		dog.logs = append(dog.logs, messages[i])
 	}
 
 	if dog.stream != nil {
@@ -87,7 +87,7 @@ func (dog *DeploymentLogger) Write(level Level, messages ...string) {
 func (dog *DeploymentLogger) WriteDeploymentStatus(status common.DeploymentStatus, messages ...string) {
 	for i := range messages {
 		log.Info().Str("deployment", dog.deploymentID).Msg(messages[i])
-		dog.logs = append(dog.logs, messages...)
+		dog.logs = append(dog.logs, messages[i])
 	}
 
 	if dog.stream != nil {
@@ -118,7 +118,7 @@ func (dog *DeploymentLogger) WriteContainerState(
 
 	for i := range messages {
 		log.Info().Str("prefix", prefix).Msg(messages[i])
-		dog.logs = append(dog.logs, messages...)
+		dog.logs = append(dog.logs, messages[i])
 	}
 
 	if dog.stream != nil {

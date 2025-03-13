@@ -16,6 +16,15 @@ Stack:
 -   Docker or Podman installed on your system.
 -   Go Compiler to run the CLI from its source code. (Precompiled binaries are in the works.)
 
+## Option 0: Using our convinience script
+Using the following step, you can generate the appropriate docker compose files. Once generated, you can easily spin up your own dyrector.io platform instance.
+
+```bash
+# make sure to be in a folder where docker compose and config files should be generated
+docker run --rm -it -v $PWD:/work --workdir /work ghcr.io/dyrector-io/dyrectorio/cli/dyo:stable generate compose
+docker-compose up -d
+```
+
 ## Option 1: Go install
 
 1. Execute `go install github.com/dyrector-io/dyrectorio/golang/cmd/dyo@develop`

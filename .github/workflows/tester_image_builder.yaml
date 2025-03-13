@@ -16,16 +16,16 @@ jobs:
   build:
     runs-on: ubuntu-22.04
     container:
-      image: ghcr.io/dyrector-io/dyrectorio/builder-images/protobuf:2
+      image: ghcr.io/dyrector-io/dyrectorio/builder-images/protobuf:3
     steps:
       - name: Checkout
         uses: actions/checkout@v3
       - name: Docker build
-        run: docker build -t ${GITHUB_REGISTRY}/${TESTER_IMAGE_NAME}:latest ./images/playwright
+        run: docker build -t ${GITHUB_REGISTRY}/${TESTER_IMAGE_NAME}:latest ./distribution/images/playwright
       - name: Docker save
         run: docker save ${GITHUB_REGISTRY}/${TESTER_IMAGE_NAME}:latest | gzip -f > tester.zstd
       - name: Artifact upload
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: tester
           path: ./tester.zstd
@@ -38,7 +38,7 @@ jobs:
     environment: Workflow - Protected
     steps:
       - name: Artifact download
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: tester
           path: artifacts
