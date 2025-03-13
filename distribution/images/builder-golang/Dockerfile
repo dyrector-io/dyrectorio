@@ -1,5 +1,5 @@
 # note: update this together with protobuf image
-FROM docker.io/library/golang:1.23-alpine3.19
+FROM docker.io/library/golang:1.23-alpine3.20
 
 ENV GOLANGCI_LINT_CACHE $GOPATH/cache
 ENV GOCACHE $GOPATH/cache
