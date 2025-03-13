@@ -96,8 +96,8 @@ single-arch-check:
 
 .PHONY: init-cli
 init-cli:
-	cp -f ../distribution/compose/*.yaml pkg/cli/compose/files/
-	cp -f ../docker-compose.yaml pkg/cli/compose/files/
+	cp -f ../distribution/compose/*.yaml pkg/cli/setup/files/
+	cp -f ../docker-compose.yaml pkg/cli/setup/files/
 
 .PHONY: compile-cli
 compile-cli: init-cli
