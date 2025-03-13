@@ -19,5 +19,6 @@
     },
     "[yaml]": {
         "editor.defaultFormatter": "bluebrown.yamlfmt"
-    }
+    },
+    "makefile.configureOnOpen": false
 }

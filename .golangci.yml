@@ -61,7 +61,6 @@ linters-settings:
     checks:
       - all
 linters:
-  # please, do not use `enable-all`: it's deprecated and will be removed soon.
   # inverted configuration with `enable-all` and `disable` is not scalable during updates of golangci-lint
   disable-all: true
   enable:
@@ -75,7 +74,7 @@ linters:
     - dupl
     - errcheck
     - errname
-    - exportloopref
+    - copyloopvar
     - exhaustive
     - forbidigo
     - funlen
@@ -85,7 +84,7 @@ linters:
     - gocyclo
     - gofumpt
     - goimports
-    - gomnd
+    - mnd
     - goprintffuncname
     - gosec
     - gosimple
@@ -102,7 +101,7 @@ linters:
     - rowserrcheck
     - staticcheck
     - stylecheck
-    - tenv
+    - usetesting
     - thelper
     - typecheck
     - unconvert

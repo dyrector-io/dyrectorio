@@ -14,7 +14,6 @@ import (
 	"os"
 	"path"
 	"path/filepath"
-	"strconv"
 	"strings"
 	"time"
 
@@ -31,7 +30,6 @@ import (
 	dockerHelper "github.com/dyrector-io/dyrectorio/golang/internal/helper/docker"
 	imageHelper "github.com/dyrector-io/dyrectorio/golang/internal/helper/image"
 	"github.com/dyrector-io/dyrectorio/golang/internal/label"
-	"github.com/dyrector-io/dyrectorio/golang/internal/logdefer"
 	"github.com/dyrector-io/dyrectorio/golang/internal/mapper"
 	"github.com/dyrector-io/dyrectorio/golang/internal/util"
 	dockerbuilder "github.com/dyrector-io/dyrectorio/golang/pkg/builder/container"
@@ -59,32 +57,6 @@ const (
 	ContainerStateWaitSeconds = 120
 	TypeContainer             = "container"
 )
-
-func GetContainerLogs(name string, skip, take uint) []string {
-	ctx := context.Background()
-
-	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
-	if err != nil {
-		panic(err)
-	}
-
-	const BASE = 10
-	tail := skip + take
-
-	options := container.LogsOptions{
-		ShowStderr: true,
-		ShowStdout: true,
-		Tail:       strconv.FormatUint(uint64(tail), BASE),
-	}
-
-	logs, err := cli.ContainerLogs(ctx, name, options)
-	if err != nil {
-		log.Err(err).Stack().Send()
-	}
-	defer logdefer.LogDeferredErr(logs.Close, log.Warn(), "error closing container log reader")
-
-	return dockerbuilder.ReadDockerLogsFromReadCloser(logs, int(skip), int(take))
-}
 
 func CopyToContainer(ctx context.Context, name string, meta v1.UploadFileData, fileHeader *multipart.FileHeader) error {
 	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
@@ -690,7 +662,10 @@ func setImageLabels(expandedImageName string,
 		return nil, fmt.Errorf("error get image labels: %w", err)
 	}
 
-	caps.ParseLabelsIntoContainerConfig(labels, &deployImageRequest.ContainerConfig)
+	err = caps.ParseLabelsIntoContainerConfig(labels, &deployImageRequest.ContainerConfig)
+	if err != nil {
+		return nil, fmt.Errorf("invalid label values: %w", err)
+	}
 
 	// add traefik related labels to the container if expose true
 	if deployImageRequest.ContainerConfig.Expose {

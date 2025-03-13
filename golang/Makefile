@@ -16,12 +16,12 @@ LDFLAGS := -ldflags "-X '${PACKAGE}/internal/version.BuildTimestamp=${BUILD_TIME
 # default tag is latest for building
 image_version ?= latest
 
-GOAIR=v1.51.0
-GOSEC=v2.19.0
-GOLANGCI=v1.57.2
-GOFUMPT=v0.6.0
-YAMLFMT=v0.11.0
-FIELDALIGN=v0.20.0
+GOAIR=v1.61.7
+GOSEC=v2.22.2
+GOLANGCI=v1.64.7
+GOFUMPT=v0.7.0
+YAMLFMT=v0.16.0
+FIELDALIGN=v0.31.0
 
 # support for: linux darwin windows
 GOOS?=linux
@@ -123,7 +123,7 @@ compile-dagent:
 
 .PHONY: install-go-tools
 install-go-tools:
-	go install github.com/cosmtrek/air@${GOAIR}
+	go install github.com/air-verse/air@${GOAIR}
 	go install github.com/golangci/golangci-lint/cmd/golangci-lint@${GOLANGCI}
 	go install github.com/securego/gosec/v2/cmd/gosec@${GOSEC}
 	go install mvdan.cc/gofumpt@${GOFUMPT}

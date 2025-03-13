@@ -1,29 +1,34 @@
-package compose
+package setup
 
 import (
 	"bufio"
 	"crypto/rand"
 	_ "embed"
 	"fmt"
-	"log"
 	"net"
 	"os"
 	"path/filepath"
 	"reflect"
 	"strings"
 
-	"github.com/dyrector-io/dyrectorio/golang/internal/util"
 	"github.com/iancoleman/strcase"
 	"github.com/joho/godotenv"
 	permbits "github.com/na4ma4/go-permbits"
+	"github.com/rs/zerolog/log"
 	ucli "github.com/urfave/cli/v2"
 	"golang.org/x/term"
+
+	"github.com/dyrector-io/dyrectorio/golang/internal/util"
 )
 
 // baking the files in ensures that we have files that works with the actual version and branch
 // but I couldn't find a way to make go:embed use files from the project root
 
-const mailURL = "http://localhost:4436"
+const (
+	mailURL             = "http://localhost:4436"
+	defaultSecretLength = 32
+	cruxSecretLength    = 43
+)
 
 //go:embed files/docker-compose.yaml
 var composeBase []byte
@@ -52,36 +57,36 @@ const (
 	FlagUseHTTPS               = "use-https"
 	FlagAcmeEmail              = "acme-email"
 	FlagDomain                 = "domain"
-	FlagSmtpURI                = "smtp-uri"
+	FlagSMTPUri                = "smtp-uri"
 	FlagFromEmail              = "from-email"
 	FlagFromName               = "from-name"
 	FlagCruxEncryptionKey      = "encryption-secret-key"
-	FlagKratosPostgresPassword = "kratos-postgres-password"
-	FlagCruxPostgresPassword   = "crux-postgres-password"
+	FlagKratosPostgresPassword = "kratos-postgres-password" //nolint:gosec // these are not passwords
+	FlagCruxPostgresPassword   = "crux-postgres-password"   //nolint:gosec // these are not passwords
 	FlagCruxSecret             = "crux-secret"
 	FlagKratosSecret           = "kratos-secret"
 )
 
 type Config struct {
-	NoCompose              bool
-	DeployTestMail         bool
-	DeployTraefik          bool
-	AddTraefikLabels       bool
-	UseHTTPS               bool
+	FromEmail              string
+	Domain                 string
+	CruxSecret             string
+	AcmeEmail              string
+	KratosSecret           string
 	ExternalPort           string
 	DyoVersion             string
 	ComposeFile            string
-	ExternalProto          string
-	AcmeEmail              string
-	Domain                 string
-	SmtpURI                string
-	FromEmail              string
-	FromName               string
-	EncryptionSecretKey    string
-	CruxPostgresPassword   string
 	KratosPostgresPassword string
-	KratosSecret           string
-	CruxSecret             string
+	ExternalProto          string
+	CruxPostgresPassword   string
+	SmtpURI                string //nolint:revive,stylecheck // we need this for uppercasing to work
+	EncryptionSecretKey    string
+	FromName               string
+	NoCompose              bool
+	AddTraefikLabels       bool
+	DeployTestMail         bool
+	UseHTTPS               bool
+	DeployTraefik          bool
 }
 
 func (cfg *Config) ToMap() map[string]string {
@@ -92,11 +97,7 @@ func (cfg *Config) ToMap() map[string]string {
 	for i := range val.NumField() {
 		field := typeOfCfg.Field(i)
 		value := val.Field(i)
-		switch value.Kind() {
-		// we dont want booleans in our .env file now
-		// case reflect.Bool:
-		// 	result[strings.ToUpper(field.Name)] = fmt.Sprintf("%t", value.Bool())
-		case reflect.String:
+		if value.Kind() == reflect.String {
 			str := value.String()
 			if str != "" {
 				result[toEnvCase(field.Name)] = str
@@ -115,29 +116,30 @@ func (cfg *Config) Validate() error {
 	return nil
 }
 
+func anyMatch(str string, matchOpt ...string) bool {
+	for _, m := range matchOpt {
+		if str == m {
+			return true
+		}
+	}
+	return false
+}
+
 func PromptBoolOrExit(sc *bufio.Scanner) bool {
 	for {
 		sc.Scan()
 		in := sc.Text()
-		switch in {
+		switch {
 		// positive cases
-		case "y":
-			fallthrough
-		case "yes":
+		case anyMatch(in, "y", "yes"):
 			return true
 
 		// negative cases
-		case "no":
-			fallthrough
-		case "n":
+		case anyMatch(in, "no", "n"):
 			return false
 
 		// exit cases
-		case "q":
-			fallthrough
-		case "quit":
-			fallthrough
-		case "exit":
+		case anyMatch(in, "q", "quit", "exit"):
 			log.Printf("User exit")
 			os.Exit(1)
 		default:
@@ -154,38 +156,37 @@ func PromptText(sc *bufio.Scanner) string {
 func (cfg *Config) PromptUserInput() {
 	scanner := bufio.NewScanner(os.Stdin)
 
-	fmt.Print("We rely on custom reverse proxy configuration and for that we use Traefik.\n")
-	fmt.Print("You could use different proxies as well, if you do so you are on your own for now.\n")
-	fmt.Print("Deploy Traefik? (y/n) ")
+	log.Print("We rely on custom reverse proxy configuration and for that we use Traefik.\n")
+	log.Print("You could use different proxies as well, if you do so you are on your own for now.\n")
+	log.Print("Deploy Traefik? (y/n) ")
 	cfg.DeployTraefik = PromptBoolOrExit(scanner)
 
-	if cfg.DeployTraefik == false {
-		fmt.Print("Add Traefik labels regardless? If you already have Traefik running (y/n) ")
+	if !cfg.DeployTraefik {
+		log.Print("Add Traefik labels regardless? If you already have Traefik running (y/n) ")
 		cfg.AddTraefikLabels = PromptBoolOrExit(scanner)
 	} else {
 		cfg.AddTraefikLabels = true
 	}
 
-	fmt.Print("Deploy Test Mail service? (y/n) ")
+	log.Print("Deploy Test Mail service? (y/n) ")
 	cfg.DeployTestMail = PromptBoolOrExit(scanner)
 
 	if cfg.DeployTestMail {
 		cfg.SmtpURI = "smtps://test:test@mailslurper:1025/?skip_ssl_verify=true&legacy_ssl=true"
 		cfg.FromEmail = "demo@test.dyrector.io"
 		cfg.FromName = "dyrectorio demo"
-		fmt.Printf("After deployment, you can reach the mail service at: %s\n", mailURL)
-
+		log.Printf("After deployment, you can reach the mail service at: %s\n", mailURL)
 	} else {
-		fmt.Print("Enter SMTP URI: ")
+		log.Print("Enter SMTP URI: ")
 		cfg.SmtpURI = PromptText(scanner)
 
-		fmt.Print("Enter From Email: ")
+		log.Print("Enter From Email: ")
 		cfg.FromEmail = PromptText(scanner)
 
-		fmt.Print("Enter From Name: ")
+		log.Print("Enter From Name: ")
 		cfg.FromName = PromptText(scanner)
 	}
-	fmt.Print("Use HTTPS? (y/n) ")
+	log.Print("Use HTTPS? (y/n) ")
 	cfg.UseHTTPS = PromptBoolOrExit(scanner)
 	if cfg.UseHTTPS {
 		cfg.ExternalProto = "https"
@@ -193,11 +194,11 @@ func (cfg *Config) PromptUserInput() {
 		cfg.ExternalProto = "http"
 	}
 
-	fmt.Print("Enter domain (examples: localhost:8080, test.yourdomain.com): ")
+	log.Print("Enter domain (examples: localhost:8080, test.yourdomain.com): ")
 	cfg.Domain = PromptText(scanner)
 
 	if cfg.UseHTTPS {
-		fmt.Print("Enter ACME Email: ")
+		log.Print("Enter ACME Email: ")
 		cfg.AcmeEmail = PromptText(scanner)
 	}
 }
@@ -208,7 +209,10 @@ func isTTY() bool {
 
 func randomString(length int) string {
 	bytes := make([]byte, length/2+1)
-	rand.Read(bytes)
+	_, err := rand.Read(bytes)
+	if err != nil {
+		panic(err)
+	}
 	return fmt.Sprintf("%x", bytes)[0:length]
 }
 
@@ -230,11 +234,14 @@ func (c ComposeItems) GetFileNames() []string {
 
 func (c ComposeItems) WriteToDisk() error {
 	for _, item := range c {
-		fmt.Printf("Writing file: %s\n", item.Path)
+		log.Printf("Writing file: %s\n", item.Path)
 		err := os.WriteFile(item.Path, item.Content, permbits.UserReadWrite)
 		if err != nil {
 			if os.IsNotExist(err) {
-				os.MkdirAll(filepath.Dir(item.Path), permbits.UserAll+permbits.GroupAll)
+				err = os.MkdirAll(filepath.Dir(item.Path), permbits.UserAll+permbits.GroupAll)
+				if err != nil {
+					return err
+				}
 				err = os.WriteFile(item.Path, item.Content, permbits.UserReadWrite)
 				if err != nil {
 					return err
@@ -250,7 +257,7 @@ func (c ComposeItems) WriteToDisk() error {
 
 func GetItems(deployTestMail, deployTraefik, addTraefikLabels, tls bool) ComposeItems {
 	items := []ComposeItem{{
-		Path:    filepath.Join("docker-compose.yaml"),
+		Path:    "docker-compose.yaml",
 		Content: composeBase,
 	}}
 
@@ -266,7 +273,7 @@ func GetItems(deployTestMail, deployTraefik, addTraefikLabels, tls bool) Compose
 			items = append(items,
 				ComposeItem{
 					Path:    filepath.Join("compose", "docker-compose.traefik-tls.yaml"),
-					Content: traefikCompose,
+					Content: traefikTLSCompose,
 				})
 		} else {
 			items = append(items,
@@ -286,7 +293,7 @@ func GetItems(deployTestMail, deployTraefik, addTraefikLabels, tls bool) Compose
 			items = append(items,
 				ComposeItem{
 					Path:    filepath.Join("compose", "docker-compose.traefik-labels-tls.yaml"),
-					Content: traefikCompose,
+					Content: traefikLabelsTLSCompose,
 				})
 		}
 	}
@@ -302,7 +309,7 @@ func GenerateComposeConfig(cCtx *ucli.Context) error {
 		UseHTTPS:               cCtx.Bool(FlagUseHTTPS),
 		AcmeEmail:              cCtx.String(FlagAcmeEmail),
 		Domain:                 cCtx.String(FlagDomain),
-		SmtpURI:                cCtx.String(FlagSmtpURI),
+		SmtpURI:                cCtx.String(FlagSMTPUri),
 		FromEmail:              cCtx.String(FlagFromEmail),
 		FromName:               cCtx.String(FlagFromName),
 		DyoVersion:             cCtx.String(FlagDyoVersion),
@@ -349,16 +356,16 @@ func GenerateComposeConfig(cCtx *ucli.Context) error {
 		return err
 	}
 
-	fmt.Print("You can start the project with the command: docker compose up -d\n")
+	log.Print("You can start the project with the command: docker compose up -d\n")
 	if cfg.DeployTestMail {
-		fmt.Printf("The UI should be available at %s://%s%s\n", cfg.ExternalProto, cfg.Domain, cfg.ExternalPort)
-		fmt.Printf("The e-mail service should be available at %s location\n", mailURL)
+		log.Printf("The UI should be available at %s://%s%s\n", cfg.ExternalProto, cfg.Domain, cfg.ExternalPort)
+		log.Printf("The e-mail service should be available at %s location\n", mailURL)
 	}
 
 	return nil
 }
 
-func ComposeGenerateCommand() *ucli.Command {
+func Setup() *ucli.Command {
 	envMap, _ := godotenv.Read(".env")
 
 	return &ucli.Command{
@@ -373,15 +380,15 @@ func ComposeGenerateCommand() *ucli.Command {
 			},
 			&ucli.BoolFlag{
 				Name:  FlagDeployTestMail,
-				Usage: "Downloads Mailsluper compose file and concatenates it to base compose file in the generated .env file",
+				Usage: "Writes mail service compose file and concatenates it to base compose file in the generated .env file",
 			},
 			&ucli.BoolFlag{
 				Name:  FlagDeployTraefik,
-				Usage: "Downloads Traefik compose file and concatenates it to base compose file in the generated .env file, you may not need this if you have Traefik installed already",
+				Usage: "Writes Traefik compose file and concatenates it to base compose file in the generated .env file",
 			},
 			&ucli.BoolFlag{
 				Name:  FlagAddTraefikLabels,
-				Usage: "If you opted for deploying Traefik, you can still have the labels added, so the already present one can use it",
+				Usage: "If you opted for deploying Traefik, you can still have the labels added, so the one running can use it",
 			},
 			&ucli.BoolFlag{
 				Name:  FlagUseHTTPS,
@@ -400,7 +407,7 @@ func ComposeGenerateCommand() *ucli.Command {
 				Usage: "The domain used for host based routing and token generation",
 			},
 			&ucli.StringFlag{
-				Name:  FlagSmtpURI,
+				Name:  FlagSMTPUri,
 				Usage: "The application needs a working SMTP service to function",
 			},
 			&ucli.StringFlag{
@@ -414,27 +421,27 @@ func ComposeGenerateCommand() *ucli.Command {
 			&ucli.StringFlag{
 				Name:        FlagCruxEncryptionKey,
 				DefaultText: "auto-generated",
-				Value:       util.Fallback(envMap[toEnvCase(FlagCruxEncryptionKey)], randomString(43)),
+				Value:       util.Fallback(envMap[toEnvCase(FlagCruxEncryptionKey)], randomString(cruxSecretLength)),
 			},
 			&ucli.StringFlag{
 				Name:        FlagCruxPostgresPassword,
 				DefaultText: "auto-generated",
-				Value:       util.Fallback(envMap[toEnvCase(FlagCruxPostgresPassword)], randomString(32)),
+				Value:       util.Fallback(envMap[toEnvCase(FlagCruxPostgresPassword)], randomString(defaultSecretLength)),
 			},
 			&ucli.StringFlag{
 				Name:        FlagKratosPostgresPassword,
 				DefaultText: "auto-generated",
-				Value:       util.Fallback(envMap[toEnvCase(FlagKratosPostgresPassword)], randomString(32)),
+				Value:       util.Fallback(envMap[toEnvCase(FlagKratosPostgresPassword)], randomString(defaultSecretLength)),
 			},
 			&ucli.StringFlag{
 				Name:        FlagCruxSecret,
 				DefaultText: "auto-generated",
-				Value:       util.Fallback(envMap[toEnvCase(FlagCruxSecret)], randomString(32)),
+				Value:       util.Fallback(envMap[toEnvCase(FlagCruxSecret)], randomString(defaultSecretLength)),
 			},
 			&ucli.StringFlag{
 				Name:        FlagKratosSecret,
 				DefaultText: "auto-generated",
-				Value:       util.Fallback(envMap[toEnvCase(FlagKratosSecret)], randomString(32)),
+				Value:       util.Fallback(envMap[toEnvCase(FlagKratosSecret)], randomString(defaultSecretLength)),
 			},
 		},
 	}

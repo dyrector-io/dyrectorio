@@ -8,7 +8,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/go-playground/validator/v10"
+	validator "github.com/go-playground/validator/v10"
 	"github.com/rs/zerolog/log"
 	"k8s.io/apimachinery/pkg/api/resource"
 
@@ -371,7 +371,7 @@ func (vt *VolumeType) UnmarshalJSON(b []byte) error {
 		*vt = volumeType
 		return nil
 	}
-	return errors.New("Invalid volume type")
+	return errors.New("invalid volume type")
 }
 
 // setting known defaults from constants

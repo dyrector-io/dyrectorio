@@ -3,8 +3,9 @@ package cli
 import (
 	"fmt"
 
-	"github.com/dyrector-io/dyrectorio/golang/pkg/cli/compose"
 	ucli "github.com/urfave/cli/v2"
+
+	"github.com/dyrector-io/dyrectorio/golang/pkg/cli/setup"
 )
 
 const (
@@ -33,7 +34,7 @@ func GetGenerateCommand() *ucli.Command {
 					},
 				}},
 			},
-			compose.ComposeGenerateCommand(),
+			setup.Setup(),
 		},
 	}
 }
