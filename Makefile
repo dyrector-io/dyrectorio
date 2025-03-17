@@ -32,6 +32,12 @@ cli:
 	cd golang/cmd/dyo && \
 	go run .
 
+# Run the interactive compose-file config generator
+.PHONY: compose-init
+compose-init:
+	cd golang && make init-cli
+	go run ./golang/cmd/dyo/main.go  generate compose --compose-dir "distribution/compose"
+
 # Create dyrector.io offline installer bundle
 .PHONY: export-minimal
 export-minimal:

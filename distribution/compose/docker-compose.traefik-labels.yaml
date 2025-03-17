@@ -2,7 +2,7 @@ services:
   crux:
     labels:
       - traefik.enable=true
-      - traefik.http.routers.crux.rule=(Host(`${DOMAIN}`) && Headers(`content-type`, `application/grpc`))
+      - traefik.http.routers.crux.rule=(Host(`${CRUX_AGENT_HOST}`) && Headers(`content-type`, `application/grpc`))
       - traefik.http.routers.crux.entrypoints=web
       - traefik.http.routers.crux.service=crux
       - traefik.http.services.crux.loadbalancer.server.port=5000

@@ -14,6 +14,7 @@ import (
 	"github.com/iancoleman/strcase"
 	"github.com/joho/godotenv"
 	permbits "github.com/na4ma4/go-permbits"
+	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 	ucli "github.com/urfave/cli/v2"
 	"golang.org/x/term"
@@ -65,28 +66,31 @@ const (
 	FlagCruxPostgresPassword   = "crux-postgres-password"   // #nosec 101 // these are not passwords
 	FlagCruxSecret             = "crux-secret"
 	FlagKratosSecret           = "kratos-secret"
+	FlagComposeDir             = "compose-dir"
 )
 
 type Config struct {
-	FromEmail              string
-	Domain                 string
-	CruxSecret             string
 	AcmeEmail              string
-	KratosSecret           string
-	ExternalPort           string
-	DyoVersion             string
 	ComposeFile            string
-	KratosPostgresPassword string
-	ExternalProto          string
+	CruxSecret             string
 	CruxPostgresPassword   string
-	SmtpURI                string //nolint:revive,stylecheck // we need this for uppercasing to work
+	CruxAgentHost          string
 	EncryptionSecretKey    string
+	ExternalPort           string
+	ExternalProto          string
+	Domain                 string
+	DyoVersion             string
+	FromEmail              string
 	FromName               string
-	NoCompose              bool
+	KratosPostgresPassword string
+	KratosSecret           string
+	NodeEnv                string
+	SmtpURI                string //nolint:revive,stylecheck // we need this for uppercasing to work
 	AddTraefikLabels       bool
 	DeployTestMail         bool
-	UseHTTPS               bool
 	DeployTraefik          bool
+	NoCompose              bool
+	UseHTTPS               bool
 }
 
 func (cfg *Config) ToMap() map[string]string {
@@ -156,8 +160,8 @@ func PromptText(sc *bufio.Scanner) string {
 func (cfg *Config) PromptUserInput() {
 	scanner := bufio.NewScanner(os.Stdin)
 
-	log.Print("We rely on custom reverse proxy configuration and for that we use Traefik.\n")
-	log.Print("You could use different proxies as well, if you do so you are on your own for now.\n")
+	log.Print("We rely on custom reverse proxy configuration and for that we use Traefik.")
+	log.Print("You could use different proxies as well, if you do so you are on your own for now.")
 	log.Print("Deploy Traefik? (y/n) ")
 	cfg.DeployTraefik = PromptBoolOrExit(scanner)
 
@@ -175,7 +179,7 @@ func (cfg *Config) PromptUserInput() {
 		cfg.SmtpURI = "smtps://test:test@mailslurper:1025/?skip_ssl_verify=true&legacy_ssl=true"
 		cfg.FromEmail = "demo@test.dyrector.io"
 		cfg.FromName = "dyrectorio demo"
-		log.Printf("After deployment, you can reach the mail service at: %s\n", mailURL)
+		log.Printf("After deployment, you can reach the mail service at: %s", mailURL)
 	} else {
 		log.Print("Enter SMTP URI: ")
 		cfg.SmtpURI = PromptText(scanner)
@@ -192,6 +196,7 @@ func (cfg *Config) PromptUserInput() {
 		cfg.ExternalProto = "https"
 	} else {
 		cfg.ExternalProto = "http"
+		cfg.NodeEnv = "development"
 	}
 
 	log.Print("Enter domain (examples: localhost:8080, test.yourdomain.com): ")
@@ -234,7 +239,7 @@ func (c ComposeItems) GetFileNames() []string {
 
 func (c ComposeItems) WriteToDisk() error {
 	for _, item := range c {
-		log.Printf("Writing file: %s\n", item.Path)
+		log.Printf("Writing file: %s", item.Path)
 		err := os.WriteFile(item.Path, item.Content, permbits.UserReadWrite)
 		if err != nil {
 			if os.IsNotExist(err) {
@@ -255,7 +260,7 @@ func (c ComposeItems) WriteToDisk() error {
 	return nil
 }
 
-func GetItems(deployTestMail, deployTraefik, addTraefikLabels, tls bool) ComposeItems {
+func GetItems(composeFolder string, deployTestMail, deployTraefik, addTraefikLabels, tls bool) ComposeItems {
 	items := []ComposeItem{{
 		Path:    "docker-compose.yaml",
 		Content: composeBase,
@@ -264,7 +269,7 @@ func GetItems(deployTestMail, deployTraefik, addTraefikLabels, tls bool) Compose
 	if deployTestMail {
 		items = append(items,
 			ComposeItem{
-				Path:    filepath.Join("compose", "docker-compose.mail-test.yaml"),
+				Path:    filepath.Join(composeFolder, "docker-compose.mail-test.yaml"),
 				Content: mailCompose,
 			})
 	}
@@ -272,13 +277,13 @@ func GetItems(deployTestMail, deployTraefik, addTraefikLabels, tls bool) Compose
 		if tls {
 			items = append(items,
 				ComposeItem{
-					Path:    filepath.Join("compose", "docker-compose.traefik-tls.yaml"),
+					Path:    filepath.Join(composeFolder, "docker-compose.traefik-tls.yaml"),
 					Content: traefikTLSCompose,
 				})
 		} else {
 			items = append(items,
 				ComposeItem{
-					Path:    filepath.Join("compose", "docker-compose.traefik.yaml"),
+					Path:    filepath.Join(composeFolder, "docker-compose.traefik.yaml"),
 					Content: traefikCompose,
 				})
 		}
@@ -286,13 +291,13 @@ func GetItems(deployTestMail, deployTraefik, addTraefikLabels, tls bool) Compose
 	if addTraefikLabels {
 		items = append(items,
 			ComposeItem{
-				Path:    filepath.Join("compose", "docker-compose.traefik-labels.yaml"),
+				Path:    filepath.Join(composeFolder, "docker-compose.traefik-labels.yaml"),
 				Content: traefikLabelsCompose,
 			})
 		if tls {
 			items = append(items,
 				ComposeItem{
-					Path:    filepath.Join("compose", "docker-compose.traefik-labels-tls.yaml"),
+					Path:    filepath.Join(composeFolder, "docker-compose.traefik-labels-tls.yaml"),
 					Content: traefikLabelsTLSCompose,
 				})
 		}
@@ -301,7 +306,18 @@ func GetItems(deployTestMail, deployTraefik, addTraefikLabels, tls bool) Compose
 	return items
 }
 
+func customZerologLogger() zerolog.Logger {
+	output := zerolog.ConsoleWriter{Out: os.Stdout, FormatTimestamp: func(i interface{}) string { return "" }}
+
+	output.FormatLevel = func(i interface{}) string {
+		return fmt.Sprintf("dyo>")
+	}
+
+	return zerolog.New(output).With().Logger()
+}
+
 func GenerateComposeConfig(cCtx *ucli.Context) error {
+	log.Logger = customZerologLogger()
 	cfg := Config{
 		DeployTestMail:         cCtx.Bool(FlagDeployTestMail),
 		DeployTraefik:          cCtx.Bool(FlagDeployTraefik),
@@ -327,7 +343,7 @@ func GenerateComposeConfig(cCtx *ucli.Context) error {
 	}
 
 	if !cCtx.Bool(FlagNoCompose) {
-		composeFiles := GetItems(cfg.DeployTestMail, cfg.DeployTraefik, cfg.AddTraefikLabels, cfg.UseHTTPS)
+		composeFiles := GetItems(cCtx.String(FlagComposeDir), cfg.DeployTestMail, cfg.DeployTraefik, cfg.AddTraefikLabels, cfg.UseHTTPS)
 		cfg.ComposeFile = strings.Join(composeFiles.GetFileNames(), ":")
 
 		err := composeFiles.WriteToDisk()
@@ -338,9 +354,12 @@ func GenerateComposeConfig(cCtx *ucli.Context) error {
 
 	if strings.Contains(cfg.Domain, ":") {
 		host, port, err := net.SplitHostPort(cfg.Domain)
-		cfg.Domain = host
 		if err != nil {
 			return err
+		}
+		cfg.Domain = host
+		if host == "localhost" {
+			cfg.CruxAgentHost = "host.docker.internal"
 		}
 		if port != "443" && cfg.UseHTTPS {
 			// if it's not the default port for protocol
@@ -356,10 +375,10 @@ func GenerateComposeConfig(cCtx *ucli.Context) error {
 		return err
 	}
 
-	log.Print("You can start the project with the command: docker compose up -d\n")
+	log.Print("You can start the project with the command: docker compose up -d")
 	if cfg.DeployTestMail {
-		log.Printf("The UI should be available at %s://%s%s\n", cfg.ExternalProto, cfg.Domain, cfg.ExternalPort)
-		log.Printf("The e-mail service should be available at %s location\n", mailURL)
+		log.Printf("The UI should be available at %s://%s%s", cfg.ExternalProto, cfg.Domain, cfg.ExternalPort)
+		log.Printf("The e-mail service should be available at %s location", mailURL)
 	}
 
 	return nil
@@ -417,6 +436,11 @@ func Setup() *ucli.Command {
 			&ucli.StringFlag{
 				Name:  FlagFromName,
 				Usage: "Sender's name",
+			},
+			&ucli.StringFlag{
+				Name:  FlagComposeDir,
+				Usage: "Path of the directory were the additional compose files should be placed",
+				Value: "compose",
 			},
 			&ucli.StringFlag{
 				Name:        FlagCruxEncryptionKey,
