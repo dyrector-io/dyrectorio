@@ -8,7 +8,7 @@ services:
     platform: linux/amd64
     environment:
       - TZ=UTC
-      - DATABASE_URL=postgresql://crux:${POSTGRES_PASSWORD}@crux-postgres:5432/crux?schema=public
+      - DATABASE_URL=postgresql://crux_user:${CRUX_POSTGRES_PASSWORD}@database:5432/crux?schema=public
     command: migrate
     networks:
       - crux-intranet
@@ -25,13 +25,13 @@ services:
       - 5001:5001
     environment:
       - TZ=UTC
-      - DATABASE_URL=postgresql://crux:${POSTGRES_PASSWORD}@crux-postgres:5432/crux?schema=public
-      - SMTP_URI=$SMTP_URI
-      - FROM_EMAIL=$FROM_EMAIL
-      - FROM_NAME=$FROM_NAME
-      - KRATOS_ADMIN_URL=$KRATOS_ADMIN_URL
-      - CRUX_UI_URL=$CRUX_UI_URL
-      - CRUX_AGENT_ADDRESS=$CRUX_AGENT_ADDRESS
+      - DATABASE_URL=postgresql://crux_user:${CRUX_POSTGRES_PASSWORD}@database:5432/crux?schema=public
+      - SMTP_URI=${SMTP_URI}
+      - FROM_EMAIL=${FROM_EMAIL}
+      - FROM_NAME=${FROM_NAME}
+      - KRATOS_ADMIN_URL=${KRATOS_ADMIN_URL}
+      - CRUX_UI_URL=${CRUX_UI_URL}
+      - CRUX_AGENT_ADDRESS=${CRUX_AGENT_ADDRESS}
     restart: unless-stopped
     command: serve
     networks:
