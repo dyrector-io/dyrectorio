@@ -1,7 +1,7 @@
 name: pull_request_labeler
 on:
   pull_request:
-    types: [edited, opened, synchronize, reopened]
+    types: [opened]
 jobs:
   # Check if the pull request is a fork
   # We can assign labels to a pull request only if it originates from the original repository. If a
@@ -44,7 +44,7 @@ jobs:
     steps:
       - uses: actions/labeler@v4
         with:
-          configuration-path: .github/config/labeler.yml
+          configuration-path: .github/config/source_labeler.yml
   #  Add scope & type labels to the PR
   label_based_on_title:
     permissions:
@@ -56,7 +56,7 @@ jobs:
     steps:
       - uses: github/issue-labeler@v3.1
         with:
-          configuration-path: .github/config/title_label_config.yml
+          configuration-path: .github/config/title_labeler.yml
           include-title: 1
           repo-token: ${{ github.token }}
           enable-versioned-regex: 0
