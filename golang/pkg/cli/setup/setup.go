@@ -307,10 +307,10 @@ func GetItems(composeFolder string, deployTestMail, deployTraefik, addTraefikLab
 }
 
 func customZerologLogger() zerolog.Logger {
-	output := zerolog.ConsoleWriter{Out: os.Stdout, FormatTimestamp: func(i interface{}) string { return "" }}
+	output := zerolog.ConsoleWriter{Out: os.Stdout, FormatTimestamp: func(any) string { return "" }}
 
-	output.FormatLevel = func(i interface{}) string {
-		return fmt.Sprintf("dyo>")
+	output.FormatLevel = func(any) string {
+		return "dyo>"
 	}
 
 	return zerolog.New(output).With().Logger()
