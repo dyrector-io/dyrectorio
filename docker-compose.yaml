@@ -1,6 +1,23 @@
 # This is a minimal compose file, meant to be extended using files from the distribution/compose folder
 # Consult the GETTING_STARTED.md
 services:
+  database:
+    container_name: database
+    image: ghcr.io/dyrector-io/dyrectorio/multi-database:1.0.0
+    environment:
+      - POSTGRES_PASSWORD=${POSTGRES_ROOT_PASSWORD}
+      - CRUX_POSTGRES_PASSWORD=${CRUX_POSTGRES_PASSWORD}
+      - KRATOS_POSTGRES_PASSWORD=${KRATOS_POSTGRES_PASSWORD}
+    restart: unless-stopped
+    volumes: ['database:/var/lib/postgresql/data']
+    healthcheck:
+      # testing the healtheck with a specific database and users
+      test: [CMD-SHELL, pg_isready -d crux -U crux_user]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    labels:
+      - org.dyrectorio.service-category=_internal
   crux:
     container_name: crux
     image: ghcr.io/dyrector-io/dyrectorio/web/crux:${DYO_VERSION:-stable}
@@ -8,7 +25,7 @@ services:
     environment:
       - TZ=${TIMEZONE:-UTC}
       - LOG_LEVEL=${LOG_LEVEL:-debug}
-      - DATABASE_URL=postgresql://crux:${CRUX_POSTGRES_PASSWORD}@crux-postgres:5432/crux?schema=public
+      - DATABASE_URL=postgresql://crux_user:${CRUX_POSTGRES_PASSWORD}@database:5432/crux?schema=public
       - KRATOS_ADMIN_URL=http://kratos:4434
       - KRATOS_URL=http://kratos:4433
       - CRUX_UI_URL=${EXTERNAL_PROTO}://${DOMAIN}${EXTERNAL_PORT}
@@ -24,7 +41,7 @@ services:
       - QA_OPT_OUT=${QA_OPT_OUT:-false}
       - ENCRYPTION_SECRET_KEY=${ENCRYPTION_SECRET_KEY}
     depends_on:
-      crux-postgres:
+      database:
         condition: service_healthy
       crux-migrate:
         condition: service_completed_successfully
@@ -39,27 +56,11 @@ services:
     command: [migrate]
     environment:
       - TZ=${TIMEZONE:-UTC}
-      - DATABASE_URL=postgresql://crux:${CRUX_POSTGRES_PASSWORD}@crux-postgres:5432/crux?schema=public&connect_timeout=5
+      - DATABASE_URL=postgresql://crux_user:${CRUX_POSTGRES_PASSWORD}@database:5432/crux?schema=public&connect_timeout=5
     depends_on:
-      crux-postgres:
+      database:
         condition: service_healthy
     restart: 'no'
-    labels:
-      - org.dyrectorio.service-category=_internal
-  crux-postgres:
-    container_name: crux-postgres
-    image: docker.io/library/postgres:13-alpine
-    environment:
-      - POSTGRES_PASSWORD=${CRUX_POSTGRES_PASSWORD}
-      - POSTGRES_USER=crux
-      - POSTGRES_DB=crux
-    restart: unless-stopped
-    volumes: ['crux-db:/var/lib/postgresql/data']
-    healthcheck:
-      test: [CMD-SHELL, pg_isready -U crux]
-      interval: 5s
-      timeout: 5s
-      retries: 5
     labels:
       - org.dyrectorio.service-category=_internal
   crux-ui:
@@ -85,7 +86,7 @@ services:
     image: ghcr.io/dyrector-io/dyrectorio/web/kratos:${DYO_VERSION:-stable}
     environment:
       - SQA_OPT_OUT=true
-      - DSN=postgres://kratos:${KRATOS_POSTGRES_PASSWORD}@kratos-postgres:5432/kratos?sslmode=disable&max_conns=20&max_idle_conns=4&connect_timeout=5
+      - DSN=postgres://kratos_user:${KRATOS_POSTGRES_PASSWORD}@database:5432/kratos?sslmode=disable&max_conns=20&max_idle_conns=4&connect_timeout=5
       - KRATOS_URL=${EXTERNAL_PROTO}://${DOMAIN}${EXTERNAL_PORT}/kratos
       - KRATOS_ADMIN_URL=http://kratos:4434
       - AUTH_URL=${EXTERNAL_PROTO}://${DOMAIN}${EXTERNAL_PORT}/auth
@@ -97,7 +98,7 @@ services:
       - FROM_EMAIL=${FROM_EMAIL}
       - FROM_NAME=${FROM_NAME}
     depends_on:
-      kratos-postgres:
+      database:
         condition: service_healthy
       kratos-migrate:
         condition: service_completed_successfully
@@ -110,29 +111,12 @@ services:
     command: -c /etc/config/kratos/kratos.yaml migrate sql -e --yes
     environment:
       - SQA_OPT_OUT=true
-      - DSN=postgres://kratos:${KRATOS_POSTGRES_PASSWORD}@kratos-postgres:5432/kratos?sslmode=disable&max_conns=20&max_idle_conns=4
+      - DSN=postgres://kratos_user:${KRATOS_POSTGRES_PASSWORD}@database:5432/kratos?sslmode=disable&max_conns=20&max_idle_conns=4
     depends_on:
-      kratos-postgres:
+      database:
         condition: service_healthy
     restart: 'no'
     labels:
       - org.dyrectorio.service-category=_internal
-  kratos-postgres:
-    container_name: kratos-postgres
-    image: docker.io/library/postgres:13-alpine
-    environment:
-      - POSTGRES_PASSWORD=${KRATOS_POSTGRES_PASSWORD}
-      - POSTGRES_USER=kratos
-      - POSTGRES_DB=kratos
-    restart: unless-stopped
-    volumes: ['kratos-db:/var/lib/postgresql/data']
-    healthcheck:
-      test: [CMD-SHELL, pg_isready -U kratos]
-      interval: 5s
-      timeout: 5s
-      retries: 5
-    labels:
-      - org.dyrectorio.service-category=_internal
 volumes:
-  crux-db:
-  kratos-db:
+  database:
