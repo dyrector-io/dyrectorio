@@ -1,6 +1,6 @@
 services:
   database:
-    image: ghcr.io/dyrector-io/dyrectorio/multi-database:1.2.3
+    image: ghcr.io/dyrector-io/dyrectorio/multi-database:1.0.0
     container_name: database
     restart: unless-stopped
     healthcheck:
