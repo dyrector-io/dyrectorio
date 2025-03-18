@@ -2,7 +2,7 @@
 set -eu
 
 # Wait for PostgreSQL to start
-until pg_isready -U "root"; do
+until pg_isready -U "${POSTGRES_USER}"; do
   echo "Waiting for PostgreSQL to start..."
   sleep 2
 done
@@ -10,16 +10,16 @@ done
 # Create the database and users dynamically
 echo "Creating databases and users..."
 
-psql -v ON_ERROR_STOP=1 --username root <<-EOSQL
-  CREATE USER crux_user WITH ENCRYPTED PASSWORD '${CRUX_POSTGRES_PASSWORD}';
-  CREATE DATABASE crux;
-  GRANT ALL PRIVILEGES ON DATABASE crux TO crux_user;
-  ALTER DATABASE crux OWNER TO crux_user;
+psql -v ON_ERROR_STOP=1 --username '${POSTGRES_USER}' <<-EOSQL
+  CREATE USER '${CRUX_POSTGRES_USER}' WITH ENCRYPTED PASSWORD '${CRUX_POSTGRES_PASSWORD}';
+  CREATE DATABASE '${CRUX_POSTGRES}';
+  GRANT ALL PRIVILEGES ON DATABASE '${CRUX_POSTGRES}' TO '${CRUX_POSTGRES_USER}';
+  ALTER DATABASE '${CRUX_POSTGRES}' OWNER TO '${CRUX_POSTGRES_USER}';
 
-  CREATE USER kratos_user WITH ENCRYPTED PASSWORD '${KRATOS_POSTGRES_PASSWORD}';
-  CREATE DATABASE kratos;
-  GRANT ALL PRIVILEGES ON DATABASE kratos TO kratos_user;
-  ALTER DATABASE kratos OWNER TO kratos_user;
+  CREATE USER '${KRATOS_POSTGRES_USER}' WITH ENCRYPTED PASSWORD '${KRATOS_POSTGRES_PASSWORD}';
+  CREATE DATABASE '${KRATOS_POSTGRES}' ;
+  GRANT ALL PRIVILEGES ON DATABASE '${KRATOS_POSTGRES}'  TO '${KRATOS_POSTGRES_USER}';
+  ALTER DATABASE '${KRATOS_POSTGRES}' OWNER TO '${KRATOS_POSTGRES_USER}';
 EOSQL
 
 echo "Databases and users created successfully."
