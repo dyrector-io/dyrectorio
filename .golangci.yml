@@ -1,80 +1,16 @@
-run:
-  timeout: 5m
-linters-settings:
-  depguard:
-    rules:
-      logblock:
-        deny:
-          - pkg: "log"
-            desc: "logging is allowed only by github.com/rs/zerolog"
-  dupl:
-    threshold: 100
-  forbidigo:
-    exclude-godoc-examples: false
-    forbid:
-      - ^print.*$
-      - 'fmt\.Print.*'
-  funlen:
-    lines: 100
-    statements: 50
-  goconst:
-    min-len: 2
-    min-occurrences: 2
-  gocritic:
-    enabled-tags:
-      - diagnostic
-      - experimental
-      - opinionated
-      - performance
-      - style
-    disabled-checks:
-      - dupImport # https://github.com/go-critic/go-critic/issues/845
-      - ifElseChain
-      - octalLiteral
-      - whyNoLint
-      - wrapperFunc
-  gocognit:
-    min-complexity: 20
-  gocyclo:
-    min-complexity: 15
-  goimports:
-    local-prefixes: github.com/golangci/golangci-lint,github.com/dyrector-io/dyrectorio
-  govet:
-    enable-all: true
-  lll:
-    line-length: 140
-  misspell:
-    locale: US
-  mnd:
-    checks:
-      - argument
-      - case
-      - condition
-      - return
-  nolintlint:
-    allow-unused: false # report any unused nolint directives
-    require-explanation: false # don't require an explanation for nolint directives
-    require-specific: false # don't require nolint directives to be specific about which linter is being skipped
-  tenv:
-    all: true
-  staticcheck:
-    checks:
-      - all
+version: "2"
 linters:
-  # inverted configuration with `enable-all` and `disable` is not scalable during updates of golangci-lint
-  disable-all: true
+  default: none
   enable:
     - asciicheck
     - bodyclose
-    # TODO(nandor-magyar): refactor golang code to comply
-    # - containedctx
+    - copyloopvar
     - depguard
     - dogsled
-    - durationcheck
     - dupl
+    - durationcheck
     - errcheck
     - errname
-    - copyloopvar
     - exhaustive
     - forbidigo
     - funlen
@@ -82,17 +18,14 @@ linters:
     - goconst
     - gocritic
     - gocyclo
-    - gofumpt
-    - goimports
-    - mnd
     - goprintffuncname
     - gosec
-    - gosimple
     - govet
     - importas
     - ineffassign
     - lll
     - misspell
+    - mnd
     - nakedret
     - nilerr
     - noctx
@@ -100,19 +33,97 @@ linters:
     - revive
     - rowserrcheck
     - staticcheck
-    - stylecheck
-    - usetesting
     - thelper
-    - typecheck
     - unconvert
     - unparam
     - unused
+    - usetesting
     - whitespace
-issues:
-  # Excluding configuration per-path, per-linter, per-text and per-source
-  exclude-rules:
-    - path: _test\.go
-      linters:
-        - gomnd
-  exclude-dirs:
-    - internal/cache
+  settings:
+    depguard:
+      rules:
+        logblock:
+          deny:
+            - pkg: log
+              desc: logging is allowed only by github.com/rs/zerolog
+    dupl:
+      threshold: 100
+    forbidigo:
+      forbid:
+        - pattern: ^print.*$
+        - pattern: fmt\.Print.*
+      exclude-godoc-examples: false
+    funlen:
+      lines: 100
+      statements: 50
+    gocognit:
+      min-complexity: 20
+    goconst:
+      min-len: 2
+      min-occurrences: 2
+    gocritic:
+      disabled-checks:
+        - dupImport
+        - ifElseChain
+        - octalLiteral
+        - whyNoLint
+        - wrapperFunc
+      enabled-tags:
+        - diagnostic
+        - experimental
+        - opinionated
+        - performance
+        - style
+    gocyclo:
+      min-complexity: 15
+    govet:
+      enable-all: true
+    lll:
+      line-length: 140
+    misspell:
+      locale: US
+    mnd:
+      checks:
+        - argument
+        - case
+        - condition
+        - return
+    nolintlint:
+      require-explanation: false
+      require-specific: false
+      allow-unused: false
+    staticcheck:
+      checks:
+        - all
+  exclusions:
+    generated: lax
+    presets:
+      - comments
+      - common-false-positives
+      - legacy
+      - std-error-handling
+    rules:
+      - linters:
+          - mnd
+        path: _test\.go
+    paths:
+      - internal/cache
+      - third_party$
+      - builtin$
+      - examples$
+formatters:
+  enable:
+    - gofumpt
+    - goimports
+  settings:
+    goimports:
+      local-prefixes:
+        - github.com/golangci/golangci-lint
+        - github.com/dyrector-io/dyrectorio
+  exclusions:
+    generated: lax
+    paths:
+      - internal/cache
+      - third_party$
+      - builtin$
+      - examples$
