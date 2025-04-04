@@ -127,8 +127,8 @@ jobs:
         uses: golangci/golangci-lint-action@v7
         with:
           version: ${{ env.GOLANGCI_LINT_VERSION }}
-          working-directory: ${{ env.GOLANG_WORKING_DIRECTORY }}
-          args: --config=${{ github.workspace }}/.golangci.yml
+          working-directory: ${{ github.workspace }}
+          args: --path-prefix=golang
   go_security:
     runs-on: ubuntu-22.04
     needs: gather_changes
