@@ -294,15 +294,15 @@ func LoadDefaultsOnEmpty(state *State, args *ArgsFlags) *State {
 	state.SettingsFile.KratosSecret = util.Fallback(state.SettingsFile.KratosSecret, randomChars())
 
 	// Generate names
-	state.Containers.Traefik.Name = fmt.Sprintf("%s_traefik", args.Prefix)
-	state.Containers.Crux.Name = fmt.Sprintf("%s_crux", args.Prefix)
-	state.Containers.CruxMigrate.Name = fmt.Sprintf("%s_crux-migrate", args.Prefix)
-	state.Containers.CruxUI.Name = fmt.Sprintf("%s_crux-ui", args.Prefix)
-	state.Containers.Kratos.Name = fmt.Sprintf("%s_kratos", args.Prefix)
-	state.Containers.KratosMigrate.Name = fmt.Sprintf("%s_kratos-migrate", args.Prefix)
-	state.Containers.CruxPostgres.Name = fmt.Sprintf("%s_crux-postgres", args.Prefix)
-	state.Containers.KratosPostgres.Name = fmt.Sprintf("%s_kratos-postgres", args.Prefix)
-	state.Containers.MailSlurper.Name = fmt.Sprintf("%s_mailslurper", args.Prefix)
+	state.Traefik.Name = fmt.Sprintf("%s_traefik", args.Prefix)
+	state.Crux.Name = fmt.Sprintf("%s_crux", args.Prefix)
+	state.CruxMigrate.Name = fmt.Sprintf("%s_crux-migrate", args.Prefix)
+	state.CruxUI.Name = fmt.Sprintf("%s_crux-ui", args.Prefix)
+	state.Kratos.Name = fmt.Sprintf("%s_kratos", args.Prefix)
+	state.KratosMigrate.Name = fmt.Sprintf("%s_kratos-migrate", args.Prefix)
+	state.CruxPostgres.Name = fmt.Sprintf("%s_crux-postgres", args.Prefix)
+	state.KratosPostgres.Name = fmt.Sprintf("%s_kratos-postgres", args.Prefix)
+	state.MailSlurper.Name = fmt.Sprintf("%s_mailslurper", args.Prefix)
 
 	return state
 }

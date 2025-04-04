@@ -8,8 +8,9 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/dyrector-io/dyrectorio/golang/pkg/dagent/utils"
 	"github.com/na4ma4/go-permbits"
+
+	"github.com/dyrector-io/dyrectorio/golang/pkg/dagent/utils"
 
 	"github.com/stretchr/testify/assert"
 )

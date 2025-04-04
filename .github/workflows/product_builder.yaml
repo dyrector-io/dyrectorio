@@ -25,7 +25,7 @@ env:
   CRUX_UI_WORKING_DIRECTORY: web/crux-ui
   KRATOS_WORKING_DIRECTORY: web/kratos
   GOLANG_WORKING_DIRECTORY: golang
-  GOLANGCI_LINT_VERSION: v2.0
+  GOLANGCI_LINT_VERSION: v2.0.2
 concurrency:
   group: ${{ github.workflow }}-${{ github.sha }}
   cancel-in-progress: true

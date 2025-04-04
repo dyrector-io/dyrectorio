@@ -123,7 +123,7 @@ func getCruxInitContainer(state *State, args *ArgsFlags) containerbuilder.Lifecy
 		fmt.Sprintf("DATABASE_URL=postgresql://%s:%s@%s:%d/%s?schema=public",
 			state.SettingsFile.CruxPostgresUser,
 			state.SettingsFile.CruxPostgresPassword,
-			state.Containers.CruxPostgres.Name,
+			state.CruxPostgres.Name,
 			defaultPostgresPort,
 			state.SettingsFile.CruxPostgresDB),
 		fmt.Sprintf("ENCRYPTION_SECRET_KEY=%s", state.SettingsFile.CruxEncryptionKey),
@@ -141,7 +141,7 @@ func getCruxInitContainer(state *State, args *ArgsFlags) containerbuilder.Lifecy
 			WithCmd([]string{"migrate"}).
 			WithLabels(map[string]string{
 				"com.docker.compose.project":                args.Prefix,
-				"com.docker.compose.service":                state.Containers.CruxMigrate.Name,
+				"com.docker.compose.service":                state.CruxMigrate.Name,
 				label.DyrectorioOrg + label.ContainerPrefix: args.Prefix,
 				label.DyrectorioOrg + label.ServiceCategory: label.GetHiddenServiceCategory("internal"),
 			})
@@ -160,8 +160,8 @@ func getCruxEnvs(state *State, args *ArgsFlags) []string {
 	host := localhost
 	traefikHost := localhost
 	if args.FullyContainerized {
-		host = state.Containers.Crux.Name
-		traefikHost = state.Containers.Traefik.Name
+		host = state.Crux.Name
+		traefikHost = state.Traefik.Name
 	}
 
 	// this is a pipeline configuration
@@ -171,7 +171,7 @@ func getCruxEnvs(state *State, args *ArgsFlags) []string {
 		)
 	}
 
-	cruxAgentAddr := fmt.Sprintf("%s:%d", state.Containers.Crux.Name, defaultCruxAgentGrpcPort)
+	cruxAgentAddr := fmt.Sprintf("%s:%d", state.Crux.Name, defaultCruxAgentGrpcPort)
 	if args.LocalAgent {
 		cruxAgentAddr = fmt.Sprintf("%s:%d", host, state.SettingsFile.CruxAgentGrpcPort)
 	}
@@ -182,14 +182,14 @@ func getCruxEnvs(state *State, args *ArgsFlags) []string {
 		fmt.Sprintf("DATABASE_URL=postgresql://%s:%s@%s:%d/%s?schema=public",
 			state.SettingsFile.CruxPostgresUser,
 			state.SettingsFile.CruxPostgresPassword,
-			state.Containers.CruxPostgres.Name,
+			state.CruxPostgres.Name,
 			defaultPostgresPort,
 			state.SettingsFile.CruxPostgresDB),
 		fmt.Sprintf("KRATOS_URL=http://%s:%d/kratos",
-			state.Containers.Traefik.Name,
+			state.Traefik.Name,
 			defaultTraefikInternalPort),
 		fmt.Sprintf("KRATOS_ADMIN_URL=http://%s:%d",
-			state.Containers.Kratos.Name,
+			state.Kratos.Name,
 			state.SettingsFile.KratosAdminPort),
 		fmt.Sprintf("CRUX_UI_URL=http://%s:%d", traefikHost, state.SettingsFile.TraefikWebPort),
 		fmt.Sprintf("CRUX_AGENT_ADDRESS=%s", cruxAgentAddr),
@@ -198,7 +198,7 @@ func getCruxEnvs(state *State, args *ArgsFlags) []string {
 		fmt.Sprintf("JWT_SECRET=%s", state.SettingsFile.CruxSecret),
 		fmt.Sprintf("FROM_NAME=%s", state.SettingsFile.MailFromName),
 		fmt.Sprintf("FROM_EMAIL=%s", state.SettingsFile.MailFromEmail),
-		fmt.Sprintf("SMTP_URI=%s:1025/?skip_ssl_verify=true&legacy_ssl=true", state.Containers.MailSlurper.Name),
+		fmt.Sprintf("SMTP_URI=%s:1025/?skip_ssl_verify=true&legacy_ssl=true", state.MailSlurper.Name),
 		fmt.Sprintf("AGENT_INSTALL_SCRIPT_DISABLE_PULL=%t", true),
 		fmt.Sprintf("ENCRYPTION_SECRET_KEY=%s", state.SettingsFile.CruxEncryptionKey),
 		"DISABLE_RECAPTCHA=true",
@@ -211,20 +211,20 @@ func getCruxEnvs(state *State, args *ArgsFlags) []string {
 func GetCruxUI(state *State, args *ArgsFlags) containerbuilder.Builder {
 	traefikHost := localhost
 	if args.FullyContainerized {
-		traefikHost = state.Containers.Traefik.Name
+		traefikHost = state.Traefik.Name
 	}
 
 	envs := append([]string{
 		fmt.Sprintf("TZ=%s", state.SettingsFile.TimeZone),
 		fmt.Sprintf("CRUX_UI_URL=http://%s:%d", traefikHost, state.SettingsFile.TraefikWebPort),
 		fmt.Sprintf("CRUX_URL=http://%s:%d",
-			state.Containers.Traefik.Name,
+			state.Traefik.Name,
 			defaultTraefikInternalPort),
 		fmt.Sprintf("KRATOS_URL=http://%s:%d/kratos",
-			state.Containers.Traefik.Name,
+			state.Traefik.Name,
 			defaultTraefikInternalPort),
 		fmt.Sprintf("KRATOS_ADMIN_URL=http://%s:%d",
-			state.Containers.Kratos.Name,
+			state.Kratos.Name,
 			state.SettingsFile.KratosAdminPort),
 		"DISABLE_RECAPTCHA=true",
 	}, state.EnvFile...)
@@ -239,11 +239,11 @@ func GetCruxUI(state *State, args *ArgsFlags) containerbuilder.Builder {
 		WithLabels(map[string]string{
 			"traefik.enable": "true",
 			"traefik.http.routers.crux-ui.rule": RenderTraefikHostRules(
-				append(args.Hosts, traefikHost, state.InternalHostDomain, state.Containers.Traefik.Name)...),
+				append(args.Hosts, traefikHost, state.InternalHostDomain, state.Traefik.Name)...),
 			"traefik.http.routers.crux-ui.entrypoints":               "web",
 			"traefik.http.services.crux-ui.loadbalancer.server.port": fmt.Sprintf("%d", defaultCruxUIPort),
 			"com.docker.compose.project":                             args.Prefix,
-			"com.docker.compose.service":                             state.Containers.CruxUI.Name,
+			"com.docker.compose.service":                             state.CruxUI.Name,
 			label.DyrectorioOrg + label.ContainerPrefix:              args.Prefix,
 			label.DyrectorioOrg + label.ServiceCategory:              label.GetHiddenServiceCategory("internal"),
 		})
@@ -333,7 +333,7 @@ func GetTraefik(state *State, args *ArgsFlags) containerbuilder.Builder {
 		})
 
 	if args.FullyContainerized {
-		traefikHost := state.Containers.Traefik.Name
+		traefikHost := state.Traefik.Name
 		traefik.
 			WithPostStartHooks(func(ctx context.Context, _ client.APIClient,
 				_ containerbuilder.ParentContainer,
@@ -405,7 +405,7 @@ func getKratosInitContainer(state *State, args *ArgsFlags) containerbuilder.Life
 		fmt.Sprintf("DSN=postgresql://%s:%s@%s:%d/%s?sslmode=disable&max_conns=20&max_idle_conns=4",
 			state.SettingsFile.KratosPostgresUser,
 			state.SettingsFile.KratosPostgresPassword,
-			state.Containers.KratosPostgres.Name,
+			state.KratosPostgres.Name,
 			defaultPostgresPort,
 			state.SettingsFile.KratosPostgresDB),
 	}, state.EnvFile...)
@@ -420,7 +420,7 @@ func getKratosInitContainer(state *State, args *ArgsFlags) containerbuilder.Life
 			WithCmd([]string{"-c /etc/config/kratos/kratos.yaml", "migrate", "sql", "-e", "--yes"}).
 			WithLabels(map[string]string{
 				"com.docker.compose.project":                args.Prefix,
-				"com.docker.compose.service":                state.Containers.KratosMigrate.Name,
+				"com.docker.compose.service":                state.KratosMigrate.Name,
 				label.DyrectorioOrg + label.ContainerPrefix: args.Prefix,
 				label.DyrectorioOrg + label.ServiceCategory: label.GetHiddenServiceCategory("internal"),
 			})
@@ -443,14 +443,14 @@ func getKratosEnvs(state *State) []string {
 		fmt.Sprintf("DSN=postgresql://%s:%s@%s:%d/%s?sslmode=disable&max_conns=20&max_idle_conns=4",
 			state.SettingsFile.KratosPostgresUser,
 			state.SettingsFile.KratosPostgresPassword,
-			state.Containers.KratosPostgres.Name,
+			state.KratosPostgres.Name,
 			defaultPostgresPort,
 			state.SettingsFile.KratosPostgresDB),
 		fmt.Sprintf("KRATOS_URL=http://%s:%d/kratos",
 			traefikHost,
 			state.SettingsFile.TraefikWebPort),
 		fmt.Sprintf("KRATOS_ADMIN_URL=http://%s:%d",
-			state.Containers.Kratos.Name,
+			state.Kratos.Name,
 			state.SettingsFile.KratosAdminPort),
 		fmt.Sprintf("AUTH_URL=http://%s:%d/auth",
 			traefikHost,
@@ -462,9 +462,9 @@ func getKratosEnvs(state *State) []string {
 		"LOG_LEVEL=info",
 		"LOG_LEAK_SENSITIVE_VALUES=false",
 		fmt.Sprintf("SECRETS_COOKIE=%s", state.SettingsFile.KratosSecret),
-		fmt.Sprintf("SMTP_URI=%s:1025/?skip_ssl_verify=true&legacy_ssl=true", state.Containers.MailSlurper.Name),
+		fmt.Sprintf("SMTP_URI=%s:1025/?skip_ssl_verify=true&legacy_ssl=true", state.MailSlurper.Name),
 		fmt.Sprintf("COURIER_SMTP_CONNECTION_URI=smtps://test:test@%s:1025/?skip_ssl_verify=true&legacy_ssl=true",
-			state.Containers.MailSlurper.Name),
+			state.MailSlurper.Name),
 		fmt.Sprintf("FROM_NAME=%s", state.SettingsFile.MailFromName),
 		fmt.Sprintf("FROM_EMAIL=%s", state.SettingsFile.MailFromEmail),
 	}
@@ -482,7 +482,7 @@ func GetMailSlurper(state *State, args *ArgsFlags) containerbuilder.Builder {
 		WithNetworkAliases(state.Containers.MailSlurper.Name).
 		WithLabels(map[string]string{
 			"com.docker.compose.project":                args.Prefix,
-			"com.docker.compose.service":                state.Containers.MailSlurper.Name,
+			"com.docker.compose.service":                state.MailSlurper.Name,
 			label.DyrectorioOrg + label.ContainerPrefix: args.Prefix,
 			label.DyrectorioOrg + label.ServiceCategory: label.GetHiddenServiceCategory("internal"),
 		})
@@ -521,7 +521,7 @@ func GetCruxPostgres(state *State, args *ArgsFlags) containerbuilder.Builder {
 		WithEnv(envs).
 		WithLabels(map[string]string{
 			"com.docker.compose.project":                args.Prefix,
-			"com.docker.compose.service":                state.Containers.CruxPostgres.Name,
+			"com.docker.compose.service":                state.CruxPostgres.Name,
 			label.DyrectorioOrg + label.ContainerPrefix: args.Prefix,
 			label.DyrectorioOrg + label.ServiceCategory: label.GetHiddenServiceCategory("internal"),
 		})
@@ -536,7 +536,7 @@ func GetCruxPostgres(state *State, args *ArgsFlags) containerbuilder.Builder {
 			}).
 			WithMountPoints([]mount.Mount{{
 				Type:   mount.TypeVolume,
-				Source: fmt.Sprintf("%s-data", state.Containers.CruxPostgres.Name),
+				Source: fmt.Sprintf("%s-data", state.CruxPostgres.Name),
 				Target: "/var/lib/postgresql/data",
 			}})
 	}
@@ -558,7 +558,7 @@ func GetKratosPostgres(state *State, args *ArgsFlags) containerbuilder.Builder {
 		WithNetworkAliases(state.Containers.KratosPostgres.Name).
 		WithLabels(map[string]string{
 			"com.docker.compose.project":                args.Prefix,
-			"com.docker.compose.service":                state.Containers.KratosPostgres.Name,
+			"com.docker.compose.service":                state.KratosPostgres.Name,
 			label.DyrectorioOrg + label.ContainerPrefix: args.Prefix,
 			label.DyrectorioOrg + label.ServiceCategory: label.GetHiddenServiceCategory("internal"),
 		})
@@ -574,7 +574,7 @@ func GetKratosPostgres(state *State, args *ArgsFlags) containerbuilder.Builder {
 			WithMountPoints([]mount.Mount{
 				{
 					Type:   mount.TypeVolume,
-					Source: fmt.Sprintf("%s-data", state.Containers.KratosPostgres.Name),
+					Source: fmt.Sprintf("%s-data", state.KratosPostgres.Name),
 					Target: "/var/lib/postgresql/data",
 				},
 			})

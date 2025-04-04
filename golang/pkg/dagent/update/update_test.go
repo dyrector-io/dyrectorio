@@ -17,12 +17,13 @@ import (
 	"github.com/docker/docker/api/types/network"
 	"github.com/docker/docker/client"
 	"github.com/docker/docker/errdefs"
+	v1 "github.com/opencontainers/image-spec/specs-go/v1"
+	"github.com/stretchr/testify/assert"
+
 	"github.com/dyrector-io/dyrectorio/golang/internal/grpc"
 	imagehelper "github.com/dyrector-io/dyrectorio/golang/internal/helper/image"
 	"github.com/dyrector-io/dyrectorio/golang/pkg/dagent/update"
 	"github.com/dyrector-io/dyrectorio/protobuf/go/agent"
-	v1 "github.com/opencontainers/image-spec/specs-go/v1"
-	"github.com/stretchr/testify/assert"
 )
 
 type DockerClientMock struct {

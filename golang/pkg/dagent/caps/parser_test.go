@@ -8,9 +8,10 @@ import (
 	"testing"
 
 	"github.com/AlekSi/pointer"
+	"github.com/stretchr/testify/assert"
+
 	v1 "github.com/dyrector-io/dyrectorio/golang/api/v1"
 	"github.com/dyrector-io/dyrectorio/golang/pkg/builder/container"
-	"github.com/stretchr/testify/assert"
 )
 
 func TestParseLabelsIntoContainerConfig_UnrelatedValue(t *testing.T) {

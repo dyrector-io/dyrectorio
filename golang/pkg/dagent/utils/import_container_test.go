@@ -7,8 +7,9 @@ import (
 	"testing"
 
 	"github.com/docker/docker/api/types/mount"
-	v1 "github.com/dyrector-io/dyrectorio/golang/api/v1"
 	"github.com/stretchr/testify/assert"
+
+	v1 "github.com/dyrector-io/dyrectorio/golang/api/v1"
 )
 
 func TestCheckIfTargetVolumeIsThere(t *testing.T) {

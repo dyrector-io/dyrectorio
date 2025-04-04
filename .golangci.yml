@@ -40,6 +40,9 @@ linters:
     - usetesting
     - whitespace
   settings:
+    exhaustive:
+      default-signifies-exhaustive: true
+      explicit-exhaustive-switch: true
     depguard:
       rules:
         logblock:

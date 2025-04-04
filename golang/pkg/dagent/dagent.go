@@ -53,9 +53,10 @@ func Serve(cfg *config.Configuration) error {
 }
 
 func grpcClose(ctx context.Context, reason agent.CloseReason, options grpc.UpdateOptions) error {
-	if reason == agent.CloseReason_SELF_DESTRUCT {
+	switch reason {
+	case agent.CloseReason_SELF_DESTRUCT:
 		return update.RemoveSelf(ctx, options)
-	} else if reason == agent.CloseReason_SHUTDOWN || reason == agent.CloseReason_REVOKE_TOKEN {
+	case agent.CloseReason_SHUTDOWN, agent.CloseReason_REVOKE_TOKEN:
 		log.Info().Msg("Remote shutdown requested")
 		os.Exit(0)
 	}

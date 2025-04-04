@@ -237,7 +237,7 @@ func shouldUseLocalImage(ctx context.Context, cli client.APIClient,
 		}
 
 		// Swallowing specific errors
-		if !(errors.Is(err, errDigestMismatch) || errors.Is(err, ErrImageNotFound)) {
+		if !errors.Is(err, errDigestMismatch) && !errors.Is(err, ErrImageNotFound) {
 			return false, err
 		}
 	}

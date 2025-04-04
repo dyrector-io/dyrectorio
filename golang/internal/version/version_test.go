@@ -7,8 +7,9 @@ import (
 	"regexp"
 	"testing"
 
-	"github.com/dyrector-io/dyrectorio/golang/internal/version"
 	"github.com/stretchr/testify/assert"
+
+	"github.com/dyrector-io/dyrectorio/golang/internal/version"
 )
 
 // Version text format "<agent-version>-<commit-hash> (<build-date>)" where <build-date> is an ISO 8601 UTC date string
