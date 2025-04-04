@@ -127,7 +127,6 @@ jobs:
         with:
           version: v2.0
           working-directory: ${{ env.GOLANG_WORKING_DIRECTORY }}
-          args: --out-format=colored-line-number
   go_security:
     runs-on: ubuntu-22.04
     needs: gather_changes
