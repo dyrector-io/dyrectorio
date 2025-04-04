@@ -25,6 +25,7 @@ env:
   CRUX_UI_WORKING_DIRECTORY: web/crux-ui
   KRATOS_WORKING_DIRECTORY: web/kratos
   GOLANG_WORKING_DIRECTORY: golang
+  GOLANGCI_LINT_VERSION: v2.0
 concurrency:
   group: ${{ github.workflow }}-${{ github.sha }}
   cancel-in-progress: true
@@ -125,9 +126,9 @@ jobs:
       - name: Run golangci-lint
         uses: golangci/golangci-lint-action@v7
         with:
-          version: v2.0
+          version: ${{ env.GOLANGCI_LINT_VERSION }}
           working-directory: ${{ env.GOLANG_WORKING_DIRECTORY }}
-          args: --config=../.golangci.yml
+          args: --config=${{ github.workspace }}/.golangci.yml
   go_security:
     runs-on: ubuntu-22.04
     needs: gather_changes
