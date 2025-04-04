@@ -127,6 +127,7 @@ jobs:
         with:
           version: v2.0
           working-directory: ${{ env.GOLANG_WORKING_DIRECTORY }}
+          args: --config=../.golangci.yml
   go_security:
     runs-on: ubuntu-22.04
     needs: gather_changes
