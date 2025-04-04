@@ -118,27 +118,16 @@ jobs:
   go_lint:
     runs-on: ubuntu-22.04
     needs: gather_changes
-    container:
-      image: ghcr.io/dyrector-io/dyrectorio/builder-images/golang:4
-    defaults:
-      run:
-        working-directory: ${{ env.GOLANG_WORKING_DIRECTORY }}
     if: ${{ (needs.gather_changes.outputs.agents == 'true') || (github.ref_type == 'tag') || (needs.gather_changes.outputs.release == 'true') }}
     steps:
       - name: Checkout
         uses: actions/checkout@v3
-      - name: Setup Golang caches
-        uses: actions/cache/restore@v3
-        with:
-          path: /go
-          key: ${{ runner.os }}-golang-${{ hashFiles('go.sum') }}
-      - name: Load go mod
-        run: go mod tidy
-      # fixes: fatal: unsafe repository
-      - name: Adding workspace
-        run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
       - name: Run golangci-lint
-        run: make lint
+        uses: golangci/golangci-lint-action@v5
+        with:
+          version: latest
+          working-directory: ${{ env.GOLANG_WORKING_DIRECTORY }}
+          args: --config=../.golangci.yml
   go_security:
     runs-on: ubuntu-22.04
     needs: gather_changes
