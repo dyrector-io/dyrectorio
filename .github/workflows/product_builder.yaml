@@ -123,11 +123,11 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
       - name: Run golangci-lint
-        uses: golangci/golangci-lint-action@v5
+        uses: golangci/golangci-lint-action@v7
         with:
-          version: latest
+          version: v2.0
           working-directory: ${{ env.GOLANG_WORKING_DIRECTORY }}
-          args: --config=../.golangci.yml
+          args: --out-format=colored-line-number
   go_security:
     runs-on: ubuntu-22.04
     needs: gather_changes
