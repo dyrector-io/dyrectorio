@@ -535,7 +535,13 @@ const collectConflicts = (
   }
 
   const checkStorageConflict = () => {
-    if (objectsConflict(one, other)) {
+    if (typeof one.storageSet !== 'boolean' || typeof other.storageSet !== 'boolean') {
+      // one of them are null or uninterpretable
+      return
+    }
+
+    if (one.storageSet && other.storageSet) {
+      // both cannot be set
       conflicts.storage = appendConflict(conflicts.storage, one.id, other.id)
     }
   }

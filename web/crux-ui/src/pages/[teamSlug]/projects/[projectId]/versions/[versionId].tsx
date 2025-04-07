@@ -43,6 +43,7 @@ const VersionDetailsPage = (props: VersionDetailsPageProps) => {
     initialSection,
     projectId: project.id,
     version,
+    fetchTagInfo: false,
   })
 
   const onVersionEdited = async (newVersion: EditableVersion) => {

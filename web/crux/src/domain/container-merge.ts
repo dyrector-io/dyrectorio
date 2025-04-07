@@ -37,18 +37,7 @@ const mergeBoolean = (strong: boolean, weak: boolean): boolean => {
 
 type StorageProperties = Pick<ContainerConfigData, 'storageSet' | 'storageId' | 'storageConfig'>
 const mergeStorage = (strong: StorageProperties, weak: StorageProperties): StorageProperties => {
-  const set = mergeBoolean(strong.storageSet, weak.storageSet)
-  if (!set) {
-    // neither of them are set
-
-    return {
-      storageSet: false,
-      storageId: null,
-      storageConfig: null,
-    }
-  }
-
-  if (typeof strong.storageSet === 'boolean') {
+  if (strong.storageSet) {
     // strong is set
 
     return {
@@ -58,10 +47,21 @@ const mergeStorage = (strong: StorageProperties, weak: StorageProperties): Stora
     }
   }
 
+  if (weak.storageSet) {
+    // weak is set
+
+    return {
+      storageSet: true,
+      storageId: weak.storageId,
+      storageConfig: weak.storageConfig,
+    }
+  }
+
+  // neither of them are set
   return {
-    storageSet: true,
-    storageId: weak.storageId,
-    storageConfig: weak.storageConfig,
+    storageSet: false,
+    storageId: null,
+    storageConfig: null,
   }
 }
 
@@ -97,10 +97,10 @@ export const mergeSecrets = (strong: UniqueSecretKeyValue[], weak: UniqueSecretK
   weak = weak ?? []
   strong = strong ?? []
 
-  const overriddenIds: Set<string> = new Set(strong?.map(it => it.id))
+  const overriddenKeys: Set<string> = new Set(strong?.map(it => it.key))
 
   const missing: UniqueSecretKeyValue[] = weak
-    .filter(it => !overriddenIds.has(it.id))
+    .filter(it => !overriddenKeys.has(it.key))
     .map(it => ({
       ...it,
       value: '',
@@ -110,6 +110,20 @@ export const mergeSecrets = (strong: UniqueSecretKeyValue[], weak: UniqueSecretK
 
   return [...missing, ...strong]
 }
+
+// TODO(@robot9706): Validate
+// const mergeUniqueKeyValues = <T extends UniqueKeyValue>(strong: T[], weak: T[]): T[] => {
+//   if (!strong) {
+//     return weak ?? null
+//   }
+
+//   if (!weak) {
+//     return strong
+//   }
+
+//   const missing = weak.filter(w => !strong.find(it => it.key === w.key))
+//   return [...strong, ...missing]
+// }
 
 export const mergeConfigs = (strong: ContainerConfigData, weak: ContainerConfigData): ContainerConfigData => ({
   // common
@@ -152,6 +166,15 @@ export const mergeConfigs = (strong: ContainerConfigData, weak: ContainerConfigD
   expectedState: strong.expectedState ?? weak.expectedState,
 })
 
+// TODO(@robot9706): Validate
+// export const squashConfigs = (configs: ContainerConfigData[]): ContainerConfigData =>
+//   configs.reduce((result, conf) => {
+//     const merged = mergeConfigs(conf, result)
+//     return {
+//       ...merged,
+//       environment: mergeUniqueKeyValues(conf.environment, result.environment),
+//     }
+//   }, {} as ContainerConfigData)
 const squashConfigs = (configs: ContainerConfigData[]): ContainerConfigData =>
   configs.reduce((result, conf) => mergeConfigs(conf, result), {} as ContainerConfigData)
 
