@@ -47,6 +47,7 @@ func (b *backoff) safeIncrement() time.Duration {
 func (b *backoff) checkReset() {
 	if time.Since(b.lastSeen) > cooldownThresholdMinute*time.Minute {
 		b.counter = 0
+		log.Trace().Msg("backoff cooldown threshold reached, counter resset")
 	}
 	b.lastSeen = time.Now()
 }
