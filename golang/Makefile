@@ -78,7 +78,7 @@ go-dagent:
 	air --build.cmd "" --build.bin "cd cmd/dagent && ${GRPC_DEBUG_FLAGS} go run ."
 
 .PHONY: cli
-cli: init-cli
+cli:
 	cd cmd/dyo && \
 	go run .
 
@@ -94,13 +94,8 @@ single-arch-check:
 		$(error Only one single architecture should be used. Use 'GOARCHS=<target-arch> make target')
 	endif
 
-.PHONY: init-cli
-init-cli:
-	cp -f ../distribution/compose/*.yaml pkg/cli/setup/files/
-	cp -f ../docker-compose.yaml pkg/cli/setup/files/
-
 .PHONY: compile-cli
-compile-cli: init-cli
+compile-cli:
 	cd cmd/dyo && \
 	$(foreach arch, $(GOARCHS), $(foreach os, $(GOOS), ${GOPARAMS} GOARCH=$(arch) GOOS=${os} go build ${LDFLAGS} -o ../../build/out/dyo-${os}-${arch}${OUT_EXT};))
 
@@ -135,12 +130,12 @@ compile-agents: compile-crane compile-dagent
 
 # running gosec for static code analysis for bugs and leaks
 .PHONY: security
-security: init-cli
+security:
 	gosec -severity high ./...
 
 # golangci for linting
 .PHONY: lint
-lint: init-cli
+lint:
 	golangci-lint run -c ../.golangci.yml ./...
 
 .PHONY: build-cli
@@ -259,16 +254,16 @@ k3d-rm:
 
 # dependency: valid & working k8s configuration
 .PHONY: test-unit
-test-unit: init-cli
+test-unit:
 	go test -tags=unit -race ./...
 
 # dependency: valid & working k8s configuration
 .PHONY: test-unit-with-coverage
-test-unit-with-coverage: init-cli
+test-unit-with-coverage:
 	go test -tags=unit -race -coverpkg=./... -coverprofile=./unit.cov -covermode=atomic ./...
 
 .PHONY: test-integration
-test-integration: init-cli test-dagent test-crane test-cli test-internal
+test-integration: test-dagent test-crane test-cli test-internal
 
 .PHONY: test-crane
 test-crane:
