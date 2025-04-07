@@ -1,6 +1,6 @@
 /*
 Naive implementation of a pluggable backoff tracker
-cooldown: resets after 5 minute of not receiving any requests to wait
+cooldown: resets after 5 minutes of not receiving any requests to wait
 backoff increase: tn​ = t0 ​+ k*square(n)
 */
 package backoff
@@ -15,7 +15,7 @@ import (
 const (
 	// the first wait
 	minWaitMillis = 20
-	// a constant for the scaling out
+	// a constant multiplier to control the scaling instensity
 	scaleFactor = 32
 	// a timeout for resets
 	cooldownThresholdMinute = 5
