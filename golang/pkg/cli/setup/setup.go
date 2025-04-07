@@ -3,7 +3,6 @@ package setup
 import (
 	"bufio"
 	"crypto/rand"
-	_ "embed"
 	"fmt"
 	"net"
 	"os"
@@ -19,6 +18,7 @@ import (
 	ucli "github.com/urfave/cli/v2"
 	"golang.org/x/term"
 
+	reporoot "github.com/dyrector-io/dyrectorio"
 	"github.com/dyrector-io/dyrectorio/golang/internal/util"
 )
 
@@ -30,24 +30,6 @@ const (
 	defaultSecretLength = 32
 	cruxSecretLength    = 43
 )
-
-//go:embed files/docker-compose.yaml
-var composeBase []byte
-
-//go:embed files/docker-compose.traefik.yaml
-var traefikCompose []byte
-
-//go:embed files/docker-compose.traefik-tls.yaml
-var traefikTLSCompose []byte
-
-//go:embed files/docker-compose.traefik-labels.yaml
-var traefikLabelsCompose []byte
-
-//go:embed files/docker-compose.traefik-labels-tls.yaml
-var traefikLabelsTLSCompose []byte
-
-//go:embed files/docker-compose.mail-test.yaml
-var mailCompose []byte
 
 const (
 	FlagNoCompose              = "no-compose"
@@ -263,14 +245,14 @@ func (c ComposeItems) WriteToDisk() error {
 func GetItems(composeFolder string, deployTestMail, deployTraefik, addTraefikLabels, tls bool) ComposeItems {
 	items := []ComposeItem{{
 		Path:    "docker-compose.yaml",
-		Content: composeBase,
+		Content: reporoot.ComposeBase,
 	}}
 
 	if deployTestMail {
 		items = append(items,
 			ComposeItem{
 				Path:    filepath.Join(composeFolder, "docker-compose.mail-test.yaml"),
-				Content: mailCompose,
+				Content: reporoot.MailCompose,
 			})
 	}
 	if deployTraefik {
@@ -278,13 +260,13 @@ func GetItems(composeFolder string, deployTestMail, deployTraefik, addTraefikLab
 			items = append(items,
 				ComposeItem{
 					Path:    filepath.Join(composeFolder, "docker-compose.traefik-tls.yaml"),
-					Content: traefikTLSCompose,
+					Content: reporoot.TraefikTLSCompose,
 				})
 		} else {
 			items = append(items,
 				ComposeItem{
 					Path:    filepath.Join(composeFolder, "docker-compose.traefik.yaml"),
-					Content: traefikCompose,
+					Content: reporoot.TraefikCompose,
 				})
 		}
 	}
@@ -292,13 +274,13 @@ func GetItems(composeFolder string, deployTestMail, deployTraefik, addTraefikLab
 		items = append(items,
 			ComposeItem{
 				Path:    filepath.Join(composeFolder, "docker-compose.traefik-labels.yaml"),
-				Content: traefikLabelsCompose,
+				Content: reporoot.TraefikLabelsCompose,
 			})
 		if tls {
 			items = append(items,
 				ComposeItem{
 					Path:    filepath.Join(composeFolder, "docker-compose.traefik-labels-tls.yaml"),
-					Content: traefikLabelsTLSCompose,
+					Content: reporoot.TraefikLabelsTLSCompose,
 				})
 		}
 	}
