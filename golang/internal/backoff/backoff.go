@@ -31,9 +31,10 @@ type backoff struct {
 	maxWait  time.Duration
 }
 
-// safeIncrement is used to keep counter down, so it wont icrease after max wait is reached
+// safeIncrement is used to keep counter down, so it wont increase after max wait is reached
 func (b *backoff) safeIncrement() time.Duration {
-	wait := (minWaitMillis + time.Duration(scaleFactor*(b.counter+1*b.counter+1))) * time.Millisecond
+	n := b.counter + 1
+	wait := (minWaitMillis + time.Duration(scaleFactor*n*n)) * time.Millisecond
 	if wait < b.maxWait {
 		b.counter++
 		log.Trace().Msgf("new wait time: %d", wait)
@@ -58,7 +59,7 @@ func (b *backoff) Wait(ctx context.Context) {
 	case <-time.After(waitDuration):
 		log.Trace().Msgf("backoff waited %d", waitDuration)
 	case <-ctx.Done():
-		log.Debug().Msgf("context cancelled")
+		log.Debug().Msgf("context canceled")
 	}
 }
 

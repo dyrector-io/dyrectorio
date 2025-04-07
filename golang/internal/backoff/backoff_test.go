@@ -2,11 +2,12 @@ package backoff_test
 
 import (
 	"context"
-	"fmt"
 	"testing"
 	"time"
 
 	"github.com/dyrector-io/dyrectorio/golang/internal/backoff"
+
+	"github.com/rs/zerolog/log"
 )
 
 // TODO(nandor-magyar): rewrite this using test/synctest when we get to go 1.24
@@ -26,19 +27,19 @@ func TestBackoffWait(t *testing.T) {
 		},
 	}
 	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
+		t.Run(tt.name, func(_ *testing.T) {
 			b := backoff.New(tt.params.maxWait)
 			for i := range 30 {
 				start := time.Now()
 				b.Wait(context.Background())
 				end := time.Now()
-				fmt.Printf("iter %d passed: %s\n", i, end.Sub(start))
+				log.Printf("iter %d passed: %s\n", i, end.Sub(start))
 			}
 		})
 	}
 }
 
-func TestBackoffCancel(t *testing.T) {
+func TestBackoffCancel(_ *testing.T) {
 	b := backoff.New(time.Second)
 	start := time.Now()
 	ctx, cancel := context.WithCancel(context.Background())
@@ -49,5 +50,5 @@ func TestBackoffCancel(t *testing.T) {
 	}(ctx)
 	cancel()
 	end := time.Now()
-	fmt.Printf("context cancelled after :%v\n", end.Sub(start))
+	log.Printf("context canceled after :%v\n", end.Sub(start))
 }

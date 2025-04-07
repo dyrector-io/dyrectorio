@@ -1,7 +1,6 @@
 module github.com/dyrector-io/dyrectorio
 
 go 1.23.7
-toolchain go1.24.1
 
 require (
 	github.com/ProtonMail/gopenpgp/v2 v2.7.1
