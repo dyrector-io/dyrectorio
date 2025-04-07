@@ -14,6 +14,7 @@ import (
 	"github.com/rs/zerolog/log"
 
 	v1 "github.com/dyrector-io/dyrectorio/golang/api/v1"
+	"github.com/dyrector-io/dyrectorio/golang/internal/backoff"
 	internalCommon "github.com/dyrector-io/dyrectorio/golang/internal/common"
 	"github.com/dyrector-io/dyrectorio/golang/internal/config"
 	"github.com/dyrector-io/dyrectorio/golang/internal/dogger"
@@ -273,6 +274,7 @@ func executeCallback(mapError func(*agent.AgentError) *agent.AgentCommandError, 
 func (cl *ClientLoop) grpcLoop(token *config.ValidJWT) error {
 	var stream agent.Agent_ConnectClient
 	var err error
+	backoff := backoff.New(time.Minute)
 	defer cl.cancel()
 	defer func() {
 		err = grpcConn.Conn.Close()
@@ -285,6 +287,7 @@ func (cl *ClientLoop) grpcLoop(token *config.ValidJWT) error {
 	}()
 	for {
 		if grpcConn.Client == nil {
+			backoff.Wait(cl.Ctx)
 			client := agent.NewAgentClient(grpcConn.Conn)
 			grpcConn.SetClient(client)
 
@@ -572,7 +575,6 @@ func streamContainerStatus(
 
 				return
 			}
-			break
 		}
 	}
 }
