@@ -6,8 +6,9 @@ package utils
 import (
 	"testing"
 
-	v1 "github.com/dyrector-io/dyrectorio/golang/api/v1"
 	"github.com/stretchr/testify/assert"
+
+	v1 "github.com/dyrector-io/dyrectorio/golang/api/v1"
 )
 
 func TestMapDeployResponseToRelease(t *testing.T) {

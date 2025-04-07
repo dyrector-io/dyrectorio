@@ -763,13 +763,14 @@ func ContainerCommand(ctx context.Context, command *common.ContainerCommandReque
 		return internalCommon.ErrContainerNotFound
 	}
 
-	if operation == common.ContainerOperation_START_CONTAINER {
+	switch operation {
+	case common.ContainerOperation_START_CONTAINER:
 		err = cli.ContainerStart(ctx, cont.ID, container.StartOptions{})
-	} else if operation == common.ContainerOperation_STOP_CONTAINER {
+	case common.ContainerOperation_STOP_CONTAINER:
 		err = cli.ContainerStop(ctx, cont.ID, container.StopOptions{})
-	} else if operation == common.ContainerOperation_RESTART_CONTAINER {
+	case common.ContainerOperation_RESTART_CONTAINER:
 		err = cli.ContainerRestart(ctx, cont.ID, container.StopOptions{})
-	} else {
+	default:
 		log.Error().Str("operation", operation.String()).Str("prefix", prefix).Str("name", name).Msg("Unknown operation")
 	}
 

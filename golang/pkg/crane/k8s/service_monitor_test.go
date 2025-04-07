@@ -7,12 +7,13 @@ import (
 	"os"
 	"testing"
 
-	v1 "github.com/dyrector-io/dyrectorio/golang/api/v1"
-	"github.com/dyrector-io/dyrectorio/golang/pkg/crane/config"
-	k8s "github.com/dyrector-io/dyrectorio/golang/pkg/crane/k8s"
 	"github.com/ilyakaznacheev/cleanenv"
 	"github.com/rs/zerolog/log"
 	"github.com/stretchr/testify/assert"
+
+	v1 "github.com/dyrector-io/dyrectorio/golang/api/v1"
+	"github.com/dyrector-io/dyrectorio/golang/pkg/crane/config"
+	k8s "github.com/dyrector-io/dyrectorio/golang/pkg/crane/k8s"
 )
 
 func TestMain(m *testing.M) {

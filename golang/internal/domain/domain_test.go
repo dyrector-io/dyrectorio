@@ -6,8 +6,9 @@ package domain_test
 import (
 	"testing"
 
-	"github.com/dyrector-io/dyrectorio/golang/internal/domain"
 	"github.com/stretchr/testify/assert"
+
+	"github.com/dyrector-io/dyrectorio/golang/internal/domain"
 )
 
 func TestHostRoutingDomainGeneration(t *testing.T) {

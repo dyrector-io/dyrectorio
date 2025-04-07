@@ -224,22 +224,21 @@ func (dog *DeploymentLogger) WriteDockerPull(header string, respIn io.ReadCloser
 		if phase != imageHelper.LayerProgressStatusUnknown && stat[jm.ID] == nil {
 			stat[jm.ID] = &status{}
 		}
-		switch {
-		case phase == imageHelper.LayerProgressStatusMatching:
+		switch phase {
+		case imageHelper.LayerProgressStatusMatching:
 			dog.WriteInfo(fmt.Sprintf("%s ✓ up-to-date", header))
 			return nil
-		case phase == imageHelper.LayerProgressStatusStarting ||
-			phase == imageHelper.LayerProgressStatusWaiting:
+		case imageHelper.LayerProgressStatusStarting, imageHelper.LayerProgressStatusWaiting:
 			stat[jm.ID].Total = jm.Progress.Total
 			waiting++
 			dog.WriteInfo(fmt.Sprintf("%v layers: %d/%d, %s %s", header, pulled, len(stat), jm.ID, jm.Status))
-		case phase == imageHelper.LayerProgressStatusDownloading:
+		case imageHelper.LayerProgressStatusDownloading:
 			stat[jm.ID].Current = jm.Progress.Current
 			if stat[jm.ID].Total == 0 {
 				stat[jm.ID].Total = jm.Progress.Total
 			}
 			pulling++
-		case phase == imageHelper.LayerProgressStatusComplete || phase == imageHelper.LayerProgressStatusExists:
+		case imageHelper.LayerProgressStatusComplete, imageHelper.LayerProgressStatusExists:
 			pulled++
 			dog.WriteInfo(fmt.Sprintf("%v layers: %d/%d, %s %s", header, pulled, len(stat), jm.ID, jm.Status))
 		}

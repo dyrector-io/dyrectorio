@@ -7,11 +7,12 @@ import (
 	"context"
 	"testing"
 
+	"github.com/stretchr/testify/assert"
+	"google.golang.org/grpc/metadata"
+
 	"github.com/dyrector-io/dyrectorio/golang/internal/config"
 	"github.com/dyrector-io/dyrectorio/golang/internal/dogger"
 	"github.com/dyrector-io/dyrectorio/protobuf/go/common"
-	"github.com/stretchr/testify/assert"
-	"google.golang.org/grpc/metadata"
 )
 
 type AgentTestStream struct {

@@ -67,7 +67,7 @@ type Config struct {
 	KratosPostgresPassword string
 	KratosSecret           string
 	NodeEnv                string
-	SmtpURI                string //nolint:revive,stylecheck // we need this for uppercasing to work
+	SmtpURI                string //nolint
 	AddTraefikLabels       bool
 	DeployTestMail         bool
 	DeployTraefik          bool
