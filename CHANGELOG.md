@@ -1,6 +1,30 @@
 # CHANGELOG
 
 
+<a name="0.15.1"></a>
+## [0.15.1](https://github.com/dyrector-io/dyrectorio/compare/0.15.0...0.15.1) (2025-04-07)
+
+### Doc
+
+* improve the DEVELOPMENT.md file ([#1045](https://github.com/dyrector-io/dyrectorio/issues/1045))
+
+### Feat
+
+* **(ci):** change custom golangci-lint to github action one ([#1055](https://github.com/dyrector-io/dyrectorio/issues/1055))
+* **(web):** merge postgress instances ([#1049](https://github.com/dyrector-io/dyrectorio/issues/1049))
+* add convenience script & go toolchain upgrade ([#1040](https://github.com/dyrector-io/dyrectorio/issues/1040))
+
+### Fix
+
+* **(agent):** add backoff to reduce reconnect load ([#1056](https://github.com/dyrector-io/dyrectorio/issues/1056))
+* **(cli):** add localhost specific agent host string ([#1050](https://github.com/dyrector-io/dyrectorio/issues/1050))
+* **(ci):** remove unused workflows and rename existings for better usage ([#1048](https://github.com/dyrector-io/dyrectorio/issues/1048))
+
+### Refactor
+
+* **(cli):** avoid compose file duplication ([#1057](https://github.com/dyrector-io/dyrectorio/issues/1057))
+
+
 <a name="0.15.0"></a>
 ## [0.15.0](https://github.com/dyrector-io/dyrectorio/compare/0.14.1...0.15.0) (2025-01-31)
 
