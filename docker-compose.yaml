@@ -3,7 +3,7 @@
 services:
   database:
     container_name: database
-    image: ghcr.io/dyrector-io/dyrectorio/multi-database:1.0.0
+    image: ghcr.io/dyrector-io/dyrectorio/multi-database:1.0.1
     environment:
       - POSTGRES_PASSWORD=${POSTGRES_ROOT_PASSWORD}
       - CRUX_POSTGRES_PASSWORD=${CRUX_POSTGRES_PASSWORD}
