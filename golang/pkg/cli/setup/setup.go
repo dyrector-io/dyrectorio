@@ -163,6 +163,7 @@ func (cfg *Config) PromptUserInput() {
 		cfg.AddTraefikLabels = true
 	}
 
+	log.Print("For basic user management, an e-mail service is necessary, you can use the provided dummy mail service for testing.")
 	log.Print("Deploy Test Mail service? (y/n) ")
 	cfg.DeployTestMail = PromptBoolOrExit(scanner)
 
@@ -343,7 +344,11 @@ func GenerateComposeConfig(cCtx *ucli.Context) error {
 	}
 
 	if !cCtx.Bool(FlagNoCompose) {
-		composeFiles := GetItems(cCtx.String(FlagComposeDir), cfg.DeployTestMail, cfg.DeployTraefik, cfg.AddTraefikLabels, cfg.UseHTTPS)
+		composeFiles := GetItems(cCtx.String(FlagComposeDir),
+			cfg.DeployTestMail,
+			cfg.DeployTraefik,
+			cfg.AddTraefikLabels,
+			cfg.UseHTTPS)
 		cfg.ComposeFile = strings.Join(composeFiles.GetFileNames(), ":")
 
 		err := composeFiles.WriteToDisk()
