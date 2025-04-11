@@ -46,6 +46,7 @@ const (
 	FlagCruxEncryptionKey      = "encryption-secret-key"
 	FlagKratosPostgresPassword = "kratos-postgres-password" // #nosec 101 // these are not passwords
 	FlagCruxPostgresPassword   = "crux-postgres-password"   // #nosec 101 // these are not passwords
+	FlagRootPostgresPassword   = "root-postgres-password"   // #nosec 101 // these are not passwords
 	FlagCruxSecret             = "crux-secret"
 	FlagKratosSecret           = "kratos-secret"
 	FlagComposeDir             = "compose-dir"
@@ -66,6 +67,7 @@ type Config struct {
 	FromName               string
 	KratosPostgresPassword string
 	KratosSecret           string
+	RootPostgresPassword   string
 	NodeEnv                string
 	SmtpURI                string //nolint
 	AddTraefikLabels       bool
@@ -142,6 +144,13 @@ func PromptText(sc *bufio.Scanner) string {
 func (cfg *Config) PromptUserInput() {
 	scanner := bufio.NewScanner(os.Stdin)
 
+	log.Print("Entered the dyrectorio wizard which will help you configure your dyrectorio instance for dev or production purposes.")
+	log.Print("--------------------------------")
+	log.Print("Info:")
+	log.Print("Use 'q' to quit the wizard at any time")
+	log.Print("Configuration files will be generated in your current directory")
+	log.Print("Press any key to start the configuration...")
+	scanner.Scan()
 	log.Print("We rely on custom reverse proxy configuration and for that we use Traefik.")
 	log.Print("You could use different proxies as well, if you do so you are on your own for now.")
 	log.Print("Deploy Traefik? (y/n) ")
@@ -154,6 +163,7 @@ func (cfg *Config) PromptUserInput() {
 		cfg.AddTraefikLabels = true
 	}
 
+	log.Print("For basic user management, an e-mail service is necessary, you can use the provided dummy mail service for testing.")
 	log.Print("Deploy Test Mail service? (y/n) ")
 	cfg.DeployTestMail = PromptBoolOrExit(scanner)
 
@@ -163,7 +173,8 @@ func (cfg *Config) PromptUserInput() {
 		cfg.FromName = "dyrectorio demo"
 		log.Printf("After deployment, you can reach the mail service at: %s", mailURL)
 	} else {
-		log.Print("Enter SMTP URI: ")
+		log.Print("Enter SMTP URI:")
+		log.Print("Examples: smtp://user:pass@host:port, smtp://user:pass@host:port?skip_ssl_verify=true&legacy_ssl=true")
 		cfg.SmtpURI = PromptText(scanner)
 
 		log.Print("Enter From Email: ")
@@ -176,13 +187,20 @@ func (cfg *Config) PromptUserInput() {
 	cfg.UseHTTPS = PromptBoolOrExit(scanner)
 	if cfg.UseHTTPS {
 		cfg.ExternalProto = "https"
+		cfg.NodeEnv = "production"
 	} else {
 		cfg.ExternalProto = "http"
 		cfg.NodeEnv = "development"
 	}
 
 	log.Print("Enter domain (examples: localhost:8080, test.yourdomain.com): ")
-	cfg.Domain = PromptText(scanner)
+	for {
+		cfg.Domain = PromptText(scanner)
+		if cfg.Domain != "" {
+			break
+		}
+		log.Print("Domain cannot be empty. Please enter a valid domain: ")
+	}
 
 	if cfg.UseHTTPS {
 		log.Print("Enter ACME Email: ")
@@ -316,6 +334,7 @@ func GenerateComposeConfig(cCtx *ucli.Context) error {
 		KratosPostgresPassword: cCtx.String(FlagKratosPostgresPassword),
 		KratosSecret:           cCtx.String(FlagKratosSecret),
 		CruxSecret:             cCtx.String(FlagCruxSecret),
+		RootPostgresPassword:   cCtx.String(FlagRootPostgresPassword),
 	}
 
 	if isTTY() {
@@ -325,7 +344,11 @@ func GenerateComposeConfig(cCtx *ucli.Context) error {
 	}
 
 	if !cCtx.Bool(FlagNoCompose) {
-		composeFiles := GetItems(cCtx.String(FlagComposeDir), cfg.DeployTestMail, cfg.DeployTraefik, cfg.AddTraefikLabels, cfg.UseHTTPS)
+		composeFiles := GetItems(cCtx.String(FlagComposeDir),
+			cfg.DeployTestMail,
+			cfg.DeployTraefik,
+			cfg.AddTraefikLabels,
+			cfg.UseHTTPS)
 		cfg.ComposeFile = strings.Join(composeFiles.GetFileNames(), ":")
 
 		err := composeFiles.WriteToDisk()
@@ -438,6 +461,11 @@ func Setup() *ucli.Command {
 				Name:        FlagKratosPostgresPassword,
 				DefaultText: "auto-generated",
 				Value:       util.Fallback(envMap[toEnvCase(FlagKratosPostgresPassword)], randomString(defaultSecretLength)),
+			},
+			&ucli.StringFlag{
+				Name:        FlagRootPostgresPassword,
+				DefaultText: "auto-generated",
+				Value:       util.Fallback(envMap[toEnvCase(FlagRootPostgresPassword)], randomString(defaultSecretLength)),
 			},
 			&ucli.StringFlag{
 				Name:        FlagCruxSecret,

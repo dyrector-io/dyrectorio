@@ -34,8 +34,7 @@ Join our Discord and connect with other members to share and learn together. If 
 
 ## Getting Started
 
-You have various options to set up the platform right away, more info below:
--   [Getting started](./GETTING_STARTED.md)
+For detailed setup instructions, please refer to the [Getting Started documentation](./GETTING_STARTED.md).
 
 ## Use Cases
 
@@ -59,7 +58,7 @@ Bring transparency to your SDLC by configuring versions and deployments of your 
 
 Editing container settings no longer requires direct access or expertise in JSON formatting. Our platform provides a user-friendly JSON editor, enabling you to modify settings without accessing the containers. In case of deployment issues, you can easily make necessary adjustments using the platform's config editor screen. Additionally, you can create bundle configurations to avoid manual configuration for each container.
 
-## Demo (2 mins)
+## Intro video
 
 https://user-images.githubusercontent.com/9247788/219671903-41da385e-4f8f-4fba-a7e4-c6ec4f727b7f.mp4
 

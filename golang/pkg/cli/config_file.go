@@ -84,6 +84,7 @@ type SettingsFile struct {
 
 // Options are "globals" for the SettingsFile struct
 type Options struct {
+	RootPostgresPassword           string `yaml:"rootPostgresPassword"`
 	KratosPostgresUser             string `yaml:"kratosPostgresUser" env-default:"kratos"`
 	KratosPostgresPassword         string `yaml:"kratosPostgresPassword"`
 	TraefikDockerSocket            string `yaml:"traefikDockerSocket" env-default:"/var/run/docker.sock"`
@@ -292,6 +293,7 @@ func LoadDefaultsOnEmpty(state *State, args *ArgsFlags) *State {
 	state.SettingsFile.CruxPostgresPassword = util.Fallback(state.SettingsFile.CruxPostgresPassword, randomChars())
 	state.SettingsFile.KratosPostgresPassword = util.Fallback(state.SettingsFile.KratosPostgresPassword, randomChars())
 	state.SettingsFile.KratosSecret = util.Fallback(state.SettingsFile.KratosSecret, randomChars())
+	state.SettingsFile.RootPostgresPassword = util.Fallback(state.SettingsFile.RootPostgresPassword, randomChars())
 
 	// Generate names
 	state.Traefik.Name = fmt.Sprintf("%s_traefik", args.Prefix)
