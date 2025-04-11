@@ -144,6 +144,13 @@ func PromptText(sc *bufio.Scanner) string {
 func (cfg *Config) PromptUserInput() {
 	scanner := bufio.NewScanner(os.Stdin)
 
+	log.Print("Entered the dyrectorio wizard which will help you configure your dyrectorio instance for dev or production purposes.")
+	log.Print("--------------------------------")
+	log.Print("Info:")
+	log.Print("Use 'q' to quit the wizard at any time")
+	log.Print("Configuration files will be generated in your current directory")
+	log.Print("Press any key to start the configuration...")
+	scanner.Scan()
 	log.Print("We rely on custom reverse proxy configuration and for that we use Traefik.")
 	log.Print("You could use different proxies as well, if you do so you are on your own for now.")
 	log.Print("Deploy Traefik? (y/n) ")
@@ -165,7 +172,8 @@ func (cfg *Config) PromptUserInput() {
 		cfg.FromName = "dyrectorio demo"
 		log.Printf("After deployment, you can reach the mail service at: %s", mailURL)
 	} else {
-		log.Print("Enter SMTP URI: ")
+		log.Print("Enter SMTP URI:")
+		log.Print("Examples: smtp://user:pass@host:port, smtp://user:pass@host:port?skip_ssl_verify=true&legacy_ssl=true")
 		cfg.SmtpURI = PromptText(scanner)
 
 		log.Print("Enter From Email: ")
@@ -178,13 +186,20 @@ func (cfg *Config) PromptUserInput() {
 	cfg.UseHTTPS = PromptBoolOrExit(scanner)
 	if cfg.UseHTTPS {
 		cfg.ExternalProto = "https"
+		cfg.NodeEnv = "production"
 	} else {
 		cfg.ExternalProto = "http"
 		cfg.NodeEnv = "development"
 	}
 
 	log.Print("Enter domain (examples: localhost:8080, test.yourdomain.com): ")
-	cfg.Domain = PromptText(scanner)
+	for {
+		cfg.Domain = PromptText(scanner)
+		if cfg.Domain != "" {
+			break
+		}
+		log.Print("Domain cannot be empty. Please enter a valid domain: ")
+	}
 
 	if cfg.UseHTTPS {
 		log.Print("Enter ACME Email: ")
