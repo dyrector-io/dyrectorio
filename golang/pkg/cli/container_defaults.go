@@ -512,6 +512,7 @@ func GetCruxPostgres(state *State, args *ArgsFlags) containerbuilder.Builder {
 	envs := append([]string{
 		fmt.Sprintf("POSTGRES_USER=%s", state.SettingsFile.CruxPostgresUser),
 		fmt.Sprintf("POSTGRES_PASSWORD=%s", state.SettingsFile.CruxPostgresPassword),
+		fmt.Sprintf("POSTGRES_PASSWORD=%s", state.SettingsFile.RootPostgresPassword),
 		fmt.Sprintf("POSTGRES_DB=%s", state.SettingsFile.CruxPostgresDB),
 	}, state.EnvFile...)
 
@@ -549,6 +550,7 @@ func GetKratosPostgres(state *State, args *ArgsFlags) containerbuilder.Builder {
 	envs := append([]string{
 		fmt.Sprintf("POSTGRES_USER=%s", state.SettingsFile.KratosPostgresUser),
 		fmt.Sprintf("POSTGRES_PASSWORD=%s", state.SettingsFile.KratosPostgresPassword),
+		fmt.Sprintf("POSTGRES_PASSWORD=%s", state.SettingsFile.RootPostgresPassword),
 		fmt.Sprintf("POSTGRES_DB=%s", state.SettingsFile.KratosPostgresDB),
 	}, state.EnvFile...)
 

@@ -46,6 +46,7 @@ const (
 	FlagCruxEncryptionKey      = "encryption-secret-key"
 	FlagKratosPostgresPassword = "kratos-postgres-password" // #nosec 101 // these are not passwords
 	FlagCruxPostgresPassword   = "crux-postgres-password"   // #nosec 101 // these are not passwords
+	FlagRootPostgresPassword   = "root-postgres-password"   // #nosec 101 // these are not passwords
 	FlagCruxSecret             = "crux-secret"
 	FlagKratosSecret           = "kratos-secret"
 	FlagComposeDir             = "compose-dir"
@@ -66,6 +67,7 @@ type Config struct {
 	FromName               string
 	KratosPostgresPassword string
 	KratosSecret           string
+	RootPostgresPassword   string
 	NodeEnv                string
 	SmtpURI                string //nolint
 	AddTraefikLabels       bool
@@ -316,6 +318,7 @@ func GenerateComposeConfig(cCtx *ucli.Context) error {
 		KratosPostgresPassword: cCtx.String(FlagKratosPostgresPassword),
 		KratosSecret:           cCtx.String(FlagKratosSecret),
 		CruxSecret:             cCtx.String(FlagCruxSecret),
+		RootPostgresPassword:   cCtx.String(FlagRootPostgresPassword),
 	}
 
 	if isTTY() {
@@ -438,6 +441,11 @@ func Setup() *ucli.Command {
 				Name:        FlagKratosPostgresPassword,
 				DefaultText: "auto-generated",
 				Value:       util.Fallback(envMap[toEnvCase(FlagKratosPostgresPassword)], randomString(defaultSecretLength)),
+			},
+			&ucli.StringFlag{
+				Name:        FlagRootPostgresPassword,
+				DefaultText: "auto-generated",
+				Value:       util.Fallback(envMap[toEnvCase(FlagRootPostgresPassword)], randomString(defaultSecretLength)),
 			},
 			&ucli.StringFlag{
 				Name:        FlagCruxSecret,
