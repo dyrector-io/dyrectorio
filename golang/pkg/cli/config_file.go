@@ -54,15 +54,14 @@ type ArgsFlags struct {
 
 // Containers contain container/service specific settings
 type Containers struct {
-	Crux           ContainerSettings
-	CruxMigrate    ContainerSettings
-	CruxUI         ContainerSettings
-	Traefik        ContainerSettings
-	Kratos         ContainerSettings
-	KratosMigrate  ContainerSettings
-	CruxPostgres   ContainerSettings
-	KratosPostgres ContainerSettings
-	MailSlurper    ContainerSettings
+	Crux          ContainerSettings
+	CruxMigrate   ContainerSettings
+	CruxUI        ContainerSettings
+	Traefik       ContainerSettings
+	Kratos        ContainerSettings
+	KratosMigrate ContainerSettings
+	Multidatabase ContainerSettings
+	MailSlurper   ContainerSettings
 }
 
 // ContainerSettings are container specific settings
@@ -85,7 +84,7 @@ type SettingsFile struct {
 // Options are "globals" for the SettingsFile struct
 type Options struct {
 	RootPostgresPassword           string `yaml:"rootPostgresPassword"`
-	KratosPostgresUser             string `yaml:"kratosPostgresUser" env-default:"kratos"`
+	KratosPostgresUser             string `yaml:"kratosPostgresUser" env-default:"kratos_user"`
 	KratosPostgresPassword         string `yaml:"kratosPostgresPassword"`
 	TraefikDockerSocket            string `yaml:"traefikDockerSocket" env-default:"/var/run/docker.sock"`
 	MailFromName                   string `yaml:"mailFromName" env-default:"dyrector.io - Platform"`
@@ -93,7 +92,7 @@ type Options struct {
 	CruxEncryptionKey              string `yaml:"crux-encryption-key"`
 	KratosSecret                   string `yaml:"kratosSecret"`
 	CruxPostgresDB                 string `yaml:"cruxPostgresDB" env-default:"crux"`
-	CruxPostgresUser               string `yaml:"cruxPostgresUser" env-default:"crux"`
+	CruxPostgresUser               string `yaml:"cruxPostgresUser" env-default:"crux_user"`
 	CruxPostgresPassword           string `yaml:"cruxPostgresPassword"`
 	TimeZone                       string `yaml:"timezone" env-default:"UTC"`
 	KratosPostgresDB               string `yaml:"kratosPostgresDB" env-default:"kratos"`
@@ -302,8 +301,7 @@ func LoadDefaultsOnEmpty(state *State, args *ArgsFlags) *State {
 	state.CruxUI.Name = fmt.Sprintf("%s_crux-ui", args.Prefix)
 	state.Kratos.Name = fmt.Sprintf("%s_kratos", args.Prefix)
 	state.KratosMigrate.Name = fmt.Sprintf("%s_kratos-migrate", args.Prefix)
-	state.CruxPostgres.Name = fmt.Sprintf("%s_crux-postgres", args.Prefix)
-	state.KratosPostgres.Name = fmt.Sprintf("%s_kratos-postgres", args.Prefix)
+	state.Multidatabase.Name = fmt.Sprintf("%s_multidatabase", args.Prefix)
 	state.MailSlurper.Name = fmt.Sprintf("%s_mailslurper", args.Prefix)
 
 	return state

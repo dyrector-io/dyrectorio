@@ -22,17 +22,16 @@ import (
 type stackItemID string
 
 const (
-	traefik        stackItemID = "traefik"
-	crux           stackItemID = "crux"
-	cruxUI         stackItemID = "crux-ui"
-	kratos         stackItemID = "kratos"
-	cruxPostgres   stackItemID = "crux-postgres"
-	kratosPostgres stackItemID = "kratos-postgres"
-	mailSlurper    stackItemID = "mailslurper"
+	traefik       stackItemID = "traefik"
+	crux          stackItemID = "crux"
+	cruxUI        stackItemID = "crux-ui"
+	kratos        stackItemID = "kratos"
+	multidatabase stackItemID = "multidatabase"
+	mailSlurper   stackItemID = "mailslurper"
 )
 
 var startOrder = []stackItemID{
-	cruxPostgres, kratosPostgres, kratos, crux, mailSlurper, cruxUI, traefik,
+	multidatabase, kratos, crux, mailSlurper, cruxUI, traefik,
 }
 
 type dyrectorioStack struct {
@@ -79,8 +78,7 @@ func ProcessCommand(ctx context.Context, initialState *State, args *ArgsFlags) {
 
 		stack.builders[traefik] = GetTraefik(state, args)
 		stack.builders[kratos] = GetKratos(state, args)
-		stack.builders[cruxPostgres] = GetCruxPostgres(state, args)
-		stack.builders[kratosPostgres] = GetKratosPostgres(state, args)
+		stack.builders[multidatabase] = GetMultidatabase(state, args)
 		stack.builders[mailSlurper] = GetMailSlurper(state, args)
 		if !args.CruxDisabled {
 			stack.builders[crux] = GetCrux(state, args)

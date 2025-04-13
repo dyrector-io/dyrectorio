@@ -28,8 +28,8 @@ import (
 )
 
 const (
-	postgresImage    = "docker.io/library/postgres:13-alpine"
-	mailSlurperImage = "docker.io/oryd/mailslurper:smtps-latest"
+	multidatabseImage = "ghcr.io/dyrector-io/dyrectorio/multi-database:1.0.1"
+	mailSlurperImage  = "docker.io/oryd/mailslurper:smtps-latest"
 )
 
 const (
@@ -123,7 +123,7 @@ func getCruxInitContainer(state *State, args *ArgsFlags) containerbuilder.Lifecy
 		fmt.Sprintf("DATABASE_URL=postgresql://%s:%s@%s:%d/%s?schema=public",
 			state.SettingsFile.CruxPostgresUser,
 			state.SettingsFile.CruxPostgresPassword,
-			state.CruxPostgres.Name,
+			state.Multidatabase.Name,
 			defaultPostgresPort,
 			state.SettingsFile.CruxPostgresDB),
 		fmt.Sprintf("ENCRYPTION_SECRET_KEY=%s", state.SettingsFile.CruxEncryptionKey),
@@ -182,7 +182,7 @@ func getCruxEnvs(state *State, args *ArgsFlags) []string {
 		fmt.Sprintf("DATABASE_URL=postgresql://%s:%s@%s:%d/%s?schema=public",
 			state.SettingsFile.CruxPostgresUser,
 			state.SettingsFile.CruxPostgresPassword,
-			state.CruxPostgres.Name,
+			state.Multidatabase.Name,
 			defaultPostgresPort,
 			state.SettingsFile.CruxPostgresDB),
 		fmt.Sprintf("KRATOS_URL=http://%s:%d/kratos",
@@ -405,7 +405,7 @@ func getKratosInitContainer(state *State, args *ArgsFlags) containerbuilder.Life
 		fmt.Sprintf("DSN=postgresql://%s:%s@%s:%d/%s?sslmode=disable&max_conns=20&max_idle_conns=4",
 			state.SettingsFile.KratosPostgresUser,
 			state.SettingsFile.KratosPostgresPassword,
-			state.KratosPostgres.Name,
+			state.Multidatabase.Name,
 			defaultPostgresPort,
 			state.SettingsFile.KratosPostgresDB),
 	}, state.EnvFile...)
@@ -443,7 +443,7 @@ func getKratosEnvs(state *State) []string {
 		fmt.Sprintf("DSN=postgresql://%s:%s@%s:%d/%s?sslmode=disable&max_conns=20&max_idle_conns=4",
 			state.SettingsFile.KratosPostgresUser,
 			state.SettingsFile.KratosPostgresPassword,
-			state.KratosPostgres.Name,
+			state.Multidatabase.Name,
 			defaultPostgresPort,
 			state.SettingsFile.KratosPostgresDB),
 		fmt.Sprintf("KRATOS_URL=http://%s:%d/kratos",
@@ -507,66 +507,34 @@ func GetMailSlurper(state *State, args *ArgsFlags) containerbuilder.Builder {
 	return mailslurper
 }
 
-// GetCruxPostgres returns crux's Postgres services' containers
-func GetCruxPostgres(state *State, args *ArgsFlags) containerbuilder.Builder {
-	envs := append([]string{
-		fmt.Sprintf("POSTGRES_USER=%s", state.SettingsFile.CruxPostgresUser),
-		fmt.Sprintf("POSTGRES_PASSWORD=%s", state.SettingsFile.CruxPostgresPassword),
-		fmt.Sprintf("POSTGRES_PASSWORD=%s", state.SettingsFile.RootPostgresPassword),
-		fmt.Sprintf("POSTGRES_DB=%s", state.SettingsFile.CruxPostgresDB),
-	}, state.EnvFile...)
-
-	cruxPostgres := getBasePostgres(state, args).
-		WithName(state.Containers.CruxPostgres.Name).
-		WithNetworkAliases(state.Containers.CruxPostgres.Name).
-		WithEnv(envs).
-		WithLabels(map[string]string{
-			"com.docker.compose.project":                args.Prefix,
-			"com.docker.compose.service":                state.CruxPostgres.Name,
-			label.DyrectorioOrg + label.ContainerPrefix: args.Prefix,
-			label.DyrectorioOrg + label.ServiceCategory: label.GetHiddenServiceCategory("internal"),
-		})
-
-	if !args.FullyContainerized {
-		cruxPostgres = cruxPostgres.
-			WithPortBindings([]containerbuilder.PortBinding{
-				{
-					ExposedPort: defaultPostgresPort,
-					PortBinding: pointer.ToUint16(logUnsafePortConversion(state.SettingsFile.CruxPostgresPort)),
-				},
-			}).
-			WithMountPoints([]mount.Mount{{
-				Type:   mount.TypeVolume,
-				Source: fmt.Sprintf("%s-data", state.CruxPostgres.Name),
-				Target: "/var/lib/postgresql/data",
-			}})
-	}
-
-	return cruxPostgres
-}
-
-// GetKratosPostgres returns crux's Postgres services' containers
-func GetKratosPostgres(state *State, args *ArgsFlags) containerbuilder.Builder {
+// GetMultidatabase returns platform's Postgres services' containers
+func GetMultidatabase(state *State, args *ArgsFlags) containerbuilder.Builder {
 	envs := append([]string{
 		fmt.Sprintf("POSTGRES_USER=%s", state.SettingsFile.KratosPostgresUser),
 		fmt.Sprintf("POSTGRES_PASSWORD=%s", state.SettingsFile.KratosPostgresPassword),
-		fmt.Sprintf("POSTGRES_PASSWORD=%s", state.SettingsFile.RootPostgresPassword),
-		fmt.Sprintf("POSTGRES_DB=%s", state.SettingsFile.KratosPostgresDB),
+
+		fmt.Sprintf("CRUX_POSTGRES=%s", state.SettingsFile.CruxPostgresDB),
+		fmt.Sprintf("CRUX_POSTGRES_USER=%s", state.SettingsFile.CruxPostgresUser),
+		fmt.Sprintf("CRUX_POSTGRES_PASSWORD=%s", state.SettingsFile.CruxPostgresPassword),
+
+		fmt.Sprintf("KRATOS_POSTGRES=%s", state.SettingsFile.KratosPostgresDB),
+		fmt.Sprintf("KRATOS_POSTGRES_USER=%s", state.SettingsFile.KratosPostgresUser),
+		fmt.Sprintf("KRATOS_POSTGRES_PASSWORD=%s", state.SettingsFile.KratosPostgresPassword),
 	}, state.EnvFile...)
 
-	kratosPostgres := getBasePostgres(state, args).
+	multidatabase := getBasePostgres(state, args).
 		WithEnv(envs).
-		WithName(state.Containers.KratosPostgres.Name).
-		WithNetworkAliases(state.Containers.KratosPostgres.Name).
+		WithName(state.Containers.Multidatabase.Name).
+		WithNetworkAliases(state.Containers.Multidatabase.Name).
 		WithLabels(map[string]string{
 			"com.docker.compose.project":                args.Prefix,
-			"com.docker.compose.service":                state.KratosPostgres.Name,
+			"com.docker.compose.service":                state.Multidatabase.Name,
 			label.DyrectorioOrg + label.ContainerPrefix: args.Prefix,
 			label.DyrectorioOrg + label.ServiceCategory: label.GetHiddenServiceCategory("internal"),
 		})
 
 	if !args.FullyContainerized {
-		kratosPostgres = kratosPostgres.
+		multidatabase = multidatabase.
 			WithPortBindings([]containerbuilder.PortBinding{
 				{
 					ExposedPort: defaultPostgresPort,
@@ -576,19 +544,19 @@ func GetKratosPostgres(state *State, args *ArgsFlags) containerbuilder.Builder {
 			WithMountPoints([]mount.Mount{
 				{
 					Type:   mount.TypeVolume,
-					Source: fmt.Sprintf("%s-data", state.KratosPostgres.Name),
+					Source: fmt.Sprintf("%s-data", state.Multidatabase.Name),
 					Target: "/var/lib/postgresql/data",
 				},
 			})
 	}
 
-	return kratosPostgres
+	return multidatabase
 }
 
 // getBasePostgres removes some code duplication
 func getBasePostgres(state *State, args *ArgsFlags) containerbuilder.Builder {
 	basePostgres := baseContainer(state.Ctx, args).
-		WithImage(postgresImage).
+		WithImage(multidatabseImage).
 		WithNetworks([]string{state.SettingsFile.Network}).
 		WithRestartPolicy(container.RestartPolicyAlways)
 	return basePostgres
