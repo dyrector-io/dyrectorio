@@ -60,7 +60,7 @@ export-full:
 	echo "DYO_VERSION=$(BUNDLEVER)" > .env
 	crane pull --platform=linux/amd64 docker.io/library/traefik:2.9 offline/traefik.tar
 	crane pull --platform=linux/amd64 docker.io/oryd/mailslurper:smtps-latest offline/mailslurper.tar
-	crane pull --platform=linux/amd64 ghcr.io/dyrector-io/dyrectorio/multi-database:1.0.1 offline/multidatabase.tar
+	crane pull --platform=linux/amd64 ghcr.io/dyrector-io/dyrectorio/multi-database:1.0.3 offline/multidatabase.tar
 	crane pull --platform=linux/amd64 ghcr.io/dyrector-io/dyrectorio/web/kratos:latest offline/kratos.tar
 	crane pull --platform=linux/amd64 ghcr.io/dyrector-io/dyrectorio/web/crux:latest offline/crux.tar
 	crane pull --platform=linux/amd64 ghcr.io/dyrector-io/dyrectorio/web/crux-ui:latest offline/crux-ui.tar

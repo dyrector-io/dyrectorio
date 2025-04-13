@@ -28,7 +28,7 @@ import (
 )
 
 const (
-	multidatabseImage = "ghcr.io/dyrector-io/dyrectorio/multi-database:1.0.1"
+	multidatabseImage = "ghcr.io/dyrector-io/dyrectorio/multi-database:1.0.3"
 	mailSlurperImage  = "docker.io/oryd/mailslurper:smtps-latest"
 )
 
@@ -510,8 +510,8 @@ func GetMailSlurper(state *State, args *ArgsFlags) containerbuilder.Builder {
 // GetMultidatabase returns platform's Postgres services' containers
 func GetMultidatabase(state *State, args *ArgsFlags) containerbuilder.Builder {
 	envs := append([]string{
-		fmt.Sprintf("POSTGRES_USER=%s", state.SettingsFile.KratosPostgresUser),
-		fmt.Sprintf("POSTGRES_PASSWORD=%s", state.SettingsFile.KratosPostgresPassword),
+		fmt.Sprintf("POSTGRES_USER=%s", state.SettingsFile.PostgresUser),
+		fmt.Sprintf("POSTGRES_PASSWORD=%s", state.SettingsFile.RootPostgresPassword),
 
 		fmt.Sprintf("CRUX_POSTGRES=%s", state.SettingsFile.CruxPostgresDB),
 		fmt.Sprintf("CRUX_POSTGRES_USER=%s", state.SettingsFile.CruxPostgresUser),

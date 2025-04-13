@@ -1,5 +1,7 @@
 FROM docker.io/postgres:17.4-alpine
 
+LABEL org.opencontainers.image.source = "https://github.com/dyrector-io/dyrectorio"
+
 COPY init-database.sh /docker-entrypoint-initdb.d/
 
 ENV POSTGRES_USER=root

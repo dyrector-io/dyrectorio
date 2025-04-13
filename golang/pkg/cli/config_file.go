@@ -84,6 +84,7 @@ type SettingsFile struct {
 // Options are "globals" for the SettingsFile struct
 type Options struct {
 	RootPostgresPassword           string `yaml:"rootPostgresPassword"`
+	PostgresUser                   string `yaml:"rootPostgresUser" env-default:"root"`
 	KratosPostgresDB               string `yaml:"kratosPostgresDB" env-default:"kratos"`
 	KratosPostgresUser             string `yaml:"kratosPostgresUser" env-default:"kratos_user"`
 	KratosPostgresPassword         string `yaml:"kratosPostgresPassword"`
