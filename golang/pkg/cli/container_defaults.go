@@ -28,7 +28,7 @@ import (
 )
 
 const (
-	multidatabseImage = "ghcr.io/dyrector-io/dyrectorio/multi-database:1.0.3"
+	multidatabseImage = "ghcr.io/dyrector-io/dyrectorio/multi-database:1.0.4"
 	mailSlurperImage  = "docker.io/oryd/mailslurper:smtps-latest"
 )
 
