@@ -538,7 +538,7 @@ func GetMultidatabase(state *State, args *ArgsFlags) containerbuilder.Builder {
 			WithPortBindings([]containerbuilder.PortBinding{
 				{
 					ExposedPort: defaultPostgresPort,
-					PortBinding: pointer.ToUint16(logUnsafePortConversion(state.SettingsFile.KratosPostgresPort)),
+					PortBinding: pointer.ToUint16(logUnsafePortConversion(state.SettingsFile.MultidatabasePostgresPort)),
 				},
 			}).
 			WithMountPoints([]mount.Mount{

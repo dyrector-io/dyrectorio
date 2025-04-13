@@ -84,6 +84,7 @@ type SettingsFile struct {
 // Options are "globals" for the SettingsFile struct
 type Options struct {
 	RootPostgresPassword           string `yaml:"rootPostgresPassword"`
+	KratosPostgresDB               string `yaml:"kratosPostgresDB" env-default:"kratos"`
 	KratosPostgresUser             string `yaml:"kratosPostgresUser" env-default:"kratos_user"`
 	KratosPostgresPassword         string `yaml:"kratosPostgresPassword"`
 	TraefikDockerSocket            string `yaml:"traefikDockerSocket" env-default:"/var/run/docker.sock"`
@@ -95,18 +96,16 @@ type Options struct {
 	CruxPostgresUser               string `yaml:"cruxPostgresUser" env-default:"crux_user"`
 	CruxPostgresPassword           string `yaml:"cruxPostgresPassword"`
 	TimeZone                       string `yaml:"timezone" env-default:"UTC"`
-	KratosPostgresDB               string `yaml:"kratosPostgresDB" env-default:"kratos"`
 	MailFromEmail                  string `yaml:"mailFromEmail" env-default:"noreply@example.com"`
 	TraefikWebPort                 uint   `yaml:"traefikWebPort" env-default:"8000"`
 	CruxUIPort                     uint   `yaml:"crux-ui-port" env-default:"3000"`
 	KratosPublicPort               uint   `yaml:"kratosPublicPort" env-default:"4433"`
-	KratosPostgresPort             uint   `yaml:"kratosPostgresPort" env-default:"5433"`
 	TraefikUIPort                  uint   `yaml:"traefikUIPort" env-default:"8080"`
 	CruxHTTPPort                   uint   `yaml:"crux-http-port" env-default:"1848"`
 	CruxAgentGrpcPort              uint   `yaml:"crux-agentgrpc-port" env-default:"5000"`
 	MailSlurperUIPort              uint   `yaml:"mailSlurperUIPort" env-default:"4436"`
 	MailSlurperSMTPPort            uint   `yaml:"mailSlurperSMTPPort" env-default:"1025"`
-	CruxPostgresPort               uint   `yaml:"cruxPostgresPort" env-default:"5432"`
+	MultidatabasePostgresPort      uint   `yaml:"multidatabasePostgresPort" env-default:"5432"`
 	MailSlurperAPIPort             uint   `yaml:"mailSlurperAPIPort" env-default:"4437"`
 	KratosAdminPort                uint   `yaml:"kratosAdminPort" env-default:"4434"`
 	TraefikIsDockerSocketNamedPipe bool   `yaml:"traefikIsDockerSocketNamedPipe" env-default:"false"`

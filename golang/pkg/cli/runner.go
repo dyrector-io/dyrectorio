@@ -191,15 +191,14 @@ func checkForBoundPorts(state *State, args *ArgsFlags) {
 	hasUnavailablePort := false
 
 	portServiceMap := map[uint]string{
-		state.SettingsFile.CruxPostgresPort:   "crux's Postgres",
-		state.SettingsFile.KratosPostgresPort: "kratos' Postgres",
-		state.SettingsFile.KratosPublicPort:   "kratos public",
-		state.SettingsFile.KratosAdminPort:    "kratos admin",
-		state.SettingsFile.MailSlurperUIPort:  "mailslurper SMTP",
-		state.SettingsFile.MailSlurperUIPort:  "mailslurper UI",
-		state.SettingsFile.MailSlurperAPIPort: "mailslurper API",
-		state.SettingsFile.TraefikWebPort:     "traefik proxy",
-		state.SettingsFile.TraefikUIPort:      "traefik dashboard",
+		state.SettingsFile.MultidatabasePostgresPort: "multidatabase Postgres",
+		state.SettingsFile.KratosPublicPort:          "kratos public",
+		state.SettingsFile.KratosAdminPort:           "kratos admin",
+		state.SettingsFile.MailSlurperUIPort:         "mailslurper SMTP",
+		state.SettingsFile.MailSlurperUIPort:         "mailslurper UI",
+		state.SettingsFile.MailSlurperAPIPort:        "mailslurper API",
+		state.SettingsFile.TraefikWebPort:            "traefik proxy",
+		state.SettingsFile.TraefikUIPort:             "traefik dashboard",
 	}
 
 	if !args.CruxDisabled {

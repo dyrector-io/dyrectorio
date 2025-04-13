@@ -532,12 +532,7 @@ jobs:
     steps:
       - name: Checkout the repository
         uses: actions/checkout@v3
-      # - name: crane - artifact download
       #   if: needs.gather_changes.outputs.agents == 'true'
-      #   uses: actions/download-artifact@v4
-      #   with:
-      #     name: crane
-      #     path: artifacts
       - name: dagent - artifact download
         if: ${{ (needs.gather_changes.outputs.agents == 'true') || (github.ref_type == 'tag')  || (needs.gather_changes.outputs.release == 'true') }}
         uses: actions/download-artifact@v4
@@ -782,16 +777,6 @@ jobs:
           crane cp ${GITHUB_REGISTRY}/${CRANE_IMAGE_NAME}:${{ needs.gather_changes.outputs.tag }} ${GITHUB_REGISTRY}/${CRANE_IMAGE_NAME}:${{ needs.gather_changes.outputs.minorversion }}
           crane cp ${GITHUB_REGISTRY}/${DAGENT_IMAGE_NAME}:${{ needs.gather_changes.outputs.tag }} ${GITHUB_REGISTRY}/${DAGENT_IMAGE_NAME}:${{ needs.gather_changes.outputs.minorversion }}
           crane cp ${GITHUB_REGISTRY}/${CLI_IMAGE_NAME}:${{ needs.gather_changes.outputs.tag }} ${GITHUB_REGISTRY}/${CLI_IMAGE_NAME}:${{ needs.gather_changes.outputs.minorversion }}
-        # - name: Sign container image
-        #   run: |
-        #     cosign sign --yes --key cosign.key $(docker inspect --format='{{index .RepoDigests 0}}' ${GITHUB_REGISTRY}/${CRANE_IMAGE_NAME}:${{ needs.gather_changes.outputs.tag }} )
-        #     cosign sign --yes --key cosign.key $(docker inspect --format='{{index .RepoDigests 0}}' ${GITHUB_REGISTRY}/${DAGENT_IMAGE_NAME}:${{ needs.gather_changes.outputs.tag }} )
-        #     cosign sign --yes --key cosign.key $(docker inspect --format='{{index .RepoDigests 0}}' ${GITHUB_REGISTRY}/${CLI_IMAGE_NAME}:${{ needs.gather_changes.outputs.tag }} )
-        #     cosign sign --yes --key cosign.key $(docker inspect --format='{{index .RepoDigests 0}}' ${DOCKERHUB_REGISTRY}/crane:${{ needs.gather_changes.outputs.tag }} )
-        #     cosign sign --yes --key cosign.key $(docker inspect --format='{{index .RepoDigests 0}}' ${DOCKERHUB_REGISTRY}/dagent:${{ needs.gather_changes.outputs.tag }} )
-        #     cosign sign --yes --key cosign.key $(docker inspect --format='{{index .RepoDigests 0}}' ${DOCKERHUB_REGISTRY}/dyo:${{ needs.gather_changes.outputs.tag }} )
-        #   env:
-        #     COSIGN_PASSWORD: ${{ secrets.COSIGN_PASSWORD }}
   crux_push:
     permissions:
       packages: write
