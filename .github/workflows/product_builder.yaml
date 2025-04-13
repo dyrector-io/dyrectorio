@@ -624,7 +624,7 @@ jobs:
         run: |
           docker ps
           mkdir -p logs
-          CONTAINERS="dyo-e2e_crux-ui dyo-e2e_crux dyo-e2e_kratos dyo-e2e_traefik"
+          CONTAINERS="dyo-e2e_multidatabase dyo-e2e_crux-ui dyo-e2e_crux dyo-e2e_kratos dyo-e2e_traefik"
           for cont in $CONTAINERS
           do
             docker logs $cont > logs/$cont.log 2>&1
