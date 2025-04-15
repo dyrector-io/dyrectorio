@@ -1,8 +1,21 @@
 # CHANGELOG
 
 
+<a name="0.15.2"></a>
+## [0.15.2](https://github.com/dyrector-io/dyrectorio/compare/0.15.1...0.15.2) (2025-04-15)
+
+### Doc
+
+* delete unused content from READMEs ([#1062](https://github.com/dyrector-io/dyrectorio/issues/1062))
+
+### Fix
+
+* improve cli and fix external port and root password bug  ([#1060](https://github.com/dyrector-io/dyrectorio/issues/1060))
+* change escaping multidb image synax error ([#1059](https://github.com/dyrector-io/dyrectorio/issues/1059))
+
+
 <a name="0.15.1"></a>
-## [0.15.1](https://github.com/dyrector-io/dyrectorio/compare/0.15.0...0.15.1) (2025-04-07)
+## [0.15.1](https://github.com/dyrector-io/dyrectorio/compare/0.15.0...0.15.1) (2025-04-08)
 
 ### Doc
 
@@ -167,7 +180,11 @@
 
 
 <a name="0.11.5"></a>
-## [0.11.5](https://github.com/dyrector-io/dyrectorio/compare/0.11.4...0.11.5) (2024-04-05)
+## [0.11.5](https://github.com/dyrector-io/dyrectorio/compare/help...0.11.5) (2024-04-05)
+
+
+<a name="help"></a>
+## [help](https://github.com/dyrector-io/dyrectorio/compare/0.11.4...help) (2024-04-05)
 
 ### Feat
 
@@ -201,7 +218,20 @@
 
 
 <a name="0.11.3"></a>
-## [0.11.3](https://github.com/dyrector-io/dyrectorio/compare/0.11.2...0.11.3) (2024-03-11)
+## [0.11.3](https://github.com/dyrector-io/dyrectorio/compare/ls...0.11.3) (2024-03-11)
+
+### Feat
+
+* container log api ([#931](https://github.com/dyrector-io/dyrectorio/issues/931))
+
+### Fix
+
+* container log new line ([#932](https://github.com/dyrector-io/dyrectorio/issues/932))
+* add ENCRYPTION_SECRET_KEY to compose files ([#927](https://github.com/dyrector-io/dyrectorio/issues/927))
+
+
+<a name="ls"></a>
+## [ls](https://github.com/dyrector-io/dyrectorio/compare/0.11.2...ls) (2024-02-26)
 
 ### Doc
 
@@ -209,13 +239,7 @@
 
 ### Feat
 
-* container log api ([#931](https://github.com/dyrector-io/dyrectorio/issues/931))
 * **(web):** update kratos to 1.1.0 ([#925](https://github.com/dyrector-io/dyrectorio/issues/925))
-
-### Fix
-
-* container log new line ([#932](https://github.com/dyrector-io/dyrectorio/issues/932))
-* add ENCRYPTION_SECRET_KEY to compose files ([#927](https://github.com/dyrector-io/dyrectorio/issues/927))
 
 
 <a name="0.11.2"></a>
@@ -1088,7 +1112,7 @@
 
 
 <a name="0.2.1"></a>
-## [0.2.1](https://github.com/dyrector-io/dyrectorio/compare/0.1.1...0.2.1) (2022-09-27)
+## [0.2.1](https://github.com/dyrector-io/dyrectorio/compare/v0.1.1...0.2.1) (2022-09-27)
 
 ### Chore
 
@@ -1241,8 +1265,12 @@
 * websocket message routing
 
 
+<a name="v0.1.1"></a>
+## [v0.1.1](https://github.com/dyrector-io/dyrectorio/compare/0.1.1...v0.1.1) (2022-08-03)
+
+
 <a name="0.1.1"></a>
-## [0.1.1](https://github.com/dyrector-io/dyrectorio/compare/0.1.0...0.1.1) (2022-08-03)
+## [0.1.1](https://github.com/dyrector-io/dyrectorio/compare/v0.1.0...0.1.1) (2022-08-03)
 
 ### Chore
 
@@ -1256,6 +1284,10 @@
 ### Refactor
 
 * **(agent):** tests ([#54](https://github.com/dyrector-io/dyrectorio/issues/54))
+
+
+<a name="v0.1.0"></a>
+## [v0.1.0](https://github.com/dyrector-io/dyrectorio/compare/0.1.0...v0.1.0) (2022-08-01)
 
 
 <a name="0.1.0"></a>
