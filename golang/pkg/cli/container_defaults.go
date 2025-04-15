@@ -510,7 +510,7 @@ func GetMailSlurper(state *State, args *ArgsFlags) containerbuilder.Builder {
 // GetMultidatabase returns platform's Postgres services' containers
 func GetMultidatabase(state *State, args *ArgsFlags) containerbuilder.Builder {
 	envs := append([]string{
-		fmt.Sprintf("POSTGRES_USER=%s", state.SettingsFile.PostgresUser),
+		fmt.Sprintf("POSTGRES_USER=%s", state.SettingsFile.RootPostgresUser),
 		fmt.Sprintf("POSTGRES_PASSWORD=%s", state.SettingsFile.RootPostgresPassword),
 
 		fmt.Sprintf("CRUX_POSTGRES=%s", state.SettingsFile.CruxPostgresDB),
