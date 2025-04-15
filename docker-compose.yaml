@@ -3,9 +3,9 @@
 services:
   database:
     container_name: database
-    image: ghcr.io/dyrector-io/dyrectorio/multi-database:1.0.1
+    image: ghcr.io/dyrector-io/dyrectorio/multi-database:1.0.4
     environment:
-      - POSTGRES_PASSWORD=${POSTGRES_ROOT_PASSWORD}
+      - POSTGRES_PASSWORD=${ROOT_POSTGRES_PASSWORD}
       - CRUX_POSTGRES_PASSWORD=${CRUX_POSTGRES_PASSWORD}
       - KRATOS_POSTGRES_PASSWORD=${KRATOS_POSTGRES_PASSWORD}
     restart: unless-stopped
@@ -28,8 +28,8 @@ services:
       - DATABASE_URL=postgresql://crux_user:${CRUX_POSTGRES_PASSWORD}@database:5432/crux?schema=public
       - KRATOS_ADMIN_URL=http://kratos:4434
       - KRATOS_URL=http://kratos:4433
-      - CRUX_UI_URL=${EXTERNAL_PROTO}://${DOMAIN}${EXTERNAL_PORT}
-      - CRUX_AGENT_ADDRESS=${CRUX_AGENT_HOST}${EXTERNAL_PORT}
+      - CRUX_UI_URL=${EXTERNAL_PROTO}://${DOMAIN}:${EXTERNAL_PORT}
+      - CRUX_AGENT_ADDRESS=${CRUX_AGENT_HOST}:${EXTERNAL_PORT}
       - JWT_SECRET=${CRUX_SECRET}
       - FROM_EMAIL=${FROM_EMAIL}
       - FROM_NAME=${FROM_NAME}
@@ -68,7 +68,7 @@ services:
     image: ghcr.io/dyrector-io/dyrectorio/web/crux-ui:${DYO_VERSION:-stable}
     environment:
       - TZ=${TIMEZONE:-UTC}
-      - CRUX_UI_URL=${EXTERNAL_PROTO}://${DOMAIN}${EXTERNAL_PORT}
+      - CRUX_UI_URL=${EXTERNAL_PROTO}://${DOMAIN}:${EXTERNAL_PORT}
       - KRATOS_URL=http://kratos:4433
       - KRATOS_ADMIN_URL=http://kratos:4434
       - CRUX_URL=http://crux:1848
@@ -87,10 +87,10 @@ services:
     environment:
       - SQA_OPT_OUT=true
       - DSN=postgres://kratos_user:${KRATOS_POSTGRES_PASSWORD}@database:5432/kratos?sslmode=disable&max_conns=20&max_idle_conns=4&connect_timeout=5
-      - KRATOS_URL=${EXTERNAL_PROTO}://${DOMAIN}${EXTERNAL_PORT}/kratos
+      - KRATOS_URL=${EXTERNAL_PROTO}://${DOMAIN}:${EXTERNAL_PORT}/kratos
       - KRATOS_ADMIN_URL=http://kratos:4434
-      - AUTH_URL=${EXTERNAL_PROTO}://${DOMAIN}${EXTERNAL_PORT}/auth
-      - CRUX_UI_URL=${EXTERNAL_PROTO}://${DOMAIN}${EXTERNAL_PORT}
+      - AUTH_URL=${EXTERNAL_PROTO}://${DOMAIN}:${EXTERNAL_PORT}/auth
+      - CRUX_UI_URL=${EXTERNAL_PROTO}://${DOMAIN}:${EXTERNAL_PORT}
       - LOG_LEVEL=info
       - LOG_LEAK_SENSITIVE_VALUES=false
       - SECRETS_COOKIE=${KRATOS_SECRET}

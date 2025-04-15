@@ -32,7 +32,7 @@ func PrintInfo(state *State, args *ArgsFlags) {
 		log.Info().Msgf("DATABASE_URL=postgresql://%s:%s@localhost:%d/%s?schema=public",
 			state.SettingsFile.CruxPostgresUser,
 			state.SettingsFile.CruxPostgresPassword,
-			state.SettingsFile.CruxPostgresPort,
+			state.SettingsFile.MultidatabasePostgresPort,
 			state.SettingsFile.CruxPostgresDB)
 		log.Info().Msgf("ENCRYPTION_SECRET_KEY=%s", state.SettingsFile.CruxEncryptionKey)
 	}
