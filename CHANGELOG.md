@@ -1,6 +1,14 @@
 # CHANGELOG
 
 
+<a name="0.15.3"></a>
+## [0.15.3](https://github.com/dyrector-io/dyrectorio/compare/0.15.2...0.15.3) (2025-04-16)
+
+### Fix
+
+* misconfigured external port ([#1064](https://github.com/dyrector-io/dyrectorio/issues/1064))
+
+
 <a name="0.15.2"></a>
 ## [0.15.2](https://github.com/dyrector-io/dyrectorio/compare/0.15.1...0.15.2) (2025-04-15)
 
