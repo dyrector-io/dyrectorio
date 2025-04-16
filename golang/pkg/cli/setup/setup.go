@@ -366,13 +366,9 @@ func GenerateComposeConfig(cCtx *ucli.Context) error {
 		if host == "localhost" {
 			cfg.CruxAgentHost = "host.docker.internal"
 		}
-		if port != "443" && cfg.UseHTTPS {
-			// if it's not the default port for protocol
-			cfg.ExternalPort = ":" + port
-		}
-		if port != "80" && !cfg.UseHTTPS {
-			// if it's not the default port for protocol
-			cfg.ExternalPort = ":" + port
+		isNonDefaultPort := (cfg.UseHTTPS && port != "443") || (!cfg.UseHTTPS && port != "80")
+		if isNonDefaultPort {
+			cfg.ExternalPort = port
 		}
 	}
 
