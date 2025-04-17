@@ -16,11 +16,11 @@ import {
   PipelineHookOptions,
   PipelineRunStatusEvent,
   PipelineRunWithPipline,
-  applyPipelineInputTemplate,
   mergeEventWatcherInputs,
   registryV2EventToTemplates,
 } from 'src/domain/pipeline'
 import { REGISTRY_EVENT_V2_PULL, REGISTRY_EVENT_V2_PUSH, RegistryV2Event } from 'src/domain/registry'
+import { applyUniqueKeyValueTemplate } from 'src/domain/template'
 import { JwtTokenPayload } from 'src/domain/token'
 import { generateNonce } from 'src/domain/utils'
 import { CruxBadRequestException } from 'src/exception/crux-exception'
@@ -399,7 +399,7 @@ export default class PipelineService {
 
           const inputs = mergeEventWatcherInputs(trigger.inputs, eventWatcherTrigger.inputs)
 
-          applyPipelineInputTemplate(inputs, templates)
+          applyUniqueKeyValueTemplate(inputs, templates)
 
           await this.createRun({
             creatorType: 'eventWatcher',

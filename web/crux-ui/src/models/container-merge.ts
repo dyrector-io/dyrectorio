@@ -122,6 +122,16 @@ export const mergeConfigs = (strong: ContainerConfigData, weak: ContainerConfigD
   expectedState: strong.expectedState ?? weak.expectedState,
 })
 
+// TODO(@robot9706): Validate
+// export const squashConfigs = (configs: ContainerConfigData[]): ContainerConfigData =>
+//   configs.reduce((result, conf) => {
+//     const merged = mergeConfigs(conf, result)
+//     return {
+//       ...merged,
+//       environment: mergeUniqueKeyValues(conf.environment, result.environment),
+//     }
+//   }, {} as ContainerConfigData)
+
 export const squashConfigs = (configs: ContainerConfigData[]): ContainerConfigData =>
   configs.reduce((result, conf) => mergeConfigs(conf, result), {} as ContainerConfigData)
 

@@ -34,7 +34,10 @@ const EnvironmentDetailsPage = (props: EnvironmentDetailsPageProps) => {
 
   const submit = useSubmit()
 
-  const onEnvEdited = (newEnv: PackageEnvironmentDetails) => setEnv(newEnv)
+  const onEnvEdited = (newEnv: PackageEnvironmentDetails) => {
+    setEnv(newEnv)
+    setEditing(false)
+  }
 
   const onDelete = async () => {
     const res = await fetch(routes.package.api.environmentDetails(pack.id, env.id), {
@@ -88,7 +91,12 @@ const EnvironmentDetailsPage = (props: EnvironmentDetailsPageProps) => {
         {!editing ? (
           <PackageEnvironmentCard packageId={pack.id} environment={env} />
         ) : (
-          <EditPackageEnvironmentCard packageId={pack.id} environment={env} onEnvironmentEdited={onEnvEdited} />
+          <EditPackageEnvironmentCard
+            submit={submit}
+            packageId={pack.id}
+            environment={env}
+            onEnvironmentEdited={onEnvEdited}
+          />
         )}
 
         {!editing && <PackageEnvironmentVersionList environment={env} />}
