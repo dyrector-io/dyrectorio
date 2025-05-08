@@ -25,7 +25,7 @@
     "portBinding": "Port binding",
     "volumes": "Volumes",
     "capabilities": "Capabilities",
-    "name": "Name",
+    "name": "Container Name",
     "size": "Size",
     "path": "Path",
     "class": "Class (k8s)",

@@ -12,21 +12,21 @@ import useTranslation from 'next-translate/useTranslation'
 
 type FilterSet = Record<ContainerConfigFilterType, ContainerConfigKey[]>
 
-export const defaultFilterSet: FilterSet = {
+export const DEFAULT_FILTERS: FilterSet = {
   all: [...CONTAINER_CONFIG_KEYS],
   common: [...COMMON_CONFIG_KEYS],
   crane: [...CRANE_CONFIG_KEYS].filter(it => it !== 'extraLBAnnotations'),
   dagent: [...DAGENT_CONFIG_KEYS],
 }
 
-export const k8sFilterSet: FilterSet = {
+export const K8S_FILTERS: FilterSet = {
   all: [...COMMON_CONFIG_KEYS, ...CRANE_CONFIG_KEYS],
   common: [...COMMON_CONFIG_KEYS],
   crane: [...CRANE_CONFIG_KEYS].filter(it => it !== 'extraLBAnnotations'),
   dagent: null,
 }
 
-export const dockerFilterSet: FilterSet = {
+export const DOCKER_FILTERS: FilterSet = {
   all: [...COMMON_CONFIG_KEYS, ...DAGENT_CONFIG_KEYS],
   common: [...COMMON_CONFIG_KEYS],
   crane: null,
@@ -66,7 +66,7 @@ type ContainerConfigFilterProps = {
 }
 
 const ContainerConfigFilters = (props: ContainerConfigFilterProps) => {
-  const { onChange, filters, filterSet = defaultFilterSet } = props
+  const { onChange, filters, filterSet = DEFAULT_FILTERS } = props
 
   const filterSetKeys = Object.entries(filterSet)
     .filter(([_, value]) => !!value)

@@ -146,8 +146,8 @@ const ExtendableItemList = <T extends Item>(props: ExtendableItemListProps<T>) =
   const hasValue = !!propsItems
 
   return (
-    <div className="flex flex-col mb-2">
-      <div className="flex flex-row mb-2">
+    <div className="flex flex-col gap-2">
+      <div className="flex flex-row">
         <ConfigSectionLabel
           className="mr-2"
           labelClassName="text-bright font-semibold tracking-wide"
@@ -164,11 +164,7 @@ const ExtendableItemList = <T extends Item>(props: ExtendableItemListProps<T>) =
       </div>
 
       {items.length < 1 ? null : (
-        <div
-          className={
-            itemClassName ?? 'grid grid-cols-1 lg:grid-cols-2 2xl:grid-cols-3 grid-flow-column gap-x-10 gap-y-8 mb-8'
-          }
-        >
+        <div className={itemClassName ?? 'flex flex-col gap-4'}>
           {items.map((item, index) => {
             const error = findErrorMessage(index)
             const removeButton = (removeButtonClassName: string) =>

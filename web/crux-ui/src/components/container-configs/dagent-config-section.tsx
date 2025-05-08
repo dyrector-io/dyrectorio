@@ -65,54 +65,12 @@ const DagentConfigSection = (props: DagentConfigSectionProps) => {
         {t('base.dagent')}
       </DyoHeading>
 
-      <div className="columns-1 lg:columns-2 2xl:columns-3 gap-24 border-2 rounded-lg rounded-tl-[0px] border-solid border-dyo-sky/50 p-8 w-full">
-        {/* networkMode */}
-        {filterContains('networkMode', selectedFilters) && (
-          <div className="grid break-inside-avoid mb-8">
-            <ConfigSectionLabel
-              disabled={!stringResettable(baseConfig?.networkMode, resettableConfig.networkMode)}
-              onResetSection={() => onResetSection('networkMode')}
-              error={conflictErrors?.networkMode}
-            >
-              {t('dagent.networkMode').toUpperCase()}
-            </ConfigSectionLabel>
-
-            <DyoChips
-              className="ml-2"
-              name="networkMode"
-              choices={CONTAINER_NETWORK_MODE_VALUES}
-              selection={config.networkMode}
-              converter={(it: ContainerNetworkMode) => t(`dagent.networkModes.${it}`)}
-              onSelectionChange={it => onChange({ networkMode: it })}
-              disabled={disabled}
-              qaLabel={chipsQALabelFromValue}
-            />
-          </div>
-        )}
-
-        {filterContains('networks', selectedFilters) && (
-          <div className="grid break-inside-avoid mb-8 max-w-lg">
-            <KeyOnlyInput
-              className="max-h-128 overflow-y-auto mb-2"
-              labelClassName="text-bright font-semibold tracking-wide mb-2"
-              label={t('dagent.networks').toUpperCase()}
-              items={config.networks ?? []}
-              keyPlaceholder={t('dagent.placeholders.network')}
-              onChange={it => onChange({ networks: it })}
-              onResetSection={resettableConfig.networks ? () => onResetSection('networks') : null}
-              unique={false}
-              editorOptions={editorOptions}
-              disabled={disabled}
-            />
-            <DyoMessage message={findErrorFor(fieldErrors, 'networks')} messageType="error" />
-          </div>
-        )}
-
+      <div className="flex flex-col gap-8 border-2 rounded-lg rounded-tl-[0px] border-solid border-dyo-sky/50 p-8 w-full">
         {/* dockerLabels */}
         {filterContains('dockerLabels', selectedFilters) && (
-          <div className="grid mb-8 break-inside-avoid">
+          <div>
             <KeyValueInput
-              className="max-h-128 overflow-y-auto"
+              className="overflow-y-auto"
               labelClassName="text-bright font-semibold tracking-wide mb-2"
               label={t('dagent.dockerLabels').toUpperCase()}
               onChange={it => onChange({ dockerLabels: it })}
@@ -122,37 +80,77 @@ const DagentConfigSection = (props: DagentConfigSectionProps) => {
               disabled={disabled}
               errors={conflictErrors?.dockerLabels}
             />
-            <DyoMessage message={findErrorFor(fieldErrors, 'dockerLabels')} messageType="error" />
+            <DyoMessage grow message={findErrorFor(fieldErrors, 'dockerLabels')} messageType="error" />
           </div>
         )}
 
-        {/* restartPolicy */}
-        {filterContains('restartPolicy', selectedFilters) && (
-          <div className="grid break-inside-avoid mb-8">
+        {/* expectedState */}
+        {filterContains('expectedState', selectedFilters) && (
+          <div>
             <ConfigSectionLabel
-              disabled={disabled || !stringResettable(baseConfig?.restartPolicy, resettableConfig.restartPolicy)}
-              onResetSection={() => onResetSection('restartPolicy')}
-              error={conflictErrors?.restartPolicy}
+              disabled={!resettableConfig?.expectedState}
+              onResetSection={() => onResetSection('expectedState')}
+              error={conflictErrors?.expectedState}
             >
-              {t('dagent.restartPolicy').toUpperCase()}
+              {t('dagent.expectedState').toUpperCase()}
             </ConfigSectionLabel>
 
-            <DyoChips
-              className="ml-2"
-              name="restartPolicyType"
-              choices={CONTAINER_RESTART_POLICY_TYPE_VALUES}
-              selection={config.restartPolicy}
-              converter={(it: ContainerRestartPolicyType) => t(`dagent.restartPolicies.${it}`)}
-              onSelectionChange={it => onChange({ restartPolicy: it })}
-              disabled={disabled}
-              qaLabel={chipsQALabelFromValue}
-            />
+            <div>
+              <DyoChips
+                className="ml-2 mb-4"
+                name="expectedState"
+                choices={CONTAINER_STATE_VALUES}
+                selection={config.expectedState?.state ?? 'running'}
+                converter={(it: ContainerState) => t(`common:containerStatuses.${it}`)}
+                onSelectionChange={it => onChange({ expectedState: { ...config.expectedState, state: it } })}
+                disabled={disabled}
+                qaLabel={chipsQALabelFromValue}
+              />
+
+              <MultiInput
+                id="expectedStateTimeout"
+                label={t('dagent.expectedStateTimeout')}
+                containerClassName="max-w-lg ml-4 mb-3"
+                labelClassName="my-auto mr-4 w-40"
+                grow
+                inline
+                value={config.expectedState?.timeout ?? 120}
+                placeholder={t('dagent.placeholders.expectedStateTimeout')}
+                onPatch={it => {
+                  const val = toNumber(it)
+                  onChange({ expectedState: { ...config.expectedState, timeout: val } })
+                }}
+                editorOptions={editorOptions}
+                message={findErrorFor(fieldErrors, 'expectedState.timeout')}
+                disabled={disabled}
+              />
+
+              {config.expectedState?.state === 'exited' && (
+                <MultiInput
+                  id="expectedExitCode"
+                  label={t('dagent.expectedExitCode')}
+                  containerClassName="max-w-lg ml-4 mb-3"
+                  labelClassName="my-auto mr-4 w-40"
+                  grow
+                  inline
+                  value={config.expectedState.exitCode ?? 0}
+                  placeholder={t('dagent.placeholders.expectedExitCode')}
+                  onPatch={it => {
+                    const val = toNumber(it)
+                    onChange({ expectedState: { ...config.expectedState, exitCode: val } })
+                  }}
+                  editorOptions={editorOptions}
+                  message={findErrorFor(fieldErrors, 'expectedState.exitCode')}
+                  disabled={disabled}
+                />
+              )}
+            </div>
           </div>
         )}
 
         {/* logConfig */}
         {filterContains('logConfig', selectedFilters) && (
-          <div className="grid break-inside-avoid mb-8">
+          <div>
             <ConfigSectionLabel
               disabled={disabled || !resettableConfig.logConfig}
               onResetSection={() => onResetSection('logConfig')}
@@ -189,69 +187,69 @@ const DagentConfigSection = (props: DagentConfigSectionProps) => {
           </div>
         )}
 
-        {/* expectedState */}
-        {filterContains('expectedState', selectedFilters) && (
-          <div className="grid break-inside-avoid mb-8">
+        {/* networkMode */}
+        {filterContains('networkMode', selectedFilters) && (
+          <div>
             <ConfigSectionLabel
-              disabled={!resettableConfig?.expectedState}
-              onResetSection={() => onResetSection('expectedState')}
-              error={conflictErrors?.expectedState}
+              disabled={!stringResettable(baseConfig?.networkMode, resettableConfig.networkMode)}
+              onResetSection={() => onResetSection('networkMode')}
+              error={conflictErrors?.networkMode}
             >
-              {t('dagent.expectedState').toUpperCase()}
+              {t('dagent.networkMode').toUpperCase()}
             </ConfigSectionLabel>
 
-            <div className="ml-2">
-              <DyoChips
-                className="ml-2 mb-2"
-                name="expectedState"
-                choices={CONTAINER_STATE_VALUES}
-                selection={config.expectedState?.state ?? 'running'}
-                converter={(it: ContainerState) => t(`common:containerStatuses.${it}`)}
-                onSelectionChange={it => onChange({ expectedState: { ...config.expectedState, state: it } })}
-                disabled={disabled}
-                qaLabel={chipsQALabelFromValue}
-              />
+            <DyoChips
+              className="ml-2"
+              name="networkMode"
+              choices={CONTAINER_NETWORK_MODE_VALUES}
+              selection={config.networkMode}
+              converter={(it: ContainerNetworkMode) => t(`dagent.networkModes.${it}`)}
+              onSelectionChange={it => onChange({ networkMode: it })}
+              disabled={disabled}
+              qaLabel={chipsQALabelFromValue}
+            />
+          </div>
+        )}
 
-              {config.expectedState?.state === 'exited' && (
-                <MultiInput
-                  id="expectedExitCode"
-                  label={t('dagent.expectedExitCode')}
-                  containerClassName="max-w-lg mb-3"
-                  labelClassName="my-auto mr-4 w-40"
-                  className="w-full"
-                  grow
-                  inline
-                  value={config.expectedState.exitCode ?? 0}
-                  placeholder={t('dagent.placeholders.expectedExitCode')}
-                  onPatch={it => {
-                    const val = toNumber(it)
-                    onChange({ expectedState: { ...config.expectedState, exitCode: val } })
-                  }}
-                  editorOptions={editorOptions}
-                  message={findErrorFor(fieldErrors, 'expectedState.exitCode')}
-                  disabled={disabled}
-                />
-              )}
+        {filterContains('networks', selectedFilters) && (
+          <div>
+            <KeyOnlyInput
+              className="max-h-128 overflow-y-auto mb-2"
+              labelClassName="text-bright font-semibold tracking-wide mb-2"
+              label={t('dagent.networks').toUpperCase()}
+              items={config.networks ?? []}
+              keyPlaceholder={t('dagent.placeholders.network')}
+              onChange={it => onChange({ networks: it })}
+              onResetSection={resettableConfig.networks ? () => onResetSection('networks') : null}
+              unique={false}
+              editorOptions={editorOptions}
+              disabled={disabled}
+            />
+            <DyoMessage message={findErrorFor(fieldErrors, 'networks')} messageType="error" />
+          </div>
+        )}
 
-              <MultiInput
-                id="expectedStateTimeout"
-                label={t('dagent.expectedStateTimeout')}
-                containerClassName="max-w-lg mb-3"
-                labelClassName="my-auto mr-4 w-40"
-                className="w-full"
-                grow
-                inline
-                value={config.expectedState?.timeout ?? 120}
-                placeholder={t('dagent.placeholders.expectedStateTimeout')}
-                onPatch={it => {
-                  const val = toNumber(it)
-                  onChange({ expectedState: { ...config.expectedState, timeout: val } })
-                }}
-                editorOptions={editorOptions}
-                message={findErrorFor(fieldErrors, 'expectedState.timeout')}
-                disabled={disabled}
-              />
-            </div>
+        {/* restartPolicy */}
+        {filterContains('restartPolicy', selectedFilters) && (
+          <div>
+            <ConfigSectionLabel
+              disabled={disabled || !stringResettable(baseConfig?.restartPolicy, resettableConfig.restartPolicy)}
+              onResetSection={() => onResetSection('restartPolicy')}
+              error={conflictErrors?.restartPolicy}
+            >
+              {t('dagent.restartPolicy').toUpperCase()}
+            </ConfigSectionLabel>
+
+            <DyoChips
+              className="ml-2"
+              name="restartPolicyType"
+              choices={CONTAINER_RESTART_POLICY_TYPE_VALUES}
+              selection={config.restartPolicy}
+              converter={(it: ContainerRestartPolicyType) => t(`dagent.restartPolicies.${it}`)}
+              onSelectionChange={it => onChange({ restartPolicy: it })}
+              disabled={disabled}
+              qaLabel={chipsQALabelFromValue}
+            />
           </div>
         )}
       </div>

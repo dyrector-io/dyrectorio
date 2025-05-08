@@ -21,19 +21,17 @@ const ConfigSectionLabel = (props: ConfigSectionLabelProps) => {
         <DyoLabel className={labelClassName ?? 'text-bright font-semibold tracking-wide mb-2'}>{children}</DyoLabel>
 
         {!disabled && (
-          <div>
-            <DyoIcon
-              className="w-6 h-6 cursor-pointer ml-2"
-              src="/refresh.svg"
-              size="md"
-              alt="reset"
-              onClick={onResetSection}
-            />
-          </div>
+          <DyoIcon
+            className="w-6 h-6 cursor-pointer ml-2"
+            src="/refresh.svg"
+            size="md"
+            alt="reset"
+            onClick={onResetSection}
+          />
         )}
       </div>
 
-      {error && <DyoMessage message={error} messageType="error" />}
+      {error && <DyoMessage grow message={error} messageType="error" />}
     </div>
   )
 }

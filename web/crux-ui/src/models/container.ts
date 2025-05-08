@@ -248,44 +248,44 @@ export type ContainerConfigData = {
 }
 
 export const COMMON_CONFIG_KEYS = [
+  'args',
+  'commands',
+  'configContainer',
   'name',
   'environment',
-  'secrets',
-  'routing',
   'expose',
-  'user',
-  'tty',
-  'workingDirectory',
-  'configContainer',
-  'ports',
-  'portRanges',
-  'volumes',
-  'commands',
-  'args',
   'initContainers',
+  'portRanges',
+  'ports',
+  'routing',
+  'secrets',
   'storage',
+  'tty',
+  'user',
+  'volumes',
+  'workingDirectory',
 ] as const
 
 export const CRANE_CONFIG_KEYS = [
-  'deploymentStrategy',
+  'annotations',
   'customHeaders',
-  'proxyHeaders',
-  'useLoadBalancer',
+  'deploymentStrategy',
   'extraLBAnnotations',
   'healthCheckConfig',
-  'resourceConfig',
   'labels',
-  'annotations',
   'metrics',
+  'proxyHeaders',
+  'resourceConfig',
+  'useLoadBalancer',
 ] as const
 
 export const DAGENT_CONFIG_KEYS = [
-  'logConfig',
-  'restartPolicy',
-  'networkMode',
-  'networks',
   'dockerLabels',
   'expectedState',
+  'logConfig',
+  'networkMode',
+  'networks',
+  'restartPolicy',
 ] as const
 
 export const CONTAINER_CONFIG_KEYS = [...COMMON_CONFIG_KEYS, ...CRANE_CONFIG_KEYS, ...DAGENT_CONFIG_KEYS] as const
