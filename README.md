@@ -34,11 +34,7 @@ Join our Discord and connect with other members to share and learn together. If 
 
 ## Getting Started
 
-You have various options to set up the platform right away:
-
--   [CLI](./GETTING_STARTED.md)
--   [SaaS](#hosted-version-saas)
--   [docker-compose.yaml](./docker-compose.yaml)
+For detailed setup instructions, please refer to the [Getting Started documentation](./GETTING_STARTED.md).
 
 ## Use Cases
 
@@ -62,7 +58,7 @@ Bring transparency to your SDLC by configuring versions and deployments of your 
 
 Editing container settings no longer requires direct access or expertise in JSON formatting. Our platform provides a user-friendly JSON editor, enabling you to modify settings without accessing the containers. In case of deployment issues, you can easily make necessary adjustments using the platform's config editor screen. Additionally, you can create bundle configurations to avoid manual configuration for each container.
 
-## Demo (2 mins)
+## Intro video
 
 https://user-images.githubusercontent.com/9247788/219671903-41da385e-4f8f-4fba-a7e4-c6ec4f727b7f.mp4
 
@@ -83,7 +79,7 @@ https://user-images.githubusercontent.com/9247788/219671903-41da385e-4f8f-4fba-a
 
 ## Deployment Options
 
-Besides the self-hosted instance, you can check out the platform's alpha at [app.dyrectorio.com](https://app.dyrectorio.com). The platform is still in the works, we might reset the database, so it's not recommended for production yet. If you are interested in using dyrector.io in production, reach out to us via [email](hello@dyrector.io) and we'll set up a stable instance for you.
+Besides the self-hosted instance, you can check out the platform's alpha at [app.dyrectorio.com](https://app.dyrectorio.com). The platform is still in the works, we might reset the database, so it's not recommended for production yet.
 
 ## How it Works
 

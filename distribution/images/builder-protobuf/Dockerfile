@@ -1,14 +1,14 @@
 # this image is our official way of generating proto-files
 # for reproducable builds, anywhere
 # note: update this together with golang image
-FROM docker.io/library/golang:1.22-alpine3.19
+FROM docker.io/library/golang:1.23-alpine3.20
 
 ENV GOLANGCI_LINT_CACHE $GOPATH/cache
 ENV GOCACHE $GOPATH/cache
 
 SHELL ["/bin/ash","-c"]
 WORKDIR /usr/work
-LABEL org.opencontainers.image.source="https://github.com/dyrector-io/dyrectorio/tree/develop/images/builder-protobuf"
+LABEL org.opencontainers.image.source="https://github.com/dyrector-io/dyrectorio/tree/develop/distribution/images/builder-protobuf"
 
 RUN mkdir -p $GOPATH/src && \
     mkdir -p $GOPATH/bin && \

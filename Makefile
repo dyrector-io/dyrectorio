@@ -32,6 +32,12 @@ cli:
 	cd golang/cmd/dyo && \
 	go run .
 
+# Run the interactive compose-file config generator
+.PHONY: compose-init
+compose-init:
+	cd golang
+	go run ./golang/cmd/dyo/main.go  generate compose --compose-dir "distribution/compose"
+
 # Create dyrector.io offline installer bundle
 .PHONY: export-minimal
 export-minimal:
@@ -53,8 +59,8 @@ export-full:
 	mv .env .env_bak || true
 	echo "DYO_VERSION=$(BUNDLEVER)" > .env
 	crane pull --platform=linux/amd64 docker.io/library/traefik:2.9 offline/traefik.tar
-	crane pull --platform=linux/amd64 docker.io/library/postgres:13-alpine offline/postgresql.tar
 	crane pull --platform=linux/amd64 docker.io/oryd/mailslurper:smtps-latest offline/mailslurper.tar
+	crane pull --platform=linux/amd64 ghcr.io/dyrector-io/dyrectorio/multi-database:1.0.4 offline/multidatabase.tar
 	crane pull --platform=linux/amd64 ghcr.io/dyrector-io/dyrectorio/web/kratos:latest offline/kratos.tar
 	crane pull --platform=linux/amd64 ghcr.io/dyrector-io/dyrectorio/web/crux:latest offline/crux.tar
 	crane pull --platform=linux/amd64 ghcr.io/dyrector-io/dyrectorio/web/crux-ui:latest offline/crux-ui.tar
@@ -72,13 +78,13 @@ protogen:| proto-agent proto-crux
 # Run linting on the Go code
 .PHONY: go-lint
 go-lint:
-	MSYS_NO_PATHCONV=1 docker run --rm -u ${UID}:${GID} -v ${PWD}:/usr/work ghcr.io/dyrector-io/dyrectorio/builder-images/protobuf:2 ash -c "\
+	MSYS_NO_PATHCONV=1 docker run --rm -u ${UID}:${GID} -v ${PWD}:/usr/work ghcr.io/dyrector-io/dyrectorio/builder-images/protobuf:3 ash -c "\
 		cd golang && make lint"
 
 # Generate agent gRPC files
 .PHONY: proto-agent
 proto-agent:
-	MSYS_NO_PATHCONV=1 docker run --rm -u ${UID}:${GID} -v ${PWD}:/usr/work ghcr.io/dyrector-io/dyrectorio/builder-images/protobuf:2 ash -c "\
+	MSYS_NO_PATHCONV=1 docker run --rm -u ${UID}:${GID} -v ${PWD}:/usr/work ghcr.io/dyrector-io/dyrectorio/builder-images/protobuf:3 ash -c "\
 		mkdir -p protobuf/go && \
 		protoc -I. \
 			--go_out /tmp \
@@ -91,7 +97,7 @@ proto-agent:
 # Generate API grpc files
 .PHONY: proto-crux
 proto-crux:
-	MSYS_NO_PATHCONV=1 docker run --rm -u ${UID}:${GID} -v ${PWD}:/usr/work ghcr.io/dyrector-io/dyrectorio/builder-images/protobuf:2 ash -c "\
+	MSYS_NO_PATHCONV=1 docker run --rm -u ${UID}:${GID} -v ${PWD}:/usr/work ghcr.io/dyrector-io/dyrectorio/builder-images/protobuf:3 ash -c "\
 		mkdir -p ./web/crux/src/grpc && \
 		protoc \
 			--experimental_allow_proto3_optional \

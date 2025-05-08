@@ -25,6 +25,7 @@ env:
   CRUX_UI_WORKING_DIRECTORY: web/crux-ui
   KRATOS_WORKING_DIRECTORY: web/kratos
   GOLANG_WORKING_DIRECTORY: golang
+  GOLANGCI_LINT_VERSION: v2.0.2
 concurrency:
   group: ${{ github.workflow }}-${{ github.sha }}
   cancel-in-progress: true
@@ -55,7 +56,7 @@ jobs:
     runs-on: ubuntu-22.04
     container:
       # yamlfmt resides here because alpine doesn't provide yamlfmt package
-      image: ghcr.io/dyrector-io/dyrectorio/builder-images/golang:3
+      image: ghcr.io/dyrector-io/dyrectorio/builder-images/golang:4
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -118,32 +119,21 @@ jobs:
   go_lint:
     runs-on: ubuntu-22.04
     needs: gather_changes
-    container:
-      image: ghcr.io/dyrector-io/dyrectorio/builder-images/golang:3
-    defaults:
-      run:
-        working-directory: ${{ env.GOLANG_WORKING_DIRECTORY }}
     if: ${{ (needs.gather_changes.outputs.agents == 'true') || (github.ref_type == 'tag') || (needs.gather_changes.outputs.release == 'true') }}
     steps:
       - name: Checkout
         uses: actions/checkout@v3
-      - name: Setup Golang caches
-        uses: actions/cache/restore@v3
-        with:
-          path: /go
-          key: ${{ runner.os }}-golang-${{ hashFiles('go.sum') }}
-      - name: Load go mod
-        run: go mod tidy
-      # fixes: fatal: unsafe repository
-      - name: Adding workspace
-        run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
       - name: Run golangci-lint
-        run: make lint
+        uses: golangci/golangci-lint-action@v7
+        with:
+          version: ${{ env.GOLANGCI_LINT_VERSION }}
+          working-directory: ${{ github.workspace }}
+          args: --path-prefix=golang
   go_security:
     runs-on: ubuntu-22.04
     needs: gather_changes
     container:
-      image: ghcr.io/dyrector-io/dyrectorio/builder-images/golang:3
+      image: ghcr.io/dyrector-io/dyrectorio/builder-images/golang:4
     defaults:
       run:
         working-directory: ${{ env.GOLANG_WORKING_DIRECTORY }}
@@ -167,7 +157,7 @@ jobs:
     runs-on: ubuntu-22.04
     needs: gather_changes
     container:
-      image: ghcr.io/dyrector-io/dyrectorio/builder-images/golang:3
+      image: ghcr.io/dyrector-io/dyrectorio/builder-images/golang:4
     defaults:
       run:
         working-directory: ${{ env.GOLANG_WORKING_DIRECTORY }}
@@ -193,7 +183,7 @@ jobs:
           export KUBECONFIG="$(pwd)/k3d-auth.yaml" && \
           make test-integration
       - name: Upload integration test results
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: golang-integration-coverage
           path: ${{ env.GOLANG_WORKING_DIRECTORY }}/**.cov
@@ -201,7 +191,7 @@ jobs:
     runs-on: ubuntu-22.04
     needs: gather_changes
     container:
-      image: ghcr.io/dyrector-io/dyrectorio/builder-images/golang:3
+      image: ghcr.io/dyrector-io/dyrectorio/builder-images/golang:4
     defaults:
       run:
         working-directory: ${{ env.GOLANG_WORKING_DIRECTORY }}
@@ -222,7 +212,7 @@ jobs:
       - name: Run unit tests with coverage
         run: make test-unit-with-coverage
       - name: Upload unit test results
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: golang-unit-coverage
           path: ${{ env.GOLANG_WORKING_DIRECTORY }}/**.cov
@@ -239,19 +229,19 @@ jobs:
       - name: Install coverage merger
         run: go install go.shabbyrobe.org/gocovmerge/cmd/gocovmerge@latest
       - name: Download integration test results from artifacts
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: golang-integration-coverage
       - name: Download unit test results from artifacts
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: golang-unit-coverage
       - name: Merge coverage
         run: gocovmerge ./builder.cov ./cli.cov ./crane.cov ./dagent.cov ./internal.cov ./unit.cov  > ./merged.cov
       - name: Upload coverage reports to Codecov with GitHub Action
-        uses: codecov/codecov-action@v3
+        uses: codecov/codecov-action@v5
         with:
-          files: ./merged.cov
+          file: ./merged.cov
           name: golang-coverage
   go_build:
     runs-on: ubuntu-22.04
@@ -262,7 +252,7 @@ jobs:
       - go_integration
       - gather_changes
     container:
-      image: ghcr.io/dyrector-io/dyrectorio/builder-images/golang:3
+      image: ghcr.io/dyrector-io/dyrectorio/builder-images/golang:4
     defaults:
       run:
         working-directory: ${{ env.GOLANG_WORKING_DIRECTORY }}
@@ -302,17 +292,17 @@ jobs:
           docker save ${GITHUB_REGISTRY}/${DAGENT_IMAGE_NAME}:${{ needs.gather_changes.outputs.tag }} | zstd > dagent.zstd
           docker save ${GITHUB_REGISTRY}/${CLI_IMAGE_NAME}:${{ needs.gather_changes.outputs.tag }} | zstd > cli.zstd
       - name: artifact upload
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: crane
           path: ${{ env.GOLANG_WORKING_DIRECTORY }}/crane.zstd
       - name: artifact upload
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: dagent
           path: ${{ env.GOLANG_WORKING_DIRECTORY }}/dagent.zstd
       - name: artifact upload
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: cli
           path: ${{ env.GOLANG_WORKING_DIRECTORY }}/cli.zstd
@@ -410,7 +400,7 @@ jobs:
       - name: Docker save
         run: docker save ${GITHUB_REGISTRY}/${CRUX_IMAGE_NAME}:${{ needs.gather_changes.outputs.tag }} | zstd > crux.zstd
       - name: artifact upload
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: crux
           path: ${{ env.CRUX_WORKING_DIRECTORY }}/crux.zstd
@@ -490,7 +480,7 @@ jobs:
       - name: Docker save
         run: docker save ${GITHUB_REGISTRY}/${CRUX_UI_IMAGE_NAME}:${{ needs.gather_changes.outputs.tag }} | zstd > crux-ui.zstd
       - name: artifact upload
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: crux-ui
           path: ${{ env.CRUX_UI_WORKING_DIRECTORY }}/crux-ui.zstd
@@ -512,7 +502,7 @@ jobs:
       - name: Docker save
         run: docker save ${GITHUB_REGISTRY}/${KRATOS_IMAGE_NAME}:${{ needs.gather_changes.outputs.tag }} | zstd > kratos.zstd
       - name: artifact upload
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: kratos
           path: ${{ env.KRATOS_WORKING_DIRECTORY }}/kratos.zstd
@@ -542,15 +532,10 @@ jobs:
     steps:
       - name: Checkout the repository
         uses: actions/checkout@v3
-      # - name: crane - artifact download
       #   if: needs.gather_changes.outputs.agents == 'true'
-      #   uses: actions/download-artifact@v3
-      #   with:
-      #     name: crane
-      #     path: artifacts
       - name: dagent - artifact download
         if: ${{ (needs.gather_changes.outputs.agents == 'true') || (github.ref_type == 'tag')  || (needs.gather_changes.outputs.release == 'true') }}
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: dagent
           path: artifacts
@@ -561,7 +546,7 @@ jobs:
         # zstd -dc artifacts/crane.zstd | docker load
       - name: crux - artifact download
         if: ${{ (needs.gather_changes.outputs.crux == 'true') || (github.ref_type == 'tag')  || (needs.gather_changes.outputs.release == 'true') }}
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: crux
           path: artifacts
@@ -570,7 +555,7 @@ jobs:
         run: zstd -dc artifacts/crux.zstd | docker load
       - name: crux-ui - artifact download
         if: ${{ (needs.gather_changes.outputs.cruxui == 'true') || (github.ref_type == 'tag')  || (needs.gather_changes.outputs.release == 'true') }}
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: crux-ui
           path: artifacts
@@ -579,7 +564,7 @@ jobs:
         run: zstd -dc artifacts/crux-ui.zstd | docker load
       - name: kratos - artifact download
         if: ${{ (needs.gather_changes.outputs.kratos == 'true') || (github.ref_type == 'tag')  || (needs.gather_changes.outputs.release == 'true') }}
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: kratos
           path: artifacts
@@ -588,7 +573,7 @@ jobs:
         run: zstd -dc artifacts/kratos.zstd | docker load
       - name: cli - artifact download
         if: ${{ (needs.gather_changes.outputs.agents == 'true') || (github.ref_type == 'tag')  || (needs.gather_changes.outputs.release == 'true') }}
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: cli
           path: artifacts
@@ -601,15 +586,25 @@ jobs:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ github.token }}
-      - name: Setup using cli
+      - name: Setup dyrectorio stack using dyo-cli
         run: |
           export GITHUB_NETWORK=$(docker network ls -f name=github_network --format {{.Name}})
           docker run -v /var/run/docker.sock:/var/run/docker.sock --network $GITHUB_NETWORK ${GITHUB_REGISTRY}/${CLI_IMAGE_NAME}:${{ needs.gather_changes.outputs.tag }} --image-tag ${{ needs.gather_changes.outputs.tag }} --network $GITHUB_NETWORK --prefer-local-images --expect-container-env --debug -p dyo-e2e up
+      - name: Check if containers are running and reachable
+        run: |
+          curl -vfL -m 10 --retry 9 --retry-delay 0 http://dyo-e2e_traefik:8000 > /dev/null
       - name: Setup NPM caches
         uses: actions/cache/restore@v3
         with:
           path: ${{ env.CRUX_UI_WORKING_DIRECTORY }}/.npm/**
           key: ${{ runner.os }}-e2e_test-${{ hashFiles('web/crux-ui/package-lock.json') }}
+      - name: Setup playwright
+        working-directory: ${{ env.CRUX_UI_WORKING_DIRECTORY }}
+        env:
+          CI: true
+        run: |
+          npm ci --include=dev --arch=x64 --cache .npm --prefer-offline --no-fund
+          npx playwright install chromium
       - name: Run tests
         working-directory: ${{ env.CRUX_UI_WORKING_DIRECTORY }}
         env:
@@ -621,33 +616,31 @@ jobs:
           CRUX_UI_URL: "http://dyo-e2e_traefik:8000"
           KRATOS_URL: "http://dyo-e2e_kratos:4433"
           KRATOS_ADMIN_URL: "http://dyo-e2e_kratos:4434"
-          CI: true
         run: |
-          npm ci --include=dev --arch=x64 --cache .npm --prefer-offline --no-fund
-          npx playwright install chromium
           npm run test:e2e
       - name: Gather logs
         working-directory: ${{ env.CRUX_UI_WORKING_DIRECTORY }}
         if: always()
         run: |
           docker ps
-          mkdir logs
-          docker logs dyo-e2e_crux-ui > logs/e2e-crux-ui.log 2>&1
-          docker logs dyo-e2e_crux > logs/e2e-crux.log 2>&1
-          docker logs dyo-e2e_kratos > logs/e2e-kratos.log 2>&1
-          docker logs dyo-e2e_traefik > logs/e2e-traefik.log 2>&1
-          docker logs dagent > logs/e2e-dagent.log 2>&1
-      - uses: actions/upload-artifact@v3
+          mkdir -p logs
+          CONTAINERS="dyo-e2e_multidatabase dyo-e2e_crux-ui dyo-e2e_crux dyo-e2e_kratos dyo-e2e_traefik"
+          for cont in $CONTAINERS
+          do
+            docker logs $cont > logs/$cont.log 2>&1
+            docker inspect $cont > logs/$cont.inspect 2>&1
+          done
+      - uses: actions/upload-artifact@v4
         if: failure()
         with:
           name: e2e-logs
           path: ${{ env.CRUX_UI_WORKING_DIRECTORY }}/logs
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         if: always()
         with:
           name: e2e-screenshots
           path: ${{ env.CRUX_UI_WORKING_DIRECTORY }}/e2e/screenshots/
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         if: failure()
         with:
           name: e2e-trace
@@ -665,7 +658,7 @@ jobs:
       packages: write
     runs-on: ubuntu-22.04
     container:
-      image: ghcr.io/dyrector-io/dyrectorio/builder-images/golang:3
+      image: ghcr.io/dyrector-io/dyrectorio/builder-images/golang:4
     defaults:
       run:
         working-directory: ${{ env.GOLANG_WORKING_DIRECTORY }}
@@ -784,16 +777,6 @@ jobs:
           crane cp ${GITHUB_REGISTRY}/${CRANE_IMAGE_NAME}:${{ needs.gather_changes.outputs.tag }} ${GITHUB_REGISTRY}/${CRANE_IMAGE_NAME}:${{ needs.gather_changes.outputs.minorversion }}
           crane cp ${GITHUB_REGISTRY}/${DAGENT_IMAGE_NAME}:${{ needs.gather_changes.outputs.tag }} ${GITHUB_REGISTRY}/${DAGENT_IMAGE_NAME}:${{ needs.gather_changes.outputs.minorversion }}
           crane cp ${GITHUB_REGISTRY}/${CLI_IMAGE_NAME}:${{ needs.gather_changes.outputs.tag }} ${GITHUB_REGISTRY}/${CLI_IMAGE_NAME}:${{ needs.gather_changes.outputs.minorversion }}
-        # - name: Sign container image
-        #   run: |
-        #     cosign sign --yes --key cosign.key $(docker inspect --format='{{index .RepoDigests 0}}' ${GITHUB_REGISTRY}/${CRANE_IMAGE_NAME}:${{ needs.gather_changes.outputs.tag }} )
-        #     cosign sign --yes --key cosign.key $(docker inspect --format='{{index .RepoDigests 0}}' ${GITHUB_REGISTRY}/${DAGENT_IMAGE_NAME}:${{ needs.gather_changes.outputs.tag }} )
-        #     cosign sign --yes --key cosign.key $(docker inspect --format='{{index .RepoDigests 0}}' ${GITHUB_REGISTRY}/${CLI_IMAGE_NAME}:${{ needs.gather_changes.outputs.tag }} )
-        #     cosign sign --yes --key cosign.key $(docker inspect --format='{{index .RepoDigests 0}}' ${DOCKERHUB_REGISTRY}/crane:${{ needs.gather_changes.outputs.tag }} )
-        #     cosign sign --yes --key cosign.key $(docker inspect --format='{{index .RepoDigests 0}}' ${DOCKERHUB_REGISTRY}/dagent:${{ needs.gather_changes.outputs.tag }} )
-        #     cosign sign --yes --key cosign.key $(docker inspect --format='{{index .RepoDigests 0}}' ${DOCKERHUB_REGISTRY}/dyo:${{ needs.gather_changes.outputs.tag }} )
-        #   env:
-        #     COSIGN_PASSWORD: ${{ secrets.COSIGN_PASSWORD }}
   crux_push:
     permissions:
       packages: write
@@ -814,7 +797,7 @@ jobs:
     environment: Workflow - Protected
     steps:
       - name: artifact download
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: crux
           path: artifacts
@@ -877,7 +860,7 @@ jobs:
     environment: Workflow - Protected
     steps:
       - name: artifact download
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: crux-ui
           path: artifacts
@@ -940,7 +923,7 @@ jobs:
     environment: Workflow - Protected
     steps:
       - name: artifact download
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: kratos
           path: artifacts

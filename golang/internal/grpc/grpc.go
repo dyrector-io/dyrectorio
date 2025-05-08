@@ -14,12 +14,14 @@ import (
 	"github.com/rs/zerolog/log"
 
 	v1 "github.com/dyrector-io/dyrectorio/golang/api/v1"
+	"github.com/dyrector-io/dyrectorio/golang/internal/backoff"
 	internalCommon "github.com/dyrector-io/dyrectorio/golang/internal/common"
 	"github.com/dyrector-io/dyrectorio/golang/internal/config"
 	"github.com/dyrector-io/dyrectorio/golang/internal/dogger"
 	"github.com/dyrector-io/dyrectorio/golang/internal/health"
 	"github.com/dyrector-io/dyrectorio/golang/internal/logdefer"
 	"github.com/dyrector-io/dyrectorio/golang/internal/mapper"
+	"github.com/dyrector-io/dyrectorio/golang/internal/util"
 	"github.com/dyrector-io/dyrectorio/golang/internal/version"
 	"github.com/dyrector-io/dyrectorio/protobuf/go/agent"
 	"github.com/dyrector-io/dyrectorio/protobuf/go/common"
@@ -156,7 +158,7 @@ func fetchCertificatesFromURL(ctx context.Context, addr string) (*x509.CertPool,
 		return nil, fmt.Errorf("failed to create the http request: %s", err.Error())
 	}
 
-	//nolint:bodyclose //closed already
+	//nolint:bodyclose
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
 		return nil, fmt.Errorf("failed to execute request for certificates: %s", err.Error())
@@ -251,16 +253,19 @@ func executeCallback(mapError func(*agent.AgentError) *agent.AgentCommandError, 
 		return
 	}
 
-	statusCode := statusCodeOf(grpcErr)
+	statusCode, err := util.SafeUInt32ToInt32(uint32(statusCodeOf(grpcErr)))
+	if err != nil {
+		log.Error().Err(err).Msg("integer overflow for statusCode")
+	}
 
 	agentError := agent.AgentError{
-		Status: int32(statusCode),
+		Status: statusCode,
 		Error:  grpcErr.Error(),
 	}
 
 	cmdErr := mapError(&agentError)
 
-	_, err := grpcConn.Client.CommandError(grpcErr.Context, cmdErr)
+	_, err = grpcConn.Client.CommandError(grpcErr.Context, cmdErr)
 	if err != nil {
 		log.Error().Stack().Err(err).Msg("Reporting callback error failed")
 	}
@@ -269,6 +274,7 @@ func executeCallback(mapError func(*agent.AgentError) *agent.AgentCommandError, 
 func (cl *ClientLoop) grpcLoop(token *config.ValidJWT) error {
 	var stream agent.Agent_ConnectClient
 	var err error
+	backoff := backoff.New(time.Minute)
 	defer cl.cancel()
 	defer func() {
 		err = grpcConn.Conn.Close()
@@ -281,13 +287,14 @@ func (cl *ClientLoop) grpcLoop(token *config.ValidJWT) error {
 	}()
 	for {
 		if grpcConn.Client == nil {
+			backoff.Wait(cl.Ctx)
 			client := agent.NewAgentClient(grpcConn.Conn)
 			grpcConn.SetClient(client)
 
 			publicKey, keyErr := config.GetPublicKey(cl.AppConfig.SecretPrivateKey)
 
 			if keyErr != nil {
-				log.Panic().Stack().Err(keyErr).Str("publicKey", publicKey).Msg("gRPC public key error")
+				return errors.Join(keyErr, fmt.Errorf("gRPC public key error, key: %s", publicKey))
 			}
 
 			containerName := ""
@@ -369,7 +376,7 @@ func initWithToken(
 			log.Warn().Err(err).Msg("Secure mode is disabled in demo/dev environment, falling back to plain-text gRPC")
 			creds = insecure.NewCredentials()
 		} else {
-			log.Panic().Err(err).Msg("Could not fetch valid certificate")
+			return errors.Join(err, fmt.Errorf("could not fetch valid certificate"))
 		}
 	} else {
 		creds = credentials.NewClientTLSFromCert(certPool, "")
@@ -409,7 +416,7 @@ func Init(grpcContext context.Context,
 	appConfig *config.CommonConfiguration,
 	secrets config.SecretStore,
 	workerFuncs *WorkerFunctions,
-) {
+) error {
 	log.Info().Msg("Spinning up gRPC Agent client...")
 	if grpcConn == nil {
 		grpcConn = &Connection{}
@@ -424,24 +431,27 @@ func Init(grpcContext context.Context,
 	}
 
 	err = initWithToken(grpcContext, appConfig, workerFuncs, secrets, appConfig.JwtToken)
+	// intentional check no errors => no fallback
 	if err == nil {
-		return
+		return nil
 	}
 
 	if !errors.Is(err, ErrConnectionRefused) {
-		log.Panic().Err(err).Msg("Connection refused")
+		return errors.Join(err, fmt.Errorf("connection refused"))
 	}
 
 	if appConfig.FallbackJwtToken == nil {
-		return
+		return nil
 	}
 
 	log.Warn().Msg("Connection failed, trying fallback token")
 
 	err = initWithToken(grpcContext, appConfig, workerFuncs, secrets, appConfig.FallbackJwtToken)
 	if err != nil {
-		log.Panic().Err(err).Msg("Connection refused with fallback token")
+		return errors.Join(err, fmt.Errorf("connection refused with fallback token"))
 	}
+
+	return nil
 }
 
 func (cl *ClientLoop) handleGrpcTokenError(err error, token *config.ValidJWT) {
@@ -565,7 +575,6 @@ func streamContainerStatus(
 
 				return
 			}
-			break
 		}
 	}
 }
@@ -1176,7 +1185,7 @@ func (cl *ClientLoop) executeReplaceToken(command *agent.ReplaceTokenRequest) er
 	err = cl.Secrets.SaveConnectionToken(command.GetToken())
 	if err != nil {
 		// NOTE(@m8vago): For example, out of space?
-		log.Panic().Err(err).Msg("Failed to write the JWT token.")
+		return errors.Join(err, fmt.Errorf("failed to write the JWT token"))
 	}
 
 	md, ok := metadata.FromOutgoingContext(cl.Ctx)

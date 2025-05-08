@@ -1,25 +1,21 @@
-# version is removed as per: https://github.com/docker/cli/pull/3445
+# This is a minimal compose file, meant to be extended using files from the distribution/compose folder
+# Consult the GETTING_STARTED.md
 services:
-  # If you plan to deploy where a proxy is already in place, feel free to remove the traefik service
-  traefik:
-    container_name: traefik
-    image: docker.io/library/traefik:2.9
-    command:
-      - --providers.docker=true
-      - --providers.docker.exposedbydefault=false
-      - --entrypoints.web.address=:80
-      - --entrypoints.web.http.redirections.entryPoint.to=websecure
-      - --entrypoints.web.http.redirections.entrypoint.scheme=https
-      - --entrypoints.web.http.redirections.entrypoint.permanent=true
-      - --entrypoints.websecure.address=:443
-      - --certificatesresolvers.letsencrypt.acme.httpchallenge.entrypoint=web
-      - --certificatesresolvers.letsencrypt.acme.email=${ACME_EMAIL}
-      - --certificatesresolvers.letsencrypt.acme.storage=/letsencrypt/acme.json
-    ports: ['80:80', '443:443']
-    volumes:
-      - letsencrypt:/letsencrypt
-      - ${DOCKER_SOCKET:-/var/run/docker.sock}:/var/run/docker.sock:ro
+  database:
+    container_name: database
+    image: ghcr.io/dyrector-io/dyrectorio/multi-database:1.0.4
+    environment:
+      - POSTGRES_PASSWORD=${ROOT_POSTGRES_PASSWORD}
+      - CRUX_POSTGRES_PASSWORD=${CRUX_POSTGRES_PASSWORD}
+      - KRATOS_POSTGRES_PASSWORD=${KRATOS_POSTGRES_PASSWORD}
     restart: unless-stopped
+    volumes: ['database:/var/lib/postgresql/data']
+    healthcheck:
+      # testing the healtheck with a specific database and users
+      test: [CMD-SHELL, pg_isready -d crux -U crux_user]
+      interval: 5s
+      timeout: 5s
+      retries: 5
     labels:
       - org.dyrectorio.service-category=_internal
   crux:
@@ -29,48 +25,28 @@ services:
     environment:
       - TZ=${TIMEZONE:-UTC}
       - LOG_LEVEL=${LOG_LEVEL:-debug}
-      - DATABASE_URL=postgresql://crux:${CRUX_POSTGRES_PASSWORD}@crux-postgres:5432/crux?schema=public
+      - DATABASE_URL=postgresql://crux_user:${CRUX_POSTGRES_PASSWORD}@database:5432/crux?schema=public
       - KRATOS_ADMIN_URL=http://kratos:4434
       - KRATOS_URL=http://kratos:4433
-      - CRUX_UI_URL=${EXTERNAL_URL}
-      - CRUX_AGENT_ADDRESS=${DOMAIN}:443
+      - CRUX_UI_URL=${EXTERNAL_PROTO}://${DOMAIN}:${EXTERNAL_PORT}
+      - CRUX_AGENT_ADDRESS=${CRUX_AGENT_HOST}:${EXTERNAL_PORT}
       - JWT_SECRET=${CRUX_SECRET}
       - FROM_EMAIL=${FROM_EMAIL}
       - FROM_NAME=${FROM_NAME}
       - SMTP_URI=${SMTP_URI}
-      # If you don't have a mailserver you can use the provided mailslurper
-      # but keep in mind, this one is insecure, only use it at your own risk!
-      # - SMTP_URI=smtps://test:test@mailslurper:1025/?skip_ssl_verify=true&legacy_ssl=true
-      - DISABLE_RECAPTCHA=${DISABLE_RECAPTCHA}
+      - NODE_ENV=${NODE_ENV}
+      - DISABLE_RECAPTCHA=${DISABLE_RECAPTCHA:-true}
       - RECAPTCHA_SECRET_KEY=${RECAPTCHA_SECRET_KEY}
       - RECAPTCHA_SITE_KEY=${RECAPTCHA_SITE_KEY}
       - QA_OPT_OUT=${QA_OPT_OUT:-false}
       - ENCRYPTION_SECRET_KEY=${ENCRYPTION_SECRET_KEY}
     depends_on:
-      crux-postgres:
+      database:
         condition: service_healthy
       crux-migrate:
         condition: service_completed_successfully
-      traefik:
-        condition: service_started
     restart: unless-stopped
     labels:
-      - traefik.enable=true
-      - traefik.http.routers.crux.rule=(Host(`${DOMAIN}`) && Headers(`content-type`, `application/grpc`))
-      - traefik.http.routers.crux.entrypoints=websecure
-      - traefik.http.routers.crux.service=crux
-      - traefik.http.services.crux.loadbalancer.server.port=5000
-      - traefik.http.services.crux.loadbalancer.server.scheme=h2c
-      - traefik.http.routers.crux.tls=true
-      - traefik.http.routers.crux.tls.domains[0].main=${DOMAIN}
-      - traefik.http.routers.crux.tls.certresolver=letsencrypt
-      - traefik.http.routers.crux-http.rule=Host(`${DOMAIN}`) && (PathPrefix(`/api`) && !PathPrefix(`/api/auth`) && !PathPrefix(`/api/status`))
-      - traefik.http.routers.crux-http.entrypoints=websecure
-      - traefik.http.routers.crux-http.service=crux-http
-      - traefik.http.services.crux-http.loadbalancer.server.port=1848
-      - traefik.http.routers.crux-http.tls=true
-      - traefik.http.routers.crux-http.tls.domains[0].main=${DOMAIN}
-      - traefik.http.routers.crux-http.tls.certresolver=letsencrypt
       - org.dyrectorio.service-category=_internal
       # ports:
       #   - 1848:1848 # http API
@@ -80,27 +56,11 @@ services:
     command: [migrate]
     environment:
       - TZ=${TIMEZONE:-UTC}
-      - DATABASE_URL=postgresql://crux:${CRUX_POSTGRES_PASSWORD}@crux-postgres:5432/crux?schema=public&connect_timeout=5
+      - DATABASE_URL=postgresql://crux_user:${CRUX_POSTGRES_PASSWORD}@database:5432/crux?schema=public&connect_timeout=5
     depends_on:
-      crux-postgres:
+      database:
         condition: service_healthy
     restart: 'no'
-    labels:
-      - org.dyrectorio.service-category=_internal
-  crux-postgres:
-    container_name: crux-postgres
-    image: docker.io/library/postgres:13-alpine
-    environment:
-      - POSTGRES_PASSWORD=${CRUX_POSTGRES_PASSWORD}
-      - POSTGRES_USER=crux
-      - POSTGRES_DB=crux
-    restart: unless-stopped
-    volumes: ['crux-db:/var/lib/postgresql/data']
-    healthcheck:
-      test: [CMD-SHELL, pg_isready -U crux]
-      interval: 5s
-      timeout: 5s
-      retries: 5
     labels:
       - org.dyrectorio.service-category=_internal
   crux-ui:
@@ -108,66 +68,42 @@ services:
     image: ghcr.io/dyrector-io/dyrectorio/web/crux-ui:${DYO_VERSION:-stable}
     environment:
       - TZ=${TIMEZONE:-UTC}
-      - CRUX_UI_URL=${EXTERNAL_URL}
+      - CRUX_UI_URL=${EXTERNAL_PROTO}://${DOMAIN}:${EXTERNAL_PORT}
       - KRATOS_URL=http://kratos:4433
       - KRATOS_ADMIN_URL=http://kratos:4434
-      - CRUX_API_ADDRESS=crux:5001
-      - DISABLE_RECAPTCHA=${DISABLE_RECAPTCHA}
+      - CRUX_URL=http://crux:1848
+      - DISABLE_RECAPTCHA=${DISABLE_RECAPTCHA:-true}
       - RECAPTCHA_SECRET_KEY=${RECAPTCHA_SECRET_KEY}
       - RECAPTCHA_SITE_KEY=${RECAPTCHA_SITE_KEY}
     depends_on:
       crux:
         condition: service_started
-      traefik:
-        condition: service_started
     restart: unless-stopped
     labels:
-      - traefik.enable=true
-      - traefik.http.routers.crux-ui.rule=Host(`${DOMAIN}`)
-      - traefik.http.routers.crux-ui.entrypoints=websecure
-      - traefik.http.services.crux-ui.loadbalancer.server.port=3000
-      - traefik.http.routers.crux-ui.tls=true
-      - traefik.http.routers.crux-ui.tls.domains[0].main=${DOMAIN}
-      - traefik.http.routers.crux-ui.tls.certresolver=letsencrypt
       - org.dyrectorio.service-category=_internal
   kratos:
     container_name: kratos
     image: ghcr.io/dyrector-io/dyrectorio/web/kratos:${DYO_VERSION:-stable}
     environment:
       - SQA_OPT_OUT=true
-      - DSN=postgres://kratos:${KRATOS_POSTGRES_PASSWORD}@kratos-postgres:5432/kratos?sslmode=disable&max_conns=20&max_idle_conns=4&connect_timeout=5
-      - KRATOS_URL=${EXTERNAL_URL}/kratos
+      - DSN=postgres://kratos_user:${KRATOS_POSTGRES_PASSWORD}@database:5432/kratos?sslmode=disable&max_conns=20&max_idle_conns=4&connect_timeout=5
+      - KRATOS_URL=${EXTERNAL_PROTO}://${DOMAIN}:${EXTERNAL_PORT}/kratos
       - KRATOS_ADMIN_URL=http://kratos:4434
-      - AUTH_URL=${EXTERNAL_URL}/auth
-      - CRUX_UI_URL=${EXTERNAL_URL}
+      - AUTH_URL=${EXTERNAL_PROTO}://${DOMAIN}:${EXTERNAL_PORT}/auth
+      - CRUX_UI_URL=${EXTERNAL_PROTO}://${DOMAIN}:${EXTERNAL_PORT}
       - LOG_LEVEL=info
       - LOG_LEAK_SENSITIVE_VALUES=false
       - SECRETS_COOKIE=${KRATOS_SECRET}
       - COURIER_SMTP_CONNECTION_URI=${SMTP_URI}
       - FROM_EMAIL=${FROM_EMAIL}
       - FROM_NAME=${FROM_NAME}
-      # If you don't have a mailserver you can use the provided mailslurper
-      # but keep in mind, this one is insecure, only use it at your own risk!
-      # - COURIER_SMTP_CONNECTION_URI=smtps://test:test@mailslurper:1025/?skip_ssl_verify=true&legacy_ssl=true
     depends_on:
-      kratos-postgres:
+      database:
         condition: service_healthy
       kratos-migrate:
         condition: service_completed_successfully
-      traefik:
-        condition: service_started
     restart: unless-stopped
     labels:
-      - traefik.enable=true
-      - traefik.http.routers.kratos.rule=(Host(`${DOMAIN}`) && PathPrefix(`/kratos`))
-      - traefik.http.routers.kratos.entrypoints=websecure
-      - traefik.http.services.kratos.loadbalancer.server.port=4433
-      - traefik.http.middlewares.kratos-strip.stripprefix.prefixes=/kratos
-      - traefik.http.middlewares.kratos-ratelimit.ratelimit.average=100
-      - traefik.http.routers.kratos.middlewares=kratos-strip,kratos-ratelimit
-      - traefik.http.routers.kratos.tls=true
-      - traefik.http.routers.kratos.tls.domains[0].main=${DOMAIN}
-      - traefik.http.routers.kratos.tls.certresolver=letsencrypt
       - org.dyrectorio.service-category=_internal
   kratos-migrate:
     container_name: kratos-migrate
@@ -175,38 +111,12 @@ services:
     command: -c /etc/config/kratos/kratos.yaml migrate sql -e --yes
     environment:
       - SQA_OPT_OUT=true
-      - DSN=postgres://kratos:${KRATOS_POSTGRES_PASSWORD}@kratos-postgres:5432/kratos?sslmode=disable&max_conns=20&max_idle_conns=4
+      - DSN=postgres://kratos_user:${KRATOS_POSTGRES_PASSWORD}@database:5432/kratos?sslmode=disable&max_conns=20&max_idle_conns=4
     depends_on:
-      kratos-postgres:
+      database:
         condition: service_healthy
     restart: 'no'
     labels:
       - org.dyrectorio.service-category=_internal
-  kratos-postgres:
-    container_name: kratos-postgres
-    image: docker.io/library/postgres:13-alpine
-    environment:
-      - POSTGRES_PASSWORD=${KRATOS_POSTGRES_PASSWORD}
-      - POSTGRES_USER=kratos
-      - POSTGRES_DB=kratos
-    restart: unless-stopped
-    volumes: ['kratos-db:/var/lib/postgresql/data']
-    healthcheck:
-      test: [CMD-SHELL, pg_isready -U kratos]
-      interval: 5s
-      timeout: 5s
-      retries: 5
-    labels:
-      - org.dyrectorio.service-category=_internal
-# # This is insecure, do not use this in production or on the public internet
-#   mailslurper:
-#     container_name: mailslurper
-#     image: docker.io/oryd/mailslurper:smtps-latest
-#     ports:  # port 1025 is used internally for smtp, you do not have to expose that
-#       - 4436:4436  # web UI
-#       - 4437:4437  # http API
-#     restart: unless-stopped
 volumes:
-  letsencrypt:
-  crux-db:
-  kratos-db:
+  database:

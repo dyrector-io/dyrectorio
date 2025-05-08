@@ -7,6 +7,7 @@ import (
 	"github.com/rs/zerolog/log"
 
 	v1 "github.com/dyrector-io/dyrectorio/golang/api/v1"
+	"github.com/dyrector-io/dyrectorio/golang/internal/util"
 	builder "github.com/dyrector-io/dyrectorio/golang/pkg/builder/container"
 )
 
@@ -19,7 +20,7 @@ type NetworkLabel struct {
 	Ports []Port `json:"ports"`
 }
 
-func ParseLabelsIntoContainerConfig(labels map[string]string, config *v1.ContainerConfig) {
+func ParseLabelsIntoContainerConfig(labels map[string]string, config *v1.ContainerConfig) error {
 	for key, value := range labels {
 		if key != "io.dyrector.cap.network.v1" {
 			continue
@@ -32,16 +33,23 @@ func ParseLabelsIntoContainerConfig(labels map[string]string, config *v1.Contain
 		}
 
 		ports := []builder.PortBinding{}
-		if config.Ports != nil && len(config.Ports) > 0 {
+
+		if config != nil && len(config.Ports) > 0 {
 			ports = config.Ports
 		}
 		for i := range network.Ports {
+			exposedPort, err := util.SafeInt64ToUint16(network.Ports[i].Listening)
+			if err != nil {
+				return err
+			}
 			ports = append(ports, builder.PortBinding{
-				ExposedPort: uint16(network.Ports[i].Listening),
+				ExposedPort: exposedPort,
 				PortBinding: pointer.ToUint16(0),
 			})
 		}
 
 		config.Ports = ports
 	}
+
+	return nil
 }

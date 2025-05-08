@@ -5,8 +5,9 @@ package mapper_test
 import (
 	"testing"
 
-	"github.com/dyrector-io/dyrectorio/golang/internal/mapper"
 	"github.com/stretchr/testify/assert"
+
+	"github.com/dyrector-io/dyrectorio/golang/internal/mapper"
 )
 
 func TestStringMapToByteMap(t *testing.T) {

@@ -5,9 +5,7 @@
             "type": "node",
             "request": "launch",
             "name": "Start web/crux debug session",
-            "args": [
-                "${workspaceFolder}/web/crux/src/main.ts"
-            ],
+            "args": ["${workspaceFolder}/web/crux/src/main.ts"],
             "runtimeArgs": [
                 "--nolazy",
                 "-r",
@@ -18,7 +16,7 @@
             "sourceMaps": true,
             "envFile": "${workspaceFolder}/web/crux/.env",
             "cwd": "${workspaceRoot}/web/crux",
-            "console": "integratedTerminal",
+            "console": "integratedTerminal"
         },
         {
             "name": "Launch dagent",
@@ -29,7 +27,7 @@
             "cwd": "${workspaceFolder}/golang/cmd/dagent"
         },
 
-         {
+        {
             "name": "Launch crane",
             "type": "go",
             "request": "launch",
@@ -42,9 +40,7 @@
             "type": "go",
             "request": "launch",
             "mode": "auto",
-            "args": [
-                "up"
-            ],
+            "args": ["up"],
             "program": "${workspaceFolder}/cli",
             "cwd": "${workspaceFolder}/cli"
         },
@@ -92,11 +88,14 @@
                 // non-containarized develop
                 // "--disable-crux", "--disable-crux-ui","--prefix", "dyo-latest",
                 // containerized develop
-                "--image-tag",  "latest", "--prefix","dyo-latest",
+                "--image-tag",
+                "latest",
+                "--prefix",
+                "dyo-latest",
                 "up"
             ],
             "program": "${workspaceFolder}/golang/cmd/dyo",
             "cwd": "${workspaceFolder}/golang/cmd/dyo"
-        },
+        }
     ]
 }

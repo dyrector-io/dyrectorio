@@ -12,6 +12,7 @@ import (
 	"github.com/rs/zerolog/log"
 
 	tm "github.com/buger/goterm"
+	permbits "github.com/na4ma4/go-permbits"
 )
 
 // PrintWelcomeMessage prints a welcome mesage before the command runs
@@ -31,15 +32,15 @@ func PrintInfo(state *State, args *ArgsFlags) {
 		log.Info().Msgf("DATABASE_URL=postgresql://%s:%s@localhost:%d/%s?schema=public",
 			state.SettingsFile.CruxPostgresUser,
 			state.SettingsFile.CruxPostgresPassword,
-			state.SettingsFile.CruxPostgresPort,
+			state.SettingsFile.MultidatabasePostgresPort,
 			state.SettingsFile.CruxPostgresDB)
 		log.Info().Msgf("ENCRYPTION_SECRET_KEY=%s", state.SettingsFile.CruxEncryptionKey)
 	}
 
 	log.Info().Msgf("Stack is ready. The UI should be available at http://localhost:%d location.",
-		state.SettingsFile.Options.TraefikWebPort)
+		state.SettingsFile.TraefikWebPort)
 	log.Info().Msgf("The e-mail service should be available at http://localhost:%d location.",
-		state.SettingsFile.Options.MailSlurperUIPort)
+		state.SettingsFile.MailSlurperUIPort)
 	log.Info().Msg("Happy deploying! 🎬")
 }
 
@@ -53,7 +54,7 @@ func NotifyOnce(name string, notifyFunc func()) {
 
 	notificationPath := path.Join(targetDir, CLIDirName, "."+name)
 	if _, err := os.Stat(notificationPath); err != nil {
-		err = os.WriteFile(notificationPath, []byte{}, os.ModePerm)
+		err = os.WriteFile(notificationPath, []byte{}, permbits.UserAll)
 		if err != nil {
 			log.Trace().Err(err).Msgf("cache folder is not available to store temporary info")
 		}
@@ -89,18 +90,17 @@ func DockerPullProgressDisplayer(header string, respIn io.ReadCloser) error {
 		if phase != imageHelper.LayerProgressStatusUnknown && stat[jm.ID] == nil {
 			stat[jm.ID] = &status{}
 		}
-		switch {
-		case phase == imageHelper.LayerProgressStatusMatching:
+		switch phase {
+		case imageHelper.LayerProgressStatusMatching:
 			log.Info().Msgf("%s ✓ up-to-date", header)
 			return nil
-		case phase == imageHelper.LayerProgressStatusStarting ||
-			phase == imageHelper.LayerProgressStatusWaiting:
+		case imageHelper.LayerProgressStatusStarting, imageHelper.LayerProgressStatusWaiting:
 			stat[jm.ID].Total = jm.Progress.Total
 			waiting++
-		case phase == imageHelper.LayerProgressStatusDownloading:
+		case imageHelper.LayerProgressStatusDownloading:
 			stat[jm.ID].Current = jm.Progress.Current
 			pulling++
-		case phase == imageHelper.LayerProgressStatusComplete || phase == imageHelper.LayerProgressStatusExists:
+		case imageHelper.LayerProgressStatusComplete, imageHelper.LayerProgressStatusExists:
 			pulled++
 		}
 		if phase != imageHelper.LayerProgressStatusUnknown && len(stat) > 1 {

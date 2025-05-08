@@ -188,7 +188,7 @@ func Pull(ctx context.Context, cli client.APIClient, logger io.StringWriter, exp
 					fmt.Sprintf("Image: %s %s  %0.2f%%",
 						pullResult.ID,
 						pullResult.Status,
-						float64(pullResult.ProgressDetail.Current)/float64(pullResult.ProgressDetail.Total)*100)) //nolint:gomnd
+						float64(pullResult.ProgressDetail.Current)/float64(pullResult.ProgressDetail.Total)*100)) //nolint:mnd
 				lastLog = time.Now()
 			} else {
 				_, logErr = logger.WriteString(fmt.Sprintf("Image: %s %s", pullResult.ID, pullResult.Status))
@@ -237,7 +237,7 @@ func shouldUseLocalImage(ctx context.Context, cli client.APIClient,
 		}
 
 		// Swallowing specific errors
-		if !(errors.Is(err, errDigestMismatch) || errors.Is(err, ErrImageNotFound)) {
+		if !errors.Is(err, errDigestMismatch) && !errors.Is(err, ErrImageNotFound) {
 			return false, err
 		}
 	}

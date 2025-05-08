@@ -2,18 +2,18 @@ package util
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 
-	"github.com/pkg/errors"
 	"github.com/rs/zerolog/log"
 )
 
 func MapAppsettingsToEnv(in *string) (map[string]string, error) {
 	if in == nil {
-		return map[string]string{}, errors.New("Nil input")
+		return map[string]string{}, errors.New("nil input")
 	}
 	if *in == "" {
-		return map[string]string{}, errors.New("Empty input")
+		return map[string]string{}, errors.New("empty input")
 	}
 	envList := map[string]string{}
 

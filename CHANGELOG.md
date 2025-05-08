@@ -1,6 +1,84 @@
 # CHANGELOG
 
 
+<a name="0.15.3"></a>
+## [0.15.3](https://github.com/dyrector-io/dyrectorio/compare/0.15.2...0.15.3) (2025-04-16)
+
+### Fix
+
+* misconfigured external port ([#1064](https://github.com/dyrector-io/dyrectorio/issues/1064))
+
+
+<a name="0.15.2"></a>
+## [0.15.2](https://github.com/dyrector-io/dyrectorio/compare/0.15.1...0.15.2) (2025-04-15)
+
+### Doc
+
+* delete unused content from READMEs ([#1062](https://github.com/dyrector-io/dyrectorio/issues/1062))
+
+### Fix
+
+* improve cli and fix external port and root password bug  ([#1060](https://github.com/dyrector-io/dyrectorio/issues/1060))
+* change escaping multidb image synax error ([#1059](https://github.com/dyrector-io/dyrectorio/issues/1059))
+
+
+<a name="0.15.1"></a>
+## [0.15.1](https://github.com/dyrector-io/dyrectorio/compare/0.15.0...0.15.1) (2025-04-08)
+
+### Doc
+
+* improve the DEVELOPMENT.md file ([#1045](https://github.com/dyrector-io/dyrectorio/issues/1045))
+
+### Feat
+
+* **(ci):** change custom golangci-lint to github action one ([#1055](https://github.com/dyrector-io/dyrectorio/issues/1055))
+* **(web):** merge postgress instances ([#1049](https://github.com/dyrector-io/dyrectorio/issues/1049))
+* add convenience script & go toolchain upgrade ([#1040](https://github.com/dyrector-io/dyrectorio/issues/1040))
+
+### Fix
+
+* **(agent):** add backoff to reduce reconnect load ([#1056](https://github.com/dyrector-io/dyrectorio/issues/1056))
+* **(cli):** add localhost specific agent host string ([#1050](https://github.com/dyrector-io/dyrectorio/issues/1050))
+* **(ci):** remove unused workflows and rename existings for better usage ([#1048](https://github.com/dyrector-io/dyrectorio/issues/1048))
+
+### Refactor
+
+* **(cli):** avoid compose file duplication ([#1057](https://github.com/dyrector-io/dyrectorio/issues/1057))
+
+
+<a name="0.15.0"></a>
+## [0.15.0](https://github.com/dyrector-io/dyrectorio/compare/0.14.1...0.15.0) (2025-01-31)
+
+### Doc
+
+* fix the links in the README ([#1039](https://github.com/dyrector-io/dyrectorio/issues/1039))
+
+### Feat
+
+* **(cli):** add host override for any number of hosts ([#1014](https://github.com/dyrector-io/dyrectorio/issues/1014))
+* **(web):** specify pipeline target branch ([#1023](https://github.com/dyrector-io/dyrectorio/issues/1023))
+* **(web):** deployments list pagination & filtering ([#1021](https://github.com/dyrector-io/dyrectorio/issues/1021))
+* sso setup ([#1026](https://github.com/dyrector-io/dyrectorio/issues/1026))
+* agent install name ([#1016](https://github.com/dyrector-io/dyrectorio/issues/1016))
+* add image order column ([#1020](https://github.com/dyrector-io/dyrectorio/issues/1020))
+* **(crux-ui):** add redirects to cards ([#1011](https://github.com/dyrector-io/dyrectorio/issues/1011))
+* add validation to /api/$/projects/$/versions/$/images API ([#1008](https://github.com/dyrector-io/dyrectorio/issues/1008))
+
+### Fix
+
+* override nestjs-modules/mailer with new mjml version ([#1038](https://github.com/dyrector-io/dyrectorio/issues/1038))
+* docker labels ([#1024](https://github.com/dyrector-io/dyrectorio/issues/1024))
+* agent update image ([#1017](https://github.com/dyrector-io/dyrectorio/issues/1017))
+* **(crux-ui):** For Next.js, Node.js version >= v18.17.0 is required. ([#1015](https://github.com/dyrector-io/dyrectorio/issues/1015))
+* add client & server side keepalive ([#1013](https://github.com/dyrector-io/dyrectorio/issues/1013))
+* **(crux-ui):** add some contrast 3rd party login options ([#1010](https://github.com/dyrector-io/dyrectorio/issues/1010))
+
+### Refactor
+
+* **(agent):** remove unnecessary panic calls ([#1036](https://github.com/dyrector-io/dyrectorio/issues/1036))
+* configurations ([#1018](https://github.com/dyrector-io/dyrectorio/issues/1018))
+
+
 <a name="0.14.1"></a>
 ## [0.14.1](https://github.com/dyrector-io/dyrectorio/compare/0.14.0...0.14.1) (2024-10-03)
 

@@ -1,0 +1,23 @@
+services:
+  database:
+    image: ghcr.io/dyrector-io/dyrectorio/multi-database:1.0.4
+    container_name: database
+    restart: unless-stopped
+    healthcheck:
+      test: [CMD-SHELL, pg_isready -d crux -U crux_user]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    labels:
+      - org.dyrectorio.service-category=_internal
+    environment:
+      - POSTGRES_PASSWORD=${POSTGRES_ROOT_PASSWORD}
+      - CRUX_POSTGRES_PASSWORD=${CRUX_POSTGRES_PASSWORD}
+      - KRATOS_POSTGRES_PASSWORD=${KRATOS_POSTGRES_PASSWORD}
+    ports:
+      - "5432:5432"
+    volumes:
+      - database_data:/var/lib/postgresql/data
+      - ./init-database.sh:/docker-entrypoint-initdb.d/init-database.sh
+volumes:
+  database_data:

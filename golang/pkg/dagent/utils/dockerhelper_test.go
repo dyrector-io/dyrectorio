@@ -9,8 +9,9 @@ import (
 
 	"github.com/docker/docker/api/types/container"
 	"github.com/docker/docker/api/types/events"
-	"github.com/dyrector-io/dyrectorio/golang/internal/label"
 	"github.com/stretchr/testify/assert"
+
+	"github.com/dyrector-io/dyrectorio/golang/internal/label"
 
 	dockerHelper "github.com/dyrector-io/dyrectorio/golang/internal/helper/docker"
 	containerbuilder "github.com/dyrector-io/dyrectorio/golang/pkg/builder/container"

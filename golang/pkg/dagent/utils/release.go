@@ -9,6 +9,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/na4ma4/go-permbits"
 	"github.com/rs/zerolog/log"
 	"gopkg.in/yaml.v3"
 
@@ -75,7 +76,7 @@ func DraftRelease(instance string, versionData v1.VersionData, deployResponse v1
 		log.Panic().Stack().Err(err).Send()
 	}
 
-	err = os.WriteFile(filePath, content, os.ModePerm)
+	err = os.WriteFile(filePath, content, permbits.UserReadWrite)
 	if err != nil {
 		log.Error().Stack().Err(err).Msg("Writing release file error")
 	}

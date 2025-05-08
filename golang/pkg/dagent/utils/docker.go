@@ -14,10 +14,10 @@ import (
 	"os"
 	"path"
 	"path/filepath"
-	"strconv"
 	"strings"
 	"time"
 
+	"github.com/na4ma4/go-permbits"
 	"github.com/rs/zerolog/log"
 	"golang.org/x/exp/maps"
 
@@ -30,7 +30,6 @@ import (
 	dockerHelper "github.com/dyrector-io/dyrectorio/golang/internal/helper/docker"
 	imageHelper "github.com/dyrector-io/dyrectorio/golang/internal/helper/image"
 	"github.com/dyrector-io/dyrectorio/golang/internal/label"
-	"github.com/dyrector-io/dyrectorio/golang/internal/logdefer"
 	"github.com/dyrector-io/dyrectorio/golang/internal/mapper"
 	"github.com/dyrector-io/dyrectorio/golang/internal/util"
 	dockerbuilder "github.com/dyrector-io/dyrectorio/golang/pkg/builder/container"
@@ -48,8 +47,6 @@ import (
 
 const DockerLogHeaderLength = 8
 
-const RWOwnerROther = 0o644
-
 type DockerVersion struct {
 	ServerVersion string
 	ClientVersion string
@@ -60,32 +57,6 @@ const (
 	ContainerStateWaitSeconds = 120
 	TypeContainer             = "container"
 )
-
-func GetContainerLogs(name string, skip, take uint) []string {
-	ctx := context.Background()
-
-	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
-	if err != nil {
-		panic(err)
-	}
-
-	const BASE = 10
-	tail := skip + take
-
-	options := container.LogsOptions{
-		ShowStderr: true,
-		ShowStdout: true,
-		Tail:       strconv.FormatUint(uint64(tail), BASE),
-	}
-
-	logs, err := cli.ContainerLogs(ctx, name, options)
-	if err != nil {
-		log.Err(err).Stack().Send()
-	}
-	defer logdefer.LogDeferredErr(logs.Close, log.Warn(), "error closing container log reader")
-
-	return dockerbuilder.ReadDockerLogsFromReadCloser(logs, int(skip), int(take))
-}
 
 func CopyToContainer(ctx context.Context, name string, meta v1.UploadFileData, fileHeader *multipart.FileHeader) error {
 	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
@@ -115,7 +86,7 @@ func WriteContainerFile(ctx context.Context, cli *client.Client,
 
 	tarHeader := &tar.Header{
 		Name:    filename,
-		Mode:    RWOwnerROther,
+		Mode:    int64(permbits.UserReadWrite + permbits.GroupRead + permbits.OtherRead),
 		Size:    fileSize,
 		Uid:     meta.UID,
 		Gid:     meta.GID,
@@ -623,6 +594,7 @@ func createRuntimeConfigFileOnHost(mounts []mount.Mount, containerName, containe
 				panic(err)
 			}
 		}
+		//#nosec 304 -- this should be read-used by anyone, mostly the app container
 		if err := os.WriteFile(path.Join(configDir, "appsettings.json"), []byte(runtimeConfig), os.ModePerm); err != nil {
 			return mounts, err
 		}
@@ -690,7 +662,10 @@ func setImageLabels(expandedImageName string,
 		return nil, fmt.Errorf("error get image labels: %w", err)
 	}
 
-	caps.ParseLabelsIntoContainerConfig(labels, &deployImageRequest.ContainerConfig)
+	err = caps.ParseLabelsIntoContainerConfig(labels, &deployImageRequest.ContainerConfig)
+	if err != nil {
+		return nil, fmt.Errorf("invalid label values: %w", err)
+	}
 
 	// add traefik related labels to the container if expose true
 	if deployImageRequest.ContainerConfig.Expose {
@@ -788,13 +763,14 @@ func ContainerCommand(ctx context.Context, command *common.ContainerCommandReque
 		return internalCommon.ErrContainerNotFound
 	}
 
-	if operation == common.ContainerOperation_START_CONTAINER {
+	switch operation {
+	case common.ContainerOperation_START_CONTAINER:
 		err = cli.ContainerStart(ctx, cont.ID, container.StartOptions{})
-	} else if operation == common.ContainerOperation_STOP_CONTAINER {
+	case common.ContainerOperation_STOP_CONTAINER:
 		err = cli.ContainerStop(ctx, cont.ID, container.StopOptions{})
-	} else if operation == common.ContainerOperation_RESTART_CONTAINER {
+	case common.ContainerOperation_RESTART_CONTAINER:
 		err = cli.ContainerRestart(ctx, cont.ID, container.StopOptions{})
-	} else {
+	default:
 		log.Error().Str("operation", operation.String()).Str("prefix", prefix).Str("name", name).Msg("Unknown operation")
 	}
 

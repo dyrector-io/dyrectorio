@@ -61,35 +61,35 @@ export default class RegistryMapper {
             public: !registry.user,
           }
         : registry.type === RegistryTypeEnum.v2
-        ? {
-            url: registry.url,
-            public: !registry.user,
-            imageNamePrefix: registry.imageNamePrefix,
-          }
-        : registry.type === RegistryTypeEnum.gitlab
-        ? {
-            imageNamePrefix: registry.imageNamePrefix,
-            url: registry.apiUrl ? registry.url : null,
-            apiUrl: registry.apiUrl,
-            namespace: registry.namespace,
-          }
-        : registry.type === RegistryTypeEnum.github
-        ? {
-            imageNamePrefix: registry.imageNamePrefix,
-            namespace: registry.namespace,
-          }
-        : registry.type === RegistryTypeEnum.google
-        ? {
-            url: registry.url,
-            imageNamePrefix: registry.imageNamePrefix,
-            public: !registry.user,
-          }
-        : registry.type === RegistryTypeEnum.unchecked
-        ? {
-            url: registry.url,
-            public: !registry.user,
-          }
-        : null
+          ? {
+              url: registry.url,
+              public: !registry.user,
+              imageNamePrefix: registry.imageNamePrefix,
+            }
+          : registry.type === RegistryTypeEnum.gitlab
+            ? {
+                imageNamePrefix: registry.imageNamePrefix,
+                url: registry.apiUrl ? registry.url : null,
+                apiUrl: registry.apiUrl,
+                namespace: registry.namespace,
+              }
+            : registry.type === RegistryTypeEnum.github
+              ? {
+                  imageNamePrefix: registry.imageNamePrefix,
+                  namespace: registry.namespace,
+                }
+              : registry.type === RegistryTypeEnum.google
+                ? {
+                    url: registry.url,
+                    imageNamePrefix: registry.imageNamePrefix,
+                    public: !registry.user,
+                  }
+                : registry.type === RegistryTypeEnum.unchecked
+                  ? {
+                      url: registry.url,
+                      public: !registry.user,
+                    }
+                  : null
 
     if (!details) {
       throw new CruxBadRequestException({

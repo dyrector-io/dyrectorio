@@ -6,8 +6,9 @@ package k8s_test
 import (
 	"testing"
 
-	"github.com/dyrector-io/dyrectorio/golang/pkg/crane/k8s"
 	"github.com/stretchr/testify/assert"
+
+	"github.com/dyrector-io/dyrectorio/golang/pkg/crane/k8s"
 )
 
 func TestErrorWithoutFallback(t *testing.T) {

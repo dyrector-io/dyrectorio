@@ -6,7 +6,6 @@ services:
     environment:
       - TZ=UTC
       - KRATOS_URL=$KRATOS_URL
-      - CRUX_API_ADDRESS=$CRUX_API_ADDRESS
       - RECAPTCHA_SECRET_KEY=$RECAPTCHA_SECRET_KEY
       - RECAPTCHA_SITE_KEY=$RECAPTCHA_SITE_KEY
     restart: unless-stopped

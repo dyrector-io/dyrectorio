@@ -9,6 +9,7 @@ import (
 	"syscall"
 
 	"github.com/ProtonMail/gopenpgp/v2/crypto"
+	"github.com/na4ma4/go-permbits"
 	"github.com/rs/zerolog/log"
 
 	config "github.com/dyrector-io/dyrectorio/golang/internal/config"
@@ -60,7 +61,7 @@ func generateKey(path string) (string, error) {
 		return "", keyErr
 	}
 
-	fileErr := os.WriteFile(path, []byte(keyStr), os.ModePerm)
+	fileErr := os.WriteFile(path, []byte(keyStr), fs.FileMode(os.O_CREATE|os.O_WRONLY|os.O_TRUNC))
 	if fileErr != nil {
 		return "", fileErr
 	}
@@ -97,7 +98,7 @@ func writeStringToFile(path, value string) error {
 		return nil
 	}
 
-	err := os.WriteFile(path, []byte(value), os.ModePerm)
+	err := os.WriteFile(path, []byte(value), permbits.UserReadWrite)
 	if err != nil {
 		return err
 	}
@@ -111,7 +112,7 @@ func (c *Configuration) appendInternalMountPath(path string) string {
 }
 
 func checkFilePermissions(path string) error {
-	file, err := os.OpenFile(filepath.Clean(path), os.O_RDWR|os.O_CREATE, filePermReadWriteOnlyByOwner)
+	file, err := os.OpenFile(filepath.Clean(path), os.O_RDWR|os.O_CREATE, permbits.UserReadWrite)
 	if err != nil {
 		return err
 	}

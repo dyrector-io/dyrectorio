@@ -5,16 +5,19 @@
         "**/.git": true,
         "**/.svn": true,
         "**/.hg": true,
-        "**/CVS": true,
         "**/.DS_Store": true,
         "**/Thumbs.db": true,
+        "**/CVS": true,
         "**/node_modules": true
     },
     "eslint.workingDirectories": ["web/crux", "web/crux-ui"],
     "gopls": {
         "formatting.gofumpt": true
     },
-    "yaml.schemas": {
-        "https://json.schemastore.org/golangci-lint.json": "file:///home/nandor/projects/dyrectorio/dyo-pub/.golangci.yml"
-    }
+    "go.lintTool": "golangci-lint",
+    "go.lintFlags": ["--fast"],
+    "[yaml]": {
+        "editor.defaultFormatter": "bluebrown.yamlfmt"
+    },
+    "makefile.configureOnOpen": false
 }
