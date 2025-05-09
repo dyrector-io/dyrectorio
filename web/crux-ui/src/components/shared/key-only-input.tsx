@@ -56,7 +56,7 @@ const mergeItems =
     return result
   }
 
-interface KeyInputProps {
+type KeyOnlyInputProps = {
   disabled?: boolean
   className?: string
   label?: string
@@ -70,7 +70,7 @@ interface KeyInputProps {
   onResetSection?: VoidFunction
 }
 
-const KeyOnlyInput = (props: KeyInputProps) => {
+const KeyOnlyInput = (props: KeyOnlyInputProps) => {
   const {
     label,
     labelClassName,
@@ -152,7 +152,7 @@ const KeyOnlyInput = (props: KeyInputProps) => {
   const hasValue = !!items && items.length > 0
 
   return (
-    <div className={clsx(className, 'flex flex-col')}>
+    <div className={clsx(className, 'flex flex-col gap-2')}>
       {!label ? null : (
         <ConfigSectionLabel
           disabled={disabled || !propsOnResetSection || !hasValue}
@@ -163,7 +163,7 @@ const KeyOnlyInput = (props: KeyInputProps) => {
         </ConfigSectionLabel>
       )}
 
-      {!description ? null : <div className="text-light-eased mb-2 ml-1">{description}</div>}
+      {!description ? null : <div className="text-light-eased ml-1">{description}</div>}
 
       {elements.map((it, index) => renderItem(it, index))}
     </div>

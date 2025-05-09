@@ -85,9 +85,7 @@ test.describe('Image kubernetes config from JSON', () => {
 
     await page.reload()
 
-    const input = page
-      .locator('div.grid:has(label:has-text("CUSTOM HEADERS")) input[placeholder="Header name"]')
-      .first()
+    const input = page.locator('div:has(label:has-text("CUSTOM HEADERS")) input[placeholder="Header name"]').first()
     await expect(input).toHaveValue(header)
   })
 
@@ -149,10 +147,10 @@ test.describe('Image kubernetes config from JSON', () => {
       page.locator(':right-of(:text("USE LOAD BALANCER"))').getByRole('switch', { checked: true }),
     ).toBeVisible()
     await expect(
-      page.locator('div.grid:has(label:has-text("USE LOAD BALANCER")) input[placeholder="Key"]').first(),
+      page.locator('div:has(label:has-text("USE LOAD BALANCER")) input[placeholder="Key"]').first(),
     ).toHaveValue(key)
     await expect(
-      page.locator('div.grid:has(label:has-text("USE LOAD BALANCER")) input[placeholder="Value"]').first(),
+      page.locator('div:has(label:has-text("USE LOAD BALANCER")) input[placeholder="Value"]').first(),
     ).toHaveValue(value)
   })
 
@@ -188,7 +186,7 @@ test.describe('Image kubernetes config from JSON', () => {
 
     await page.reload()
 
-    const hcConf = page.locator('div.grid:has(label:has-text("HEALTH CHECK CONFIG"))')
+    const hcConf = page.locator('div:has(label:has-text("HEALTH CHECK CONFIG"))')
     await expect(hcConf.locator('input[placeholder="Port"]')).toHaveValue(port.toString())
     await expect(hcConf.getByLabel('Liveness probe')).toHaveValue(liveness)
     await expect(hcConf.getByLabel('Readiness probe')).toHaveValue(readiness)
@@ -230,7 +228,7 @@ test.describe('Image kubernetes config from JSON', () => {
 
     await page.reload()
 
-    const rsConf = page.locator('div.grid:has(label:has-text("RESOURCE CONFIG"))')
+    const rsConf = page.locator('div:has(label:has-text("RESOURCE CONFIG"))')
     await expect(rsConf.locator('input').nth(0)).toHaveValue(cpuLimits)
     await expect(rsConf.locator('input').nth(1)).toHaveValue(memoryLimits)
     await expect(rsConf.locator('input').nth(2)).toHaveValue(cpuRequests)
@@ -238,7 +236,7 @@ test.describe('Image kubernetes config from JSON', () => {
   })
 
   const getCategoryDiv = async (category: string, page: Page) =>
-    page.locator(`div.max-h-128 > div:nth-child(2):near(label:has-text("${category}"))`)
+    page.locator(`div:nth-child(2):below(label:has-text("${category}"))`)
 
   test('Labels should be saved', async ({ page }) => {
     const { imageConfigId } = await setup(page, 'labels-json', '1.0.0', NGINX_TEST_IMAGE_WITH_TAG)
