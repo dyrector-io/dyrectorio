@@ -1,4 +1,5 @@
 import { forwardRef, Inject, Injectable } from '@nestjs/common'
+import { ConfigService } from '@nestjs/config'
 import { DeploymentStrategy, ExposeStrategy, Image, NetworkMode, RestartPolicy } from '@prisma/client'
 import { ContainerConfigData } from 'src/domain/container'
 import { ImageDetails, ImageWithRegistry } from 'src/domain/image'
@@ -15,11 +16,16 @@ import { ImageDetailsDto, ImageDto } from './image.dto'
 
 @Injectable()
 export default class ImageMapper {
+  private readonly labelsApiDisabled: boolean
+
   constructor(
+    private appConfig: ConfigService,
     private registryMapper: RegistryMapper,
     @Inject(forwardRef(() => ContainerMapper))
     private readonly containerMapper: ContainerMapper,
-  ) {}
+  ) {
+    this.labelsApiDisabled = appConfig.get('DISABLE_REGISTRY_LABEL_FETCHING')
+  }
 
   toDto(it: ImageWithRegistry): ImageDto {
     return {
@@ -29,7 +35,7 @@ export default class ImageMapper {
       order: it.order,
       registry: this.registryMapper.toDto(it.registry),
       createdAt: it.createdAt,
-      labels: it.labels as Record<string, string>,
+      labels: this.labelsApiDisabled ? {} : (it.labels as Record<string, string>),
     }
   }
 
@@ -42,7 +48,7 @@ export default class ImageMapper {
       registry: this.registryMapper.toDto(it.registry),
       config: this.containerMapper.configDataToDto(it.config.id, 'image', it.config as any as ContainerConfigData),
       createdAt: it.createdAt,
-      labels: it.labels as Record<string, string>,
+      labels: this.labelsApiDisabled ? {} : (it.labels as Record<string, string>),
     }
   }
 

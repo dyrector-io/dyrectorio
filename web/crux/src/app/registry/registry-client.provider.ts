@@ -1,5 +1,6 @@
 import { CACHE_MANAGER } from '@nestjs/cache-manager'
 import { Inject, Injectable, forwardRef } from '@nestjs/common'
+import { ConfigService } from '@nestjs/config'
 import { OnEvent } from '@nestjs/event-emitter'
 import { Cache } from 'cache-manager'
 import { REGISTRY_EVENT_UPDATE, RegistryUpdatedEvent } from 'src/domain/registry'
@@ -33,12 +34,17 @@ export default class RegistryClientProvider {
 
   private registriesByTeam: Map<string, string[]> = new Map() // teamId to registyIds
 
+  private readonly labelsApiDisabled: boolean
+
   constructor(
+    private readonly appConfig: ConfigService,
     @Inject(forwardRef(() => RegistryService))
     private readonly service: RegistryService,
     @Inject(CACHE_MANAGER)
     private readonly cache: Cache,
-  ) {}
+  ) {
+    this.labelsApiDisabled = appConfig.get('DISABLE_REGISTRY_LABEL_FETCHING')
+  }
 
   removeClientsByTeam(teamId: string) {
     const registries = this.registriesByTeam.get(teamId)
@@ -61,17 +67,13 @@ export default class RegistryClientProvider {
     const connInfo = await this.service.getRegistryConnectionInfoById(registryId)
 
     const createV2 = () =>
-      new RegistryV2ApiClient(
-        connInfo.url,
-        this.cache,
-        !connInfo.public
-          ? {
-              username: connInfo.user,
-              password: connInfo.token,
-              imageNamePrefix: connInfo.imageNamePrefix,
-            }
-          : null,
-      )
+      new RegistryV2ApiClient(connInfo.url, {
+        disableTagInfo: this.labelsApiDisabled,
+        cache: this.cache,
+        ...(connInfo.public
+          ? {}
+          : { username: connInfo.user, password: connInfo.token, imageNamePrefix: connInfo.imageNamePrefix }),
+      })
 
     const createHub = async () => {
       if (connInfo.public) {
@@ -90,45 +92,45 @@ export default class RegistryClientProvider {
     }
 
     const createGithub = () =>
-      new GithubRegistryClient(
-        connInfo.imageNamePrefix,
-        {
-          username: connInfo.user,
-          password: connInfo.token,
-        },
-        connInfo.namespace as GithubNamespace,
-        this.cache,
-      )
+      new GithubRegistryClient({
+        disableTagInfo: this.labelsApiDisabled,
+        repository: connInfo.imageNamePrefix,
+        namespace: connInfo.namespace as GithubNamespace,
+        cache: this.cache,
+        username: connInfo.user,
+        password: connInfo.token,
+      })
 
     const createGitlab = () =>
       new GitlabRegistryClient(
-        connInfo.imageNamePrefix,
-        {
-          username: connInfo.user,
-          password: connInfo.token,
-        },
         connInfo.apiUrl
           ? {
               apiUrl: connInfo.apiUrl,
               registryUrl: connInfo.url,
             }
           : REGISTRY_GITLAB_URLS,
-        connInfo.namespace as GitlabNamespace,
-        this.cache,
+        {
+          disableTagInfo: this.labelsApiDisabled,
+          namespaceId: connInfo.imageNamePrefix,
+          namespace: connInfo.namespace as GitlabNamespace,
+          cache: this.cache,
+          username: connInfo.user,
+          password: connInfo.token,
+        },
       )
 
     const createGoogle = () =>
-      new GoogleRegistryClient(
-        connInfo.url,
-        connInfo.imageNamePrefix,
-        this.cache,
-        !connInfo.public
-          ? {
+      new GoogleRegistryClient(connInfo.url, {
+        disableTagInfo: this.labelsApiDisabled,
+        imageNamePrefix: connInfo.imageNamePrefix,
+        cache: this.cache,
+        ...(connInfo.public
+          ? {}
+          : {
               username: connInfo.user,
               password: connInfo.token,
-            }
-          : null,
-      )
+            }),
+      })
 
     const createUnchecked = () => new UncheckedApiClient()
 

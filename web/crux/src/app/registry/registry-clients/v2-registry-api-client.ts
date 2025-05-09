@@ -2,10 +2,18 @@ import { Cache } from 'cache-manager'
 import { CruxUnauthorizedException } from 'src/exception/crux-exception'
 import { getRegistryApiException } from 'src/exception/registry-exception'
 import { RegistryImageWithTags } from '../registry.message'
-import { RegistryApiClient, RegistryImageTagInfo, fetchInfoForTags } from './registry-api-client'
+import {
+  RegistryApiClient,
+  RegistryImageTagInfo,
+  TagsList,
+  fetchInfoForTags,
+  tagNamesToImageTags,
+} from './registry-api-client'
 import V2HttpApiClient from './v2-http-api-client'
 
 export type RegistryV2ApiClientOptions = {
+  cache: Cache | null
+  disableTagInfo: boolean
   imageNamePrefix?: string
   username?: string
   password?: string
@@ -14,26 +22,18 @@ export type RegistryV2ApiClientOptions = {
 export const registryCredentialsToBasicAuth = (options: RegistryV2ApiClientOptions) =>
   `Basic ${Buffer.from(`${options.username}:${options.password}`).toString('base64')}`
 
-type TagsList = {
-  name: string
-  tags: string[]
-}
-
 class RegistryV2ApiClient implements RegistryApiClient {
   private headers: HeadersInit
 
-  private imageNamePrefix?: string
-
   get subpath(): string {
-    return !this.imageNamePrefix ? '/v2' : `/v2/${this.imageNamePrefix}`
+    return !this.options.imageNamePrefix ? '/v2' : `/v2/${this.options.imageNamePrefix}`
   }
 
   constructor(
-    private url: string,
-    private readonly cache: Cache | null,
-    options?: RegistryV2ApiClientOptions,
+    private readonly url: string,
+    protected readonly options: RegistryV2ApiClientOptions,
   ) {
-    if (options?.username) {
+    if (options.username) {
       if (!options.password) {
         throw new CruxUnauthorizedException({
           message: `Invalid authentication parameters for: ${url}`,
@@ -46,8 +46,6 @@ class RegistryV2ApiClient implements RegistryApiClient {
     } else {
       this.headers = {}
     }
-
-    this.imageNamePrefix = options?.imageNamePrefix
   }
 
   async version() {
@@ -76,13 +74,15 @@ class RegistryV2ApiClient implements RegistryApiClient {
       throw getRegistryApiException(res, 'Tags request')
     }
 
-    const json = (await res.json()) as TagsList[]
-    const tags = json.flatMap(it => it.tags)
-    const tagInfo = await fetchInfoForTags(image, tags, this)
+    const tagsList = (await res.json()) as TagsList[]
+    const tagNames = tagsList.flatMap(it => it.tags)
+    const tags = this.options.disableTagInfo
+      ? tagNamesToImageTags(tagNames)
+      : await fetchInfoForTags(image, tagNames, this)
 
     return {
       name: image,
-      tags: tagInfo,
+      tags,
     }
   }
 
@@ -90,13 +90,13 @@ class RegistryV2ApiClient implements RegistryApiClient {
     return new V2HttpApiClient(
       {
         baseUrl: this.url,
-        imageNamePrefix: this.imageNamePrefix,
+        imageNamePrefix: this.options.imageNamePrefix,
         requestInit: {
           headers: this.headers,
         },
         tryV1Manifest: true, // NOTE(@robot9706): Enable V1 manifest fetch if possible as it reduces API calls
       },
-      this.cache,
+      this.options.cache,
     )
   }
 

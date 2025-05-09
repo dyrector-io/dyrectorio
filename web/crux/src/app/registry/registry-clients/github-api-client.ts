@@ -1,18 +1,23 @@
-import { Cache } from 'cache-manager'
 import { getRegistryApiException } from 'src/exception/registry-exception'
 import { REGISTRY_GITHUB_URL } from 'src/shared/const'
 import { GithubNamespace } from '../registry.dto'
 import { RegistryImageWithTags } from '../registry.message'
-import { RegistryApiClient, RegistryImageTagInfo, fetchInfoForTags } from './registry-api-client'
+import {
+  RegistryApiClient,
+  RegistryImageTagInfo,
+  TagsList,
+  fetchInfoForTags,
+  tagNamesToImageTags,
+} from './registry-api-client'
 import V2HttpApiClient from './v2-http-api-client'
 import RegistryV2ApiClient, {
   RegistryV2ApiClientOptions,
   registryCredentialsToBasicAuth,
 } from './v2-registry-api-client'
 
-type TagsList = {
-  name: string
-  tags: string[]
+export type GithubRegistryClientOptions = Omit<RegistryV2ApiClientOptions, 'imageNamePrefix'> & {
+  repository: string
+  namespace: GithubNamespace
 }
 
 class GithubRegistryClient implements RegistryApiClient {
@@ -20,22 +25,17 @@ class GithubRegistryClient implements RegistryApiClient {
 
   private namespace: string
 
-  constructor(
-    private imageNamePrefix: string,
-    options: RegistryV2ApiClientOptions,
-    namespace: GithubNamespace,
-    private readonly cache: Cache | null,
-  ) {
+  constructor(private readonly options: GithubRegistryClientOptions) {
     this.basicAuthHeaders = {
       Authorization: registryCredentialsToBasicAuth(options),
     }
 
-    this.namespace = namespace === 'organization' ? 'orgs' : 'users'
+    this.namespace = options.namespace === 'organization' ? 'orgs' : 'users'
   }
 
   async catalog(text: string): Promise<string[]> {
     const res = await fetch(
-      `https://api.github.com/${this.namespace}/${this.imageNamePrefix}/packages?package_type=container`,
+      `https://api.github.com/${this.namespace}/${this.options.repository}/packages?package_type=container`,
       {
         headers: { ...this.basicAuthHeaders, accept: 'application/vnd.github.v3+json' },
       },
@@ -52,7 +52,7 @@ class GithubRegistryClient implements RegistryApiClient {
 
   async tags(image: string): Promise<RegistryImageWithTags> {
     const tokenRes = await fetch(
-      `https://${REGISTRY_GITHUB_URL}/token?service=${REGISTRY_GITHUB_URL}&scope=repository:${this.imageNamePrefix}/${image}:pull`,
+      `https://${REGISTRY_GITHUB_URL}/token?service=${REGISTRY_GITHUB_URL}&scope=repository:${this.options.repository}/${image}:pull`,
       {
         headers: this.basicAuthHeaders,
       },
@@ -70,18 +70,23 @@ class GithubRegistryClient implements RegistryApiClient {
         },
       })
 
-    const res = await RegistryV2ApiClient.fetchPaginatedEndpoint(fetcher, `/${this.imageNamePrefix}/${image}/tags/list`)
+    const res = await RegistryV2ApiClient.fetchPaginatedEndpoint(
+      fetcher,
+      `/${this.options.repository}/${image}/tags/list`,
+    )
     if (!res.ok) {
       throw getRegistryApiException(tokenRes, '`Github tags request')
     }
 
-    const json = (await res.json()) as TagsList[]
-    const tags = json.flatMap(it => it.tags)
-    const tagInfo = await fetchInfoForTags(image, tags, this)
+    const tagsList = (await res.json()) as TagsList[]
+    const tagNames = tagsList.flatMap(it => it.tags)
+    const tags = this.options.disableTagInfo
+      ? tagNamesToImageTags(tagNames)
+      : await fetchInfoForTags(image, tagNames, this)
 
     return {
       name: image,
-      tags: tagInfo,
+      tags,
     }
   }
 
@@ -90,13 +95,13 @@ class GithubRegistryClient implements RegistryApiClient {
     return new V2HttpApiClient(
       {
         baseUrl: REGISTRY_GITHUB_URL,
-        imageNamePrefix: this.imageNamePrefix,
+        imageNamePrefix: this.options.repository,
         requestInit: {
           headers: this.basicAuthHeaders,
         },
         manifestMime: 'application/vnd.docker.distribution.manifest.v1+json',
       },
-      this.cache,
+      this.options.cache,
     )
   }
 

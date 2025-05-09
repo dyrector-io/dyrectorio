@@ -5,12 +5,22 @@ export type RegistryImageTagInfo = {
   created: string
 }
 
+export type TagsList = {
+  tags: string[]
+}
+
 export interface RegistryApiClient {
   catalog(text: string): Promise<string[]>
   tags(image: string): Promise<RegistryImageWithTags>
   labels(image: string, tag: string): Promise<Record<string, string>>
   tagInfo(image: string, tag: string): Promise<RegistryImageTagInfo>
 }
+
+export const tagNamesToImageTags = (tagNames: string[]): RegistryImageTag[] =>
+  tagNames.map(it => ({
+    name: it,
+    created: null,
+  }))
 
 export const fetchInfoForTags = async (
   image: string,
