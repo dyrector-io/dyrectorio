@@ -753,6 +753,7 @@ export default class DeployService {
       })
 
       if (finishedDeployment.deploymentConfig) {
+        // save the deployment config
         await prisma.deployment.update({
           where: {
             id: finishedDeployment.id,
@@ -771,6 +772,7 @@ export default class DeployService {
         })
       }
 
+      // save the instance config
       const configUpserts = Array.from(finishedDeployment.instanceConfigs).map(it => {
         const [key, config] = it
         const data = this.containerMapper.configDataToDbPatch(config)

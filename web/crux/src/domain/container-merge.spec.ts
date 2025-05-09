@@ -1,5 +1,5 @@
 import { ConcreteContainerConfigData, ContainerConfigData } from './container'
-import { mergeConfigsWithConcreteConfig } from './container-merge'
+import { mergeConfigsWithConcreteConfig, mergeInstanceConfigWithDeploymentConfig } from './container-merge'
 
 describe('container-merge', () => {
   const fullConfig: ContainerConfigData = {
@@ -208,6 +208,11 @@ describe('container-merge', () => {
         key: 'secret1',
         required: false,
       },
+      {
+        id: 'secret2',
+        key: 'secret2',
+        required: true,
+      },
     ],
     user: 1,
     volumes: [
@@ -225,7 +230,7 @@ describe('container-merge', () => {
   }
 
   const fullConcreteConfig: ConcreteContainerConfigData = {
-    name: 'instance.img',
+    name: 'concrete.img',
     capabilities: [],
     deploymentStrategy: 'recreate',
     workingDirectory: '/app',
@@ -238,142 +243,142 @@ describe('container-merge', () => {
     annotations: {
       deployment: [
         {
-          id: 'instance.annotations.deployment',
-          key: 'instance.annotations.deployment',
-          value: 'instance.annotations.deployment',
+          id: 'concrete.annotations.deployment',
+          key: 'concrete.annotations.deployment',
+          value: 'concrete.annotations.deployment',
         },
       ],
       ingress: [
         {
-          id: 'instance.annotations.ingress',
-          key: 'instance.annotations.ingress',
-          value: 'instance.annotations.ingress',
+          id: 'concrete.annotations.ingress',
+          key: 'concrete.annotations.ingress',
+          value: 'concrete.annotations.ingress',
         },
       ],
       service: [
         {
-          id: 'instance.annotations.service',
-          key: 'instance.annotations.service',
-          value: 'instance.annotations.service',
+          id: 'concrete.annotations.service',
+          key: 'concrete.annotations.service',
+          value: 'concrete.annotations.service',
         },
       ],
     },
     labels: {
       deployment: [
         {
-          id: 'instance.labels.deployment',
-          key: 'instance.labels.deployment',
-          value: 'instance.labels.deployment',
+          id: 'concrete.labels.deployment',
+          key: 'concrete.labels.deployment',
+          value: 'concrete.labels.deployment',
         },
       ],
       ingress: [
         {
-          id: 'instance.labels.ingress',
-          key: 'instance.labels.ingress',
-          value: 'instance.labels.ingress',
+          id: 'concrete.labels.ingress',
+          key: 'concrete.labels.ingress',
+          value: 'concrete.labels.ingress',
         },
       ],
       service: [
         {
-          id: 'instance.labels.service',
-          key: 'instance.labels.service',
-          value: 'instance.labels.service',
+          id: 'concrete.labels.service',
+          key: 'concrete.labels.service',
+          value: 'concrete.labels.service',
         },
       ],
     },
     args: [
       {
-        id: 'instance.arg1',
-        key: 'instance.arg1',
+        id: 'concrete.arg1',
+        key: 'concrete.arg1',
       },
     ],
     commands: [
       {
-        id: 'instance.command1',
-        key: 'instance.command1',
+        id: 'concrete.command1',
+        key: 'concrete.command1',
       },
     ],
     configContainer: {
-      image: 'instance.configCont',
+      image: 'concrete.configCont',
       keepFiles: true,
-      path: 'instance.configCont',
-      volume: 'instance.configCont',
+      path: 'concrete.configCont',
+      volume: 'concrete.configCont',
     },
     customHeaders: [
       {
-        id: 'instance.customHead',
-        key: 'instance.customHead',
+        id: 'concrete.customHead',
+        key: 'concrete.customHead',
       },
     ],
     dockerLabels: [
       {
-        id: 'instance.dockerLabel1',
-        key: 'instance.dockerLabel1',
-        value: 'instance.dockerLabel1',
+        id: 'concrete.dockerLabel1',
+        key: 'concrete.dockerLabel1',
+        value: 'concrete.dockerLabel1',
       },
     ],
     environment: [
       {
-        id: 'instance.env1',
-        key: 'instance.env1',
-        value: 'instance.env1',
+        id: 'concrete.env1',
+        key: 'concrete.env1',
+        value: 'concrete.env1',
       },
     ],
     extraLBAnnotations: [
       {
-        id: 'instance.lbAnn1',
-        key: 'instance.lbAnn1',
-        value: 'instance.lbAnn1',
+        id: 'concrete.lbAnn1',
+        key: 'concrete.lbAnn1',
+        value: 'concrete.lbAnn1',
       },
     ],
     healthCheckConfig: {
-      livenessProbe: 'instance.healthCheckConf',
+      livenessProbe: 'concrete.healthCheckConf',
       port: 1,
-      readinessProbe: 'instance.healthCheckConf',
-      startupProbe: 'instance.healthCheckConf',
+      readinessProbe: 'concrete.healthCheckConf',
+      startupProbe: 'concrete.healthCheckConf',
     },
     storageSet: true,
-    storageId: 'instance.storageId',
+    storageId: 'concrete.storageId',
     storageConfig: {
-      bucket: 'instance.storageBucket',
-      path: 'instance.storagePath',
+      bucket: 'concrete.storageBucket',
+      path: 'concrete.storagePath',
     },
     routing: {
-      domain: 'instance.domain',
-      path: 'instance.path',
+      domain: 'concrete.domain',
+      path: 'concrete.path',
       stripPrefix: true,
-      uploadLimit: 'instance.uploadLimit',
+      uploadLimit: 'concrete.uploadLimit',
     },
     initContainers: [
       {
-        id: 'instance.initCont1',
+        id: 'concrete.initCont1',
         args: [
           {
-            id: 'instance.initCont1Args',
-            key: 'instance.initCont1Args',
+            id: 'concrete.initCont1Args',
+            key: 'concrete.initCont1Args',
           },
         ],
         command: [
           {
-            id: 'instance.initCont1Command',
-            key: 'instance.initCont1Command',
+            id: 'concrete.initCont1Command',
+            key: 'concrete.initCont1Command',
           },
         ],
         environment: [
           {
-            id: 'instance.initCont1Env',
-            key: 'instance.initCont1Env',
-            value: 'instance.initCont1Env',
+            id: 'concrete.initCont1Env',
+            key: 'concrete.initCont1Env',
+            value: 'concrete.initCont1Env',
           },
         ],
-        image: 'instance.initCont1',
-        name: 'instance.initCont1',
+        image: 'concrete.initCont1',
+        name: 'concrete.initCont1',
         useParentConfig: true,
         volumes: [
           {
-            id: 'instance.initCont1Vol1',
-            name: 'instance.initCont1Vol1',
-            path: 'instance.initCont1Vol1',
+            id: 'concrete.initCont1Vol1',
+            name: 'concrete.initCont1Vol1',
+            path: 'concrete.initCont1Vol1',
           },
         ],
       },
@@ -382,21 +387,21 @@ describe('container-merge', () => {
       driver: 'gcplogs',
       options: [
         {
-          id: 'instance.logConfOps',
-          key: 'instance.logConfOps',
-          value: 'instance.logConfOps',
+          id: 'concrete.logConfOps',
+          key: 'concrete.logConfOps',
+          value: 'concrete.logConfOps',
         },
       ],
     },
     networks: [
       {
-        id: 'instance.network1',
-        key: 'instance.network1',
+        id: 'concrete.network1',
+        key: 'concrete.network1',
       },
     ],
     portRanges: [
       {
-        id: 'instance.portRange1',
+        id: 'concrete.portRange1',
         external: {
           from: 10,
           to: 20,
@@ -409,39 +414,272 @@ describe('container-merge', () => {
     ],
     ports: [
       {
-        id: 'instance.port1',
+        id: 'concrete.port1',
         internal: 10,
         external: 10,
       },
     ],
     resourceConfig: {
       limits: {
-        cpu: 'instance.limitCpu',
-        memory: 'instance.limitMemory',
+        cpu: 'concrete.limitCpu',
+        memory: 'concrete.limitMemory',
       },
       requests: {
-        cpu: 'instance.requestCpu',
-        memory: 'instance.requestMemory',
+        cpu: 'concrete.requestCpu',
+        memory: 'concrete.requestMemory',
       },
     },
     secrets: [
       {
         id: 'secret1',
-        key: 'instance.secret1',
+        key: 'secret1',
         required: false,
         encrypted: true,
-        value: 'instance.secret1.publicKey',
-        publicKey: 'instance.secret1.publicKey',
+        value: 'concrete.secret1.value',
+        publicKey: 'concrete.secret1.publicKey',
       },
     ],
     user: 1,
     volumes: [
       {
-        id: 'instance.vol1',
-        name: 'instance.vol1',
-        path: 'instance.vol1',
-        class: 'instance.vol1',
-        size: 'instance.vol1',
+        id: 'concrete.vol1',
+        name: 'concrete.vol1',
+        path: 'concrete.vol1',
+        class: 'concrete.vol1',
+        size: 'concrete.vol1',
+        type: 'rwo',
+      },
+    ],
+    metrics: undefined,
+    expectedState: undefined,
+  }
+
+  const fullDeploymentConfig: ConcreteContainerConfigData = {
+    name: 'deployment.img',
+    capabilities: [],
+    deploymentStrategy: 'recreate',
+    workingDirectory: '/app',
+    expose: 'exposeWithTls',
+    networkMode: 'host',
+    proxyHeaders: true,
+    restartPolicy: 'onFailure',
+    tty: true,
+    useLoadBalancer: true,
+    annotations: {
+      deployment: [
+        {
+          id: 'deployment.annotations.deployment',
+          key: 'deployment.annotations.deployment',
+          value: 'deployment.annotations.deployment',
+        },
+      ],
+      ingress: [
+        {
+          id: 'deployment.annotations.ingress',
+          key: 'deployment.annotations.ingress',
+          value: 'deployment.annotations.ingress',
+        },
+      ],
+      service: [
+        {
+          id: 'deployment.annotations.service',
+          key: 'deployment.annotations.service',
+          value: 'deployment.annotations.service',
+        },
+      ],
+    },
+    labels: {
+      deployment: [
+        {
+          id: 'deployment.labels.deployment',
+          key: 'deployment.labels.deployment',
+          value: 'deployment.labels.deployment',
+        },
+      ],
+      ingress: [
+        {
+          id: 'deployment.labels.ingress',
+          key: 'deployment.labels.ingress',
+          value: 'deployment.labels.ingress',
+        },
+      ],
+      service: [
+        {
+          id: 'deployment.labels.service',
+          key: 'deployment.labels.service',
+          value: 'deployment.labels.service',
+        },
+      ],
+    },
+    args: [
+      {
+        id: 'deployment.arg1',
+        key: 'deployment.arg1',
+      },
+    ],
+    commands: [
+      {
+        id: 'deployment.command1',
+        key: 'deployment.command1',
+      },
+    ],
+    configContainer: {
+      image: 'deployment.configCont',
+      keepFiles: true,
+      path: 'deployment.configCont',
+      volume: 'deployment.configCont',
+    },
+    customHeaders: [
+      {
+        id: 'deployment.customHead',
+        key: 'deployment.customHead',
+      },
+    ],
+    dockerLabels: [
+      {
+        id: 'deployment.dockerLabel1',
+        key: 'deployment.dockerLabel1',
+        value: 'deployment.dockerLabel1',
+      },
+    ],
+    environment: [
+      {
+        id: 'deployment.env1',
+        key: 'deployment.env1',
+        value: 'deployment.env1',
+      },
+    ],
+    extraLBAnnotations: [
+      {
+        id: 'deployment.lbAnn1',
+        key: 'deployment.lbAnn1',
+        value: 'deployment.lbAnn1',
+      },
+    ],
+    healthCheckConfig: {
+      livenessProbe: 'deployment.healthCheckConf',
+      port: 1,
+      readinessProbe: 'deployment.healthCheckConf',
+      startupProbe: 'deployment.healthCheckConf',
+    },
+    storageSet: true,
+    storageId: 'deployment.storageId',
+    storageConfig: {
+      bucket: 'deployment.storageBucket',
+      path: 'deployment.storagePath',
+    },
+    routing: {
+      domain: 'deployment.domain',
+      path: 'deployment.path',
+      stripPrefix: true,
+      uploadLimit: 'deployment.uploadLimit',
+    },
+    initContainers: [
+      {
+        id: 'deployment.initCont1',
+        args: [
+          {
+            id: 'deployment.initCont1Args',
+            key: 'deployment.initCont1Args',
+          },
+        ],
+        command: [
+          {
+            id: 'deployment.initCont1Command',
+            key: 'deployment.initCont1Command',
+          },
+        ],
+        environment: [
+          {
+            id: 'deployment.initCont1Env',
+            key: 'deployment.initCont1Env',
+            value: 'deployment.initCont1Env',
+          },
+        ],
+        image: 'deployment.initCont1',
+        name: 'deployment.initCont1',
+        useParentConfig: true,
+        volumes: [
+          {
+            id: 'deployment.initCont1Vol1',
+            name: 'deployment.initCont1Vol1',
+            path: 'deployment.initCont1Vol1',
+          },
+        ],
+      },
+    ],
+    logConfig: {
+      driver: 'gcplogs',
+      options: [
+        {
+          id: 'deployment.logConfOps',
+          key: 'deployment.logConfOps',
+          value: 'deployment.logConfOps',
+        },
+      ],
+    },
+    networks: [
+      {
+        id: 'deployment.network1',
+        key: 'deployment.network1',
+      },
+    ],
+    portRanges: [
+      {
+        id: 'deployment.portRange1',
+        external: {
+          from: 10,
+          to: 20,
+        },
+        internal: {
+          from: 10,
+          to: 20,
+        },
+      },
+    ],
+    ports: [
+      {
+        id: 'deployment.port1',
+        internal: 10,
+        external: 10,
+      },
+    ],
+    resourceConfig: {
+      limits: {
+        cpu: 'deployment.limitCpu',
+        memory: 'deployment.limitMemory',
+      },
+      requests: {
+        cpu: 'deployment.requestCpu',
+        memory: 'deployment.requestMemory',
+      },
+    },
+    secrets: [
+      {
+        id: 'secret1',
+        key: 'secret1',
+        required: false,
+        encrypted: true,
+        value: 'deployment.secret1.value',
+        publicKey: 'deployment.secret1.publicKey',
+      },
+      {
+        id: 'secret3',
+        key: 'secret3',
+        required: false,
+        encrypted: true,
+        value: 'deployment.secret3.value',
+        publicKey: 'deployment.secret3.publicKey',
+      },
+    ],
+    user: 1,
+    volumes: [
+      {
+        id: 'deployment.vol1',
+        name: 'deployment.vol1',
+        path: 'deployment.vol1',
+        class: 'deployment.vol1',
+        size: 'deployment.vol1',
         type: 'rwo',
       },
     ],
@@ -453,7 +691,22 @@ describe('container-merge', () => {
     it('should use the concrete variables when available', () => {
       const merged = mergeConfigsWithConcreteConfig([fullConfig], fullConcreteConfig)
 
-      expect(merged).toEqual(fullConcreteConfig)
+      const expected: ConcreteContainerConfigData = {
+        ...fullConcreteConfig,
+        secrets: [
+          {
+            id: 'secret2',
+            key: 'secret2',
+            required: true,
+            encrypted: false,
+            value: '',
+            publicKey: null,
+          },
+          ...fullConcreteConfig.secrets,
+        ],
+      }
+
+      expect(merged).toEqual(expected)
     })
 
     it('should use the config variables when the concrete one is not available', () => {
@@ -470,30 +723,38 @@ describe('container-merge', () => {
             value: '',
             publicKey: null,
           },
+          {
+            id: 'secret2',
+            key: 'secret2',
+            required: true,
+            encrypted: false,
+            value: '',
+            publicKey: null,
+          },
         ],
       }
 
       expect(merged).toEqual(expected)
     })
 
-    it('should use the instance only when available', () => {
-      const instance: ConcreteContainerConfigData = {
+    it('should use the concrete one only when available', () => {
+      const concrete: ConcreteContainerConfigData = {
         ports: fullConcreteConfig.ports,
         labels: {
           deployment: [
             {
-              id: 'instance.labels.deployment',
-              key: 'instance.labels.deployment',
-              value: 'instance.labels.deployment',
+              id: 'concrete.labels.deployment',
+              key: 'concrete.labels.deployment',
+              value: 'concrete.labels.deployment',
             },
           ],
         },
         annotations: {
           service: [
             {
-              id: 'instance.annotations.service',
-              key: 'instance.annotations.service',
-              value: 'instance.annotations.service',
+              id: 'concrete.annotations.service',
+              key: 'concrete.annotations.service',
+              value: 'concrete.annotations.service',
             },
           ],
         },
@@ -504,11 +765,11 @@ describe('container-merge', () => {
         ports: fullConcreteConfig.ports,
         labels: {
           ...fullConfig.labels,
-          deployment: instance.labels.deployment,
+          deployment: concrete.labels.deployment,
         },
         annotations: {
           ...fullConfig.annotations,
-          service: instance.annotations.service,
+          service: concrete.annotations.service,
         },
         secrets: [
           {
@@ -519,10 +780,72 @@ describe('container-merge', () => {
             value: '',
             publicKey: null,
           },
+          {
+            id: 'secret2',
+            key: 'secret2',
+            required: true,
+            encrypted: false,
+            value: '',
+            publicKey: null,
+          },
         ],
       }
 
-      const merged = mergeConfigsWithConcreteConfig([fullConfig], instance)
+      const merged = mergeConfigsWithConcreteConfig([fullConfig], concrete)
+
+      expect(merged).toEqual(expected)
+    })
+
+    it('should mix the instance config with the deployment config', () => {
+      const instance: ConcreteContainerConfigData = {
+        ...fullConcreteConfig,
+        secrets: [
+          ...fullConcreteConfig.secrets,
+          {
+            id: 'secret3',
+            key: 'secret3',
+            encrypted: false,
+            required: false,
+            value: '',
+            publicKey: null,
+          },
+        ],
+      }
+      const deployment = fullDeploymentConfig
+
+      const merged = mergeInstanceConfigWithDeploymentConfig(instance, deployment)
+
+      const expected: ConcreteContainerConfigData = {
+        ...fullConcreteConfig,
+        args: [...instance.args, ...deployment.args],
+        commands: [...instance.commands, ...deployment.commands],
+        customHeaders: [...instance.customHeaders, ...deployment.customHeaders],
+        dockerLabels: [...instance.dockerLabels, ...deployment.dockerLabels],
+        environment: [...instance.environment, ...deployment.environment],
+        extraLBAnnotations: [...instance.extraLBAnnotations, ...deployment.extraLBAnnotations],
+        networks: [...instance.networks, ...deployment.networks],
+        volumes: [...instance.volumes, ...deployment.volumes],
+        metrics: null,
+        expectedState: null,
+        secrets: [
+          {
+            id: 'secret1',
+            key: 'secret1',
+            required: false,
+            encrypted: true,
+            value: 'concrete.secret1.value',
+            publicKey: 'concrete.secret1.publicKey',
+          },
+          {
+            id: 'secret3',
+            key: 'secret3',
+            required: false,
+            encrypted: true,
+            value: 'deployment.secret3.value',
+            publicKey: 'deployment.secret3.publicKey',
+          },
+        ]
+      }
 
       expect(merged).toEqual(expected)
     })

@@ -4,7 +4,7 @@ const config: Config.InitialOptions = {
   preset: 'ts-jest',
   modulePaths: ['.'],
   testRegex: '.*\\.spec\\.ts$',
-  collectCoverage: true,
+  collectCoverage: false,
   collectCoverageFrom: [
     "src/**/*.ts"
   ],

@@ -97,32 +97,11 @@ const mergeImagePatch = (oldImage: VersionImage, newImage: PatchVersionImage): V
     : oldImage.config,
 })
 
-export interface VersionStateOptions {
+export type VersionStateOptions = {
   projectId: string
   version: VersionDetails
   initialSection: VersionSectionsState
-  fetchTagInfo?: boolean
   setSaveState?: (saveState: WebSocketSaveState) => void
-}
-
-const refreshImageTags = (registriesSock: WebSocketClientEndpoint, images: VersionImage[]): void => {
-  const fetchTags = images.reduce((map, it) => {
-    let names = map.get(it.registry.id)
-    if (!names) {
-      names = new Set()
-      map.set(it.registry.id, names)
-    }
-
-    names.add(it.name)
-    return map
-  }, new Map())
-
-  fetchTags.forEach((names, registryId) => {
-    registriesSock.send(WS_TYPE_REGISTRY_FETCH_IMAGE_TAGS, {
-      registryId,
-      images: Array.from(names),
-    } as FetchImageTagsMessage)
-  })
 }
 
 export const selectTagsOfImage = (state: VerionState, image: VersionImage): RegistryImageTag[] | null => {
@@ -176,20 +155,7 @@ export const useVersionState = (options: VersionStateOptions): [VerionState, Ver
 
   const editor = useEditorState(versionSock)
 
-  const registriesSock = useWebSocket(routes.registry.socket(), {
-    onOpen: () => {
-      // TODO(@robot9706): Not sure why we fetch all the tags here,
-      // it is super slow with our 8+ images / version, where each image has 200+ tags, so disable it
-      if (options.fetchTagInfo === false) {
-        return
-      }
-
-      refreshImageTags(
-        registriesSock,
-        version.images.filter(it => it.registry.type !== 'unchecked'),
-      )
-    },
-  })
+  const registriesSock = useWebSocket(routes.registry.socket())
 
   registriesSock.on(WS_TYPE_REGISTRY_IMAGE_TAGS, (message: RegistryImageTagsMessage) => {
     if (message.images.length < 1) {

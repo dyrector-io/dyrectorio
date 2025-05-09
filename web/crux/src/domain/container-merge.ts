@@ -5,6 +5,7 @@ import {
   Marker,
   Port,
   UniqueKey,
+  UniqueKeyValue,
   UniqueSecretKey,
   UniqueSecretKeyValue,
   Volume,
@@ -97,10 +98,11 @@ export const mergeSecrets = (strong: UniqueSecretKeyValue[], weak: UniqueSecretK
   weak = weak ?? []
   strong = strong ?? []
 
-  const overriddenKeys: Set<string> = new Set(strong?.map(it => it.key))
+  const overriddenKeys: Set<string> = new Set(strong.map(it => it.key))
 
+  // removes non required secrets, when they are not present in the concrete config
   const missing: UniqueSecretKeyValue[] = weak
-    .filter(it => !overriddenKeys.has(it.key))
+    .filter(it => !overriddenKeys.has(it.key) || it.required)
     .map(it => ({
       ...it,
       value: '',
@@ -111,21 +113,7 @@ export const mergeSecrets = (strong: UniqueSecretKeyValue[], weak: UniqueSecretK
   return [...missing, ...strong]
 }
 
-// TODO(@robot9706): Validate
-// const mergeUniqueKeyValues = <T extends UniqueKeyValue>(strong: T[], weak: T[]): T[] => {
-//   if (!strong) {
-//     return weak ?? null
-//   }
-
-//   if (!weak) {
-//     return strong
-//   }
-
-//   const missing = weak.filter(w => !strong.find(it => it.key === w.key))
-//   return [...strong, ...missing]
-// }
-
-export const mergeConfigs = (strong: ContainerConfigData, weak: ContainerConfigData): ContainerConfigData => ({
+const mergeConfigs = (strong: ContainerConfigData, weak: ContainerConfigData): ContainerConfigData => ({
   // common
   name: strong.name ?? weak.name,
   environment: strong.environment ?? weak.environment,
@@ -166,15 +154,6 @@ export const mergeConfigs = (strong: ContainerConfigData, weak: ContainerConfigD
   expectedState: strong.expectedState ?? weak.expectedState,
 })
 
-// TODO(@robot9706): Validate
-// export const squashConfigs = (configs: ContainerConfigData[]): ContainerConfigData =>
-//   configs.reduce((result, conf) => {
-//     const merged = mergeConfigs(conf, result)
-//     return {
-//       ...merged,
-//       environment: mergeUniqueKeyValues(conf.environment, result.environment),
-//     }
-//   }, {} as ContainerConfigData)
 const squashConfigs = (configs: ContainerConfigData[]): ContainerConfigData =>
   configs.reduce((result, conf) => mergeConfigs(conf, result), {} as ContainerConfigData)
 
@@ -205,6 +184,27 @@ const mergeUniqueKeys = <T extends UniqueKey>(strong: T[], weak: T[]): T[] => {
 
   const missing = weak.filter(w => !strong.find(it => it.key === w.key))
   return [...strong, ...missing]
+}
+
+const mergeUniqueKeyValues = <T extends UniqueKeyValue>(strong: T[], weak: T[]): T[] => {
+  if (!strong) {
+    return weak ?? null
+  }
+
+  if (!weak) {
+    return strong
+  }
+
+  const overriddenKeys = new Set(strong.map(it => it.key))
+  const overriddenValues = new Set(strong.filter(it => it.value).map(it => it.key))
+  const weakValues = new Set(
+    weak.filter(it => it.value && !overriddenValues.has(it.key) && overriddenKeys.has(it.key)).map(it => it.key),
+  )
+
+  const missing = weak.filter(it => weakValues.has(it.key) || !overriddenKeys.has(it.key))
+  const overriden = strong.filter(it => !weakValues.has(it.key))
+
+  return [...overriden, ...missing]
 }
 
 const mergePorts = (strong: Port[], weak: Port[]): Port[] => {
@@ -244,18 +244,18 @@ const mergeVolumes = (strong: Volume[], weak: Volume[]): Volume[] => {
     return strong
   }
 
-  const missing = weak.filter(w => !strong.find(it => it.path === w.path || it.name === w.path))
+  const missing = weak.filter(w => !strong.find(it => it.path === w.path || it.name === w.name))
   return [...strong, ...missing]
 }
 
 export const mergeInstanceConfigWithDeploymentConfig = (
-  deployment: ConcreteContainerConfigData,
   instance: ConcreteContainerConfigData,
+  deployment: ConcreteContainerConfigData,
 ): ConcreteContainerConfigData => ({
   // common
   name: instance.name ?? deployment.name ?? null,
-  environment: mergeUniqueKeys(instance.environment, deployment.environment),
-  secrets: mergeUniqueKeys(instance.secrets, deployment.secrets),
+  environment: mergeUniqueKeyValues(instance.environment, deployment.environment),
+  secrets: mergeUniqueKeyValues(instance.secrets, deployment.secrets),
   user: mergeNumber(instance.user, deployment.user),
   workingDirectory: instance.workingDirectory ?? deployment.workingDirectory ?? null,
   tty: mergeBoolean(instance.tty, deployment.tty),
@@ -272,9 +272,9 @@ export const mergeInstanceConfigWithDeploymentConfig = (
   ...mergeStorage(instance, deployment),
 
   // crane
-  customHeaders: mergeUniqueKeys(deployment.customHeaders, instance.customHeaders),
+  customHeaders: mergeUniqueKeys(instance.customHeaders, deployment.customHeaders),
   proxyHeaders: mergeBoolean(instance.proxyHeaders, deployment.proxyHeaders),
-  extraLBAnnotations: mergeUniqueKeys(instance.extraLBAnnotations, deployment.extraLBAnnotations),
+  extraLBAnnotations: mergeUniqueKeyValues(instance.extraLBAnnotations, deployment.extraLBAnnotations),
   healthCheckConfig: instance.healthCheckConfig ?? deployment.healthCheckConfig ?? null,
   resourceConfig: instance.resourceConfig ?? deployment.resourceConfig ?? null,
   useLoadBalancer: mergeBoolean(instance.useLoadBalancer, deployment.useLoadBalancer),
@@ -288,6 +288,6 @@ export const mergeInstanceConfigWithDeploymentConfig = (
   networkMode: instance.networkMode ?? deployment.networkMode ?? null,
   restartPolicy: instance.restartPolicy ?? deployment.restartPolicy ?? null,
   networks: mergeUniqueKeys(instance.networks, deployment.networks),
-  dockerLabels: mergeUniqueKeys(instance.dockerLabels, deployment.dockerLabels),
+  dockerLabels: mergeUniqueKeyValues(instance.dockerLabels, deployment.dockerLabels),
   expectedState: instance.expectedState ?? deployment.expectedState ?? null,
 })

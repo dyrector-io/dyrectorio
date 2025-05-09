@@ -323,16 +323,10 @@ export default class ContainerConfigService {
   private resetSection(config: ContainerConfigData, resetKey: ContainerConfigProperty) {
     config[resetKey] = null
 
-    switch (resetKey) {
-      case 'storage':
-        config.storageSet = false
-        config.storageId = null
-        config.storageConfig = null
-        break
-
-      default:
-        config[resetKey as ContainerConfigProperty] = null
-        break
+    if (resetKey === 'storage') {
+      config.storageSet = false
+      config.storageId = null
+      config.storageConfig = null
     }
 
     return config
