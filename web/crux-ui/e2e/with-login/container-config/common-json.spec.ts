@@ -239,7 +239,7 @@ test.describe('Image common config from JSON', () => {
     const wsRoute = TEAM_ROUTES.containerConfig.detailsSocket(imageConfigId)
 
     const secret = 'secretName'
-    const secretInput = page.locator('input[placeholder="SECRETS"] >> visible=true').nth(0)
+    const secretInput = page.locator('input[placeholder="Secrets"] >> visible=true').nth(0)
 
     const jsonEditorButton = await page.waitForSelector('button:has-text("JSON")')
     await jsonEditorButton.click()
@@ -404,7 +404,7 @@ test.describe('Image common config from JSON', () => {
 
     await page.reload()
 
-    const confDiv = page.locator('div.grid:has(label:has-text("CONFIG CONTAINER"))')
+    const confDiv = page.locator('div:has(label:has-text("CONFIG CONTAINER"))')
     await expect(confDiv.getByLabel('Image')).toHaveValue(img)
     await expect(confDiv.getByLabel('Volume')).toHaveValue(volume)
     await expect(confDiv.getByLabel('Path')).toHaveValue(path)
@@ -537,7 +537,7 @@ test.describe('Image common config from JSON', () => {
 
     await page.reload()
 
-    const storageDiv = page.locator('div.grid:has(label:has-text("STORAGE"))')
+    const storageDiv = page.locator('div:has(label:has-text("STORAGE"))')
     await expect(storageDiv.locator(`button.bg-dyo-turquoise:has-text("${storageName}")`)).toBeVisible()
     await expect(storageDiv.locator('input[placeholder="Bucket path"]')).toHaveValue(bucketPath)
     await expect(storageDiv.locator(`button.bg-dyo-turquoise:has-text("${volumeName}")`)).toBeVisible()

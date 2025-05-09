@@ -36,6 +36,7 @@ const configSchema = yup.object({
   FROM_NAME: yup.string().required(),
 
   DISABLE_RECAPTCHA: yup.bool().default(false).required(),
+  DISABLE_REGISTRY_LABEL_FETCHING: yup.bool().default(false).required(),
   RECAPTCHA_SECRET_KEY: yup.string().when('DISABLE_RECAPTCHA', {
     is: disabled => disabled,
     otherwise: schema => schema.required(),
