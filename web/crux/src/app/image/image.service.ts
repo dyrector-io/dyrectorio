@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common'
+import { ConfigService } from '@nestjs/config'
 import { EventEmitter2 } from '@nestjs/event-emitter'
 import { Identity } from '@ory/kratos-client'
 import { Prisma } from '@prisma/client'
@@ -21,6 +22,7 @@ type RegistryLabelMap = Record<string, ImageLabelMap>
 @Injectable()
 export default class ImageService {
   constructor(
+    private readonly appConfig: ConfigService,
     private readonly prisma: PrismaService,
     private readonly mapper: ImageMapper,
     private readonly containerConfigService: ContainerConfigService,
@@ -64,6 +66,8 @@ export default class ImageService {
     identity: Identity,
   ): Promise<ImageDetailsDto[]> {
     // TODO(@robot9706): Fix labels & config bundles conflicting
+    const labelsApiDisabled = this.appConfig.get('DISABLE_REGISTRY_LABEL_FETCHING')
+
     const teamId = await this.teamRepository.getTeamIdBySlug(teamSlug)
 
     const labelLookupPromises = request.map(async it => {
@@ -72,7 +76,7 @@ export default class ImageService {
       const imagePromises = it.images.map(async image => {
         const [imageName, imageTag] = this.splitImageAndTag(image)
 
-        const labels = await api.client.labels(imageName, imageTag)
+        const labels = labelsApiDisabled ? {} : await api.client.labels(imageName, imageTag)
 
         return {
           name: image,
@@ -217,7 +221,7 @@ export default class ImageService {
       )
     }
 
-    let labels: Record<string, string>
+    let labels: Record<string, string> = null
     let configUpdate: Prisma.ContainerConfigUpdateOneRequiredWithoutImageNestedInput = null
     if (request.tag) {
       const image = await this.prisma.image.findUniqueOrThrow({
@@ -232,9 +236,13 @@ export default class ImageService {
       })
 
       const teamId = await this.teamRepository.getTeamIdBySlug(teamSlug)
-      const api = await this.registryClients.getByRegistryId(teamId, image.registryId)
 
-      labels = await api.client.labels(image.name, request.tag)
+      const labelsApiDisabled = this.appConfig.get('DISABLE_REGISTRY_LABEL_FETCHING')
+      if (!labelsApiDisabled) {
+        const api = await this.registryClients.getByRegistryId(teamId, image.registryId)
+        labels = await api.client.labels(image.name, request.tag)
+      }
+
       const rules = parseDyrectorioEnvRules(labels)
       if (Object.entries(rules).length > 0) {
         const configEnvironment = ImageService.mergeEnvironmentsRules(

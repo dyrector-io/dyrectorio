@@ -75,10 +75,80 @@ const CraneConfigSection = (props: CraneConfigSectionProps) => {
         {t('base.crane')}
       </DyoHeading>
 
-      <div className="columns-1 lg:columns-2 2xl:columns-3 gap-24 border-2 rounded-lg rounded-tl-[0px] border-solid border-dyo-violet/50 p-8 w-full">
+      <div className="flex flex-col gap-8 border-2 rounded-lg rounded-tl-[0px] border-solid border-dyo-violet/50 p-8 w-full">
+        {/* annotations */}
+        {filterContains('annotations', selectedFilters) && (
+          <div className="flex flex-col">
+            <ConfigSectionLabel
+              disabled={disabled || !resettableConfig.annotations}
+              onResetSection={() => onResetSection('annotations')}
+            >
+              {t('crane.annotations').toUpperCase()}
+            </ConfigSectionLabel>
+
+            <div className="flex flex-col gap-2">
+              <div>
+                <KeyValueInput
+                  labelClassName="ml-2"
+                  label={t('crane.deployment')}
+                  onChange={it => onChange({ annotations: { ...config.annotations, deployment: it } })}
+                  items={config.annotations?.deployment ?? []}
+                  editorOptions={editorOptions}
+                  disabled={disabled}
+                  errors={conflictErrors?.annotations?.deployment}
+                />
+                <DyoMessage message={findErrorFor(fieldErrors, 'annotations.deployment')} messageType="error" />
+              </div>
+
+              <div>
+                <KeyValueInput
+                  labelClassName="ml-2"
+                  label={t('crane.service')}
+                  onChange={it => onChange({ annotations: { ...config.annotations, service: it } })}
+                  items={config.annotations?.service ?? []}
+                  editorOptions={editorOptions}
+                  disabled={disabled}
+                  errors={conflictErrors?.annotations.service}
+                />
+                <DyoMessage message={findErrorFor(fieldErrors, 'annotations.service')} messageType="error" />
+              </div>
+
+              <div>
+                <KeyValueInput
+                  labelClassName="ml-2"
+                  label={t('crane.ingress')}
+                  onChange={it => onChange({ annotations: { ...config.annotations, ingress: it } })}
+                  items={config.annotations?.ingress ?? []}
+                  editorOptions={editorOptions}
+                  disabled={disabled}
+                  errors={conflictErrors?.annotations.ingress}
+                />
+                <DyoMessage message={findErrorFor(fieldErrors, 'annotations.ingress')} messageType="error" />
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* customHeaders */}
+        {filterContains('customHeaders', selectedFilters) && (
+          <div>
+            <KeyOnlyInput
+              labelClassName="text-bright font-semibold tracking-wide"
+              label={t('crane.customHeaders').toUpperCase()}
+              items={config.customHeaders ?? []}
+              keyPlaceholder={t('crane.placeholders.headerName')}
+              onChange={it => onChange({ customHeaders: it })}
+              editorOptions={editorOptions}
+              disabled={disabled}
+              onResetSection={resettableConfig.customHeaders ? () => onResetSection('customHeaders') : null}
+            />
+            <DyoMessage grow message={findErrorFor(fieldErrors, 'customHeaders')} messageType="error" />
+          </div>
+        )}
+
         {/* deploymentStartegy */}
         {filterContains('deploymentStrategy', selectedFilters) && (
-          <div className="grid break-inside-avoid mb-8">
+          <div>
             <ConfigSectionLabel
               disabled={!stringResettable(baseConfig?.deploymentStrategy, resettableConfig.deploymentStrategy)}
               onResetSection={() => onResetSection('deploymentStrategy')}
@@ -102,7 +172,7 @@ const CraneConfigSection = (props: CraneConfigSectionProps) => {
 
         {/* healthCheckConfig */}
         {filterContains('healthCheckConfig', selectedFilters) && (
-          <div className="grid break-inside-avoid mb-8">
+          <div>
             <ConfigSectionLabel
               disabled={disabled || !resettableConfig.healthCheckConfig}
               onResetSection={() => onResetSection('healthCheckConfig')}
@@ -111,12 +181,12 @@ const CraneConfigSection = (props: CraneConfigSectionProps) => {
               {t('crane.healthCheckConfig').toUpperCase()}
             </ConfigSectionLabel>
 
-            <div className="ml-2">
+            <div className="flex flex-col gap-4 ml-2 mt-2">
               <MultiInput
                 id="crane.port"
                 label={t('common.port')}
-                containerClassName="max-w-lg mb-3"
-                labelClassName="my-auto mr-4 w-20"
+                containerClassName="w-40"
+                labelClassName="my-auto mr-4 w-10"
                 grow
                 inline
                 value={config.healthCheckConfig?.port ?? ''}
@@ -134,9 +204,7 @@ const CraneConfigSection = (props: CraneConfigSectionProps) => {
               <MultiInput
                 id="crane.livenessProbe"
                 label={t('crane.livenessProbe')}
-                containerClassName="max-w-lg mb-3"
-                labelClassName="my-auto mr-4 w-60"
-                className="w-full"
+                labelClassName="my-auto mr-4 w-40"
                 grow
                 inline
                 value={config.healthCheckConfig?.livenessProbe ?? ''}
@@ -154,9 +222,7 @@ const CraneConfigSection = (props: CraneConfigSectionProps) => {
               <MultiInput
                 id="crane.readinessProbe"
                 label={t('crane.readinessProbe')}
-                containerClassName="max-w-lg mb-3"
-                labelClassName="my-auto mr-4 w-60"
-                className="w-full"
+                labelClassName="my-auto mr-4 w-40"
                 grow
                 inline
                 value={config.healthCheckConfig?.readinessProbe ?? ''}
@@ -174,8 +240,7 @@ const CraneConfigSection = (props: CraneConfigSectionProps) => {
               <MultiInput
                 id="crane.startupProbe"
                 label={t('crane.startupProbe')}
-                containerClassName="max-w-lg mb-3"
-                labelClassName="my-auto mr-4 w-60"
+                labelClassName="my-auto mr-4 w-40"
                 className="w-full"
                 inline
                 grow
@@ -194,132 +259,132 @@ const CraneConfigSection = (props: CraneConfigSectionProps) => {
           </div>
         )}
 
-        {/* customHeaders */}
-        {filterContains('customHeaders', selectedFilters) && (
-          <div className="grid break-inside-avoid mb-8 max-w-lg">
-            <KeyOnlyInput
-              className="max-h-128 overflow-y-auto mb-2"
-              labelClassName="text-bright font-semibold tracking-wide mb-2"
-              label={t('crane.customHeaders').toUpperCase()}
-              items={config.customHeaders ?? []}
-              keyPlaceholder={t('crane.placeholders.headerName')}
-              onChange={it => onChange({ customHeaders: it })}
-              editorOptions={editorOptions}
-              disabled={disabled}
-              onResetSection={resettableConfig.customHeaders ? () => onResetSection('customHeaders') : null}
-            />
-            <DyoMessage message={findErrorFor(fieldErrors, 'customHeaders')} messageType="error" />
+        {/* labels */}
+        {filterContains('labels', selectedFilters) && (
+          <div className="flex flex-col">
+            <ConfigSectionLabel disabled={disabled || !config.labels} onResetSection={() => onResetSection('labels')}>
+              {t('crane.labels').toUpperCase()}
+            </ConfigSectionLabel>
+
+            <div className="flex flex-col gap-2">
+              <div>
+                <KeyValueInput
+                  labelClassName="ml-2"
+                  label={t('crane.deployment')}
+                  onChange={it => onChange({ labels: { ...config.labels, deployment: it } })}
+                  items={config.labels?.deployment ?? []}
+                  editorOptions={editorOptions}
+                  disabled={disabled}
+                  errors={conflictErrors?.labels?.deployment}
+                />
+                <DyoMessage message={findErrorFor(fieldErrors, 'labels.deployment')} messageType="error" />
+              </div>
+
+              <div>
+                <KeyValueInput
+                  labelClassName="ml-2"
+                  label={t('crane.service')}
+                  onChange={it => onChange({ labels: { ...config.labels, service: it } })}
+                  items={config.labels?.service ?? []}
+                  editorOptions={editorOptions}
+                  disabled={disabled}
+                  errors={conflictErrors?.labels?.service}
+                />
+                <DyoMessage message={findErrorFor(fieldErrors, 'labels.service')} messageType="error" />
+              </div>
+
+              <div>
+                <KeyValueInput
+                  labelClassName="ml-2"
+                  label={t('crane.ingress')}
+                  onChange={it => onChange({ labels: { ...config.labels, ingress: it } })}
+                  items={config.labels?.ingress ?? []}
+                  editorOptions={editorOptions}
+                  disabled={disabled}
+                  errors={conflictErrors?.labels?.ingress}
+                />
+                <DyoMessage message={findErrorFor(fieldErrors, 'labels.ingress')} messageType="error" />
+              </div>
+            </div>
           </div>
         )}
 
-        {/* resourceConfig */}
-        {filterContains('resourceConfig', selectedFilters) && (
-          <div className="grid break-inside-avoid mb-8">
-            <ConfigSectionLabel
-              disabled={disabled || !resettableConfig.resourceConfig}
-              onResetSection={() => onResetSection('resourceConfig')}
-              error={conflictErrors?.resourceConfig}
-            >
-              {t('crane.resourceConfig').toUpperCase()}
-            </ConfigSectionLabel>
+        {/* metrics */}
+        {filterContains('metrics', selectedFilters) && (
+          <div className="flex flex-col">
+            <div className="flex flex-row">
+              <ConfigSectionLabel
+                disabled={disabled || !resettableConfig.metrics}
+                onResetSection={() => onResetSection('metrics')}
+                error={conflictErrors?.metrics}
+              >
+                {t('crane.metrics').toUpperCase()}
+              </ConfigSectionLabel>
 
-            <div className="grid ml-2">
-              <DyoLabel className="max-w-lg w-full text-right mb-1">{t('crane.limits')}</DyoLabel>
-
-              <MultiInput
-                id="crane.limits.cpu"
-                label={t('crane.cpu')}
-                containerClassName="max-w-lg mb-3"
-                labelClassName="my-auto mr-4 w-40"
-                className="w-full"
-                inline
-                grow
-                value={config.resourceConfig?.limits?.cpu ?? ''}
-                placeholder={t('crane.placeholders.cpuUsageExample')}
-                onPatch={it =>
+              <DyoToggle
+                className="ml-2"
+                name="metrics"
+                checked={config.metrics?.enabled ?? false}
+                onCheckedChange={it =>
                   onChange({
-                    resourceConfig: {
-                      ...config.resourceConfig,
-                      limits: nullify({ ...config.resourceConfig?.limits, cpu: it }),
+                    metrics: {
+                      ...config.metrics,
+                      enabled: it,
                     },
                   })
                 }
-                editorOptions={editorOptions}
-                message={findErrorFor(fieldErrors, 'resourceConfig.limits.cpu')}
-                disabled={disabled}
-              />
-
-              <MultiInput
-                id="crane.limits.memory"
-                label={t('crane.memory')}
-                containerClassName="max-w-lg mb-3"
-                labelClassName="my-auto mr-4 w-40"
-                className="w-full"
-                inline
-                grow
-                value={config.resourceConfig?.limits?.memory ?? ''}
-                placeholder={t('crane.placeholders.memoryUsageExample')}
-                onPatch={it =>
-                  onChange({
-                    resourceConfig: {
-                      ...config.resourceConfig,
-                      limits: nullify({ ...config.resourceConfig?.limits, memory: it }),
-                    },
-                  })
-                }
-                editorOptions={editorOptions}
-                message={findErrorFor(fieldErrors, 'resourceConfig.limits.memory')}
-                disabled={disabled}
-              />
-
-              <DyoLabel className="max-w-lg w-full text-right mb-1">{t('crane.requests')}</DyoLabel>
-
-              <MultiInput
-                id="crane.requests.cpu"
-                label={t('crane.cpu')}
-                containerClassName="max-w-lg mb-3"
-                labelClassName="my-auto mr-4 w-40"
-                className="w-full"
-                inline
-                grow
-                value={config.resourceConfig?.requests?.cpu ?? ''}
-                placeholder={t('crane.placeholders.cpuUsageExample')}
-                onPatch={it =>
-                  onChange({
-                    resourceConfig: {
-                      ...config.resourceConfig,
-                      requests: nullify({ ...config.resourceConfig?.requests, cpu: it }),
-                    },
-                  })
-                }
-                editorOptions={editorOptions}
-                message={findErrorFor(fieldErrors, 'resourceConfig.requests.cpu')}
-                disabled={disabled}
-              />
-
-              <MultiInput
-                id="crane.requests.memory"
-                label={t('crane.memory')}
-                containerClassName="max-w-lg mb-3"
-                labelClassName="my-auto mr-4 w-40"
-                className="w-full"
-                inline
-                grow
-                value={config.resourceConfig?.requests?.memory ?? ''}
-                placeholder={t('crane.placeholders.memoryUsageExample')}
-                onPatch={it =>
-                  onChange({
-                    resourceConfig: {
-                      ...config.resourceConfig,
-                      requests: nullify({ ...config.resourceConfig?.requests, memory: it }),
-                    },
-                  })
-                }
-                editorOptions={editorOptions}
-                message={findErrorFor(fieldErrors, 'resourceConfig.requests.memory')}
                 disabled={disabled}
               />
             </div>
+
+            {config.metrics?.enabled && (
+              <div className="flex-col gap-2 ml-2">
+                <MultiInput
+                  id="crane.metrics.path"
+                  label={t('crane.metricsPath')}
+                  grow
+                  value={config.metrics?.path ?? ''}
+                  placeholder={t('crane.placeholders.metricsPath')}
+                  onPatch={it => {
+                    onChange({
+                      metrics: {
+                        ...config.metrics,
+                        path: it,
+                      },
+                    })
+                  }}
+                  editorOptions={editorOptions}
+                  message={findErrorFor(fieldErrors, 'metrics.path')}
+                  disabled={disabled}
+                />
+
+                <div className="flex flex-col mt-2">
+                  <DyoLabel className="whitespace-nowrap text-light-eased my-2">{t('crane.metricsPort')}</DyoLabel>
+                  {ports.length < 1 ? (
+                    <DyoMessage messageType="info" message={t('common.noInternalPortsDefined')} />
+                  ) : (
+                    <DyoChips
+                      className="w-full ml-2"
+                      name="metricsPort"
+                      choices={ports.map(it => it.internal)}
+                      selection={config.metrics?.port ?? null}
+                      converter={(it: number | null) =>
+                        config.ports?.find(port => port.internal === it).internal.toString()
+                      }
+                      onSelectionChange={it =>
+                        onChange({
+                          metrics: {
+                            ...config.metrics,
+                            port: it,
+                          },
+                        })
+                      }
+                      disabled={disabled}
+                    />
+                  )}
+                </div>
+              </div>
+            )}
           </div>
         )}
 
@@ -344,10 +409,125 @@ const CraneConfigSection = (props: CraneConfigSectionProps) => {
           </div>
         )}
 
+        {/* resourceConfig */}
+        {filterContains('resourceConfig', selectedFilters) && (
+          <div>
+            <ConfigSectionLabel
+              disabled={disabled || !resettableConfig.resourceConfig}
+              onResetSection={() => onResetSection('resourceConfig')}
+              error={conflictErrors?.resourceConfig}
+            >
+              {t('crane.resourceConfig').toUpperCase()}
+            </ConfigSectionLabel>
+
+            <div className="flex flex-row gap-16 m-2">
+              <div className="flex flex-col">
+                <DyoLabel className="font-semibold">{t('crane.limits')}</DyoLabel>
+
+                <MultiInput
+                  id="crane.limits.cpu"
+                  label={t('crane.cpu')}
+                  containerClassName="max-w-lg mb-3"
+                  labelClassName="my-auto mr-4 w-40"
+                  className="w-full"
+                  inline
+                  grow
+                  value={config.resourceConfig?.limits?.cpu ?? ''}
+                  placeholder={t('crane.placeholders.cpuUsageExample')}
+                  onPatch={it =>
+                    onChange({
+                      resourceConfig: {
+                        ...config.resourceConfig,
+                        limits: nullify({ ...config.resourceConfig?.limits, cpu: it }),
+                      },
+                    })
+                  }
+                  editorOptions={editorOptions}
+                  message={findErrorFor(fieldErrors, 'resourceConfig.limits.cpu')}
+                  disabled={disabled}
+                />
+
+                <MultiInput
+                  id="crane.limits.memory"
+                  label={t('crane.memory')}
+                  containerClassName="max-w-lg mb-3"
+                  labelClassName="my-auto mr-4 w-40"
+                  className="w-full"
+                  inline
+                  grow
+                  value={config.resourceConfig?.limits?.memory ?? ''}
+                  placeholder={t('crane.placeholders.memoryUsageExample')}
+                  onPatch={it =>
+                    onChange({
+                      resourceConfig: {
+                        ...config.resourceConfig,
+                        limits: nullify({ ...config.resourceConfig?.limits, memory: it }),
+                      },
+                    })
+                  }
+                  editorOptions={editorOptions}
+                  message={findErrorFor(fieldErrors, 'resourceConfig.limits.memory')}
+                  disabled={disabled}
+                />
+              </div>
+
+              <div className="flex flex-col">
+                <DyoLabel className="font-semibold">{t('crane.requests')}</DyoLabel>
+
+                <MultiInput
+                  id="crane.requests.cpu"
+                  label={t('crane.cpu')}
+                  containerClassName="max-w-lg mb-3"
+                  labelClassName="my-auto mr-4 w-40"
+                  className="w-full"
+                  inline
+                  grow
+                  value={config.resourceConfig?.requests?.cpu ?? ''}
+                  placeholder={t('crane.placeholders.cpuUsageExample')}
+                  onPatch={it =>
+                    onChange({
+                      resourceConfig: {
+                        ...config.resourceConfig,
+                        requests: nullify({ ...config.resourceConfig?.requests, cpu: it }),
+                      },
+                    })
+                  }
+                  editorOptions={editorOptions}
+                  message={findErrorFor(fieldErrors, 'resourceConfig.requests.cpu')}
+                  disabled={disabled}
+                />
+
+                <MultiInput
+                  id="crane.requests.memory"
+                  label={t('crane.memory')}
+                  containerClassName="max-w-lg mb-3"
+                  labelClassName="my-auto mr-4 w-40"
+                  className="w-full"
+                  inline
+                  grow
+                  value={config.resourceConfig?.requests?.memory ?? ''}
+                  placeholder={t('crane.placeholders.memoryUsageExample')}
+                  onPatch={it =>
+                    onChange({
+                      resourceConfig: {
+                        ...config.resourceConfig,
+                        requests: nullify({ ...config.resourceConfig?.requests, memory: it }),
+                      },
+                    })
+                  }
+                  editorOptions={editorOptions}
+                  message={findErrorFor(fieldErrors, 'resourceConfig.requests.memory')}
+                  disabled={disabled}
+                />
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* LoadBalancer */}
         {filterContains('useLoadBalancer', selectedFilters) && (
-          <div className="grid break-inside-avoid mb-8">
-            <div className="flex flex-row mb-2.5">
+          <div>
+            <div className="flex flex-row mb-4">
               <ConfigSectionLabel
                 disabled={disabled || booleanResettable(baseConfig?.useLoadBalancer, resettableConfig.useLoadBalancer)}
                 onResetSection={() => onResetSection('useLoadBalancer')}
@@ -376,199 +556,6 @@ const CraneConfigSection = (props: CraneConfigSectionProps) => {
                 onResetSection={resettableConfig.extraLBAnnotations ? () => onResetSection('extraLBAnnotations') : null}
                 disabled={disabled}
               />
-            )}
-          </div>
-        )}
-
-        {/* Labels */}
-        {filterContains('labels', selectedFilters) && (
-          <div className="flex flex-col">
-            <ConfigSectionLabel disabled={disabled || !config.labels} onResetSection={() => onResetSection('labels')}>
-              {t('crane.labels').toUpperCase()}
-            </ConfigSectionLabel>
-
-            <div className="grid mb-8 break-inside-avoid">
-              <KeyValueInput
-                className="max-h-128 overflow-y-auto"
-                labelClassName="mb-2 ml-2"
-                label={t('crane.deployment')}
-                onChange={it => onChange({ labels: { ...config.labels, deployment: it } })}
-                items={config.labels?.deployment ?? []}
-                editorOptions={editorOptions}
-                disabled={disabled}
-                errors={conflictErrors?.labels?.deployment}
-              />
-              <DyoMessage message={findErrorFor(fieldErrors, 'labels.deployment')} messageType="error" />
-            </div>
-
-            <div className="grid mb-8 break-inside-avoid">
-              <KeyValueInput
-                className="max-h-128 overflow-y-auto"
-                labelClassName="mb-2 ml-2"
-                label={t('crane.service')}
-                onChange={it => onChange({ labels: { ...config.labels, service: it } })}
-                items={config.labels?.service ?? []}
-                editorOptions={editorOptions}
-                disabled={disabled}
-                errors={conflictErrors?.labels?.service}
-              />
-              <DyoMessage message={findErrorFor(fieldErrors, 'labels.service')} messageType="error" />
-            </div>
-
-            <div className="grid mb-8 break-inside-avoid">
-              <KeyValueInput
-                className="max-h-128 overflow-y-auto"
-                labelClassName="mb-2 ml-2"
-                label={t('crane.ingress')}
-                onChange={it => onChange({ labels: { ...config.labels, ingress: it } })}
-                items={config.labels?.ingress ?? []}
-                editorOptions={editorOptions}
-                disabled={disabled}
-                errors={conflictErrors?.labels?.ingress}
-              />
-              <DyoMessage message={findErrorFor(fieldErrors, 'labels.ingress')} messageType="error" />
-            </div>
-          </div>
-        )}
-
-        {/* Annotations */}
-        {filterContains('annotations', selectedFilters) && (
-          <div className="flex flex-col">
-            <ConfigSectionLabel
-              disabled={disabled || !resettableConfig.annotations}
-              onResetSection={() => onResetSection('annotations')}
-            >
-              {t('crane.annotations').toUpperCase()}
-            </ConfigSectionLabel>
-
-            <div className="grid mb-8 break-inside-avoid">
-              <KeyValueInput
-                className="max-h-128 overflow-y-auto"
-                labelClassName="mb-2 ml-2"
-                label={t('crane.deployment')}
-                onChange={it => onChange({ annotations: { ...config.annotations, deployment: it } })}
-                items={config.annotations?.deployment ?? []}
-                editorOptions={editorOptions}
-                disabled={disabled}
-                errors={conflictErrors?.annotations?.deployment}
-              />
-              <DyoMessage message={findErrorFor(fieldErrors, 'annotations.deployment')} messageType="error" />
-            </div>
-
-            <div className="grid mb-8 break-inside-avoid">
-              <KeyValueInput
-                className="max-h-128 overflow-y-auto"
-                labelClassName="mb-2 ml-2"
-                label={t('crane.service')}
-                onChange={it => onChange({ annotations: { ...config.annotations, service: it } })}
-                items={config.annotations?.service ?? []}
-                editorOptions={editorOptions}
-                disabled={disabled}
-                errors={conflictErrors?.annotations.service}
-              />
-              <DyoMessage message={findErrorFor(fieldErrors, 'annotations.service')} messageType="error" />
-            </div>
-
-            <div className="grid mb-8 break-inside-avoid">
-              <KeyValueInput
-                className="max-h-128 overflow-y-auto"
-                labelClassName="mb-2 ml-2"
-                label={t('crane.ingress')}
-                onChange={it => onChange({ annotations: { ...config.annotations, ingress: it } })}
-                items={config.annotations?.ingress ?? []}
-                editorOptions={editorOptions}
-                disabled={disabled}
-                errors={conflictErrors?.annotations.ingress}
-              />
-              <DyoMessage message={findErrorFor(fieldErrors, 'annotations.ingress')} messageType="error" />
-            </div>
-          </div>
-        )}
-
-        {/* metrics */}
-        {filterContains('metrics', selectedFilters) && (
-          <div className="grid break-inside-avoid mb-8">
-            <ConfigSectionLabel
-              disabled={disabled || !resettableConfig.metrics}
-              onResetSection={() => onResetSection('metrics')}
-              error={conflictErrors?.metrics}
-            >
-              {t('crane.metrics').toUpperCase()}
-            </ConfigSectionLabel>
-
-            <DyoToggle
-              className="ml-2 mb-3"
-              name="metrics"
-              checked={config.metrics?.enabled ?? false}
-              onCheckedChange={it =>
-                onChange({
-                  metrics: {
-                    ...config.metrics,
-                    enabled: it,
-                  },
-                })
-              }
-              disabled={disabled}
-            />
-
-            {config.metrics?.enabled && (
-              <>
-                <MultiInput
-                  id="crane.metrics.path"
-                  containerClassName="max-w-lg mb-3"
-                  label={t('crane.metricsPath')}
-                  labelClassName="text-bright font-semibold tracking-wide mb-2 my-auto mr-4"
-                  grow
-                  value={config.metrics?.path ?? ''}
-                  placeholder={t('crane.placeholders.metricsPath')}
-                  onPatch={it => {
-                    onChange({
-                      metrics: {
-                        ...config.metrics,
-                        path: it,
-                      },
-                    })
-                  }}
-                  editorOptions={editorOptions}
-                  message={findErrorFor(fieldErrors, 'metrics.path')}
-                  disabled={disabled}
-                />
-
-                {ports.length > 0 ? (
-                  <div className="max-w-lg mb-3 flex flex-row">
-                    <DyoLabel className="my-auto w-40 whitespace-nowrap text-light-eased">
-                      {t('crane.metricsPort')}
-                    </DyoLabel>
-
-                    <DyoChips
-                      className="w-full ml-2"
-                      name="metricsPort"
-                      choices={ports.map(it => it.internal)}
-                      selection={config.metrics?.port ?? null}
-                      converter={(it: number | null) =>
-                        config.ports?.find(port => port.internal === it).internal.toString()
-                      }
-                      onSelectionChange={it =>
-                        onChange({
-                          metrics: {
-                            ...config.metrics,
-                            port: it,
-                          },
-                        })
-                      }
-                      disabled={disabled}
-                    />
-                  </div>
-                ) : (
-                  <div className="max-w-lg mb-3 flex flex-col">
-                    <DyoLabel className="my-auto w-40 whitespace-nowrap text-light-eased">
-                      {t('crane.metricsPort')}
-                    </DyoLabel>
-
-                    <DyoMessage messageType="info" message={t('common.noInternalPortsDefined')} />
-                  </div>
-                )}
-              </>
             )}
           </div>
         )}

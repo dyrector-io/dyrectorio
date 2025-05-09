@@ -20,8 +20,8 @@ test.describe('Versionless Project', () => {
     await configButton.click()
 
     await page.locator('button:has-text("Name")').click()
-    await page.waitForSelector('input[id="common.containerName"]')
-    await expect(await page.locator('input[id="common.containerName"]')).toBeEditable()
+    await page.waitForSelector('input[id="common.name"]')
+    await expect(await page.locator('input[id="common.name"]')).toBeEditable()
   })
 
   test('successful deployment should be mutable', async ({ page }, testInfo) => {
@@ -45,7 +45,7 @@ test.describe('Versionless Project', () => {
     await configButton.click()
 
     await page.locator('button:has-text("Name")').click()
-    await page.waitForSelector('input[id="common.containerName"]')
-    await expect(await page.locator('input[id="common.containerName"]')).toBeEditable()
+    await page.waitForSelector('input[id="common.name"]')
+    await expect(await page.locator('input[id="common.name"]')).toBeEditable()
   })
 })
