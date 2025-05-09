@@ -1,5 +1,5 @@
 import { ContainerConfigPortRangeDto } from 'src/app/container/container.dto'
-import { EnvironmentRule, ImageValidation } from 'src/app/image/image.dto'
+import { ImageValidation } from 'src/app/image/image.dto'
 import { ContainerPort } from 'src/app/node/node.dto'
 import { CruxBadRequestException } from 'src/exception/crux-exception'
 import { UID_MAX, UID_MIN } from 'src/shared/const'
@@ -22,6 +22,7 @@ import {
   PORT_MAX,
   UniqueKeyValue,
 } from './container'
+import { EnvironmentRule } from './image'
 
 export const nameRuleOptional = yup.string().trim().min(3).max(70)
 export const nameRule = yup.string().required().trim().min(3).max(70)
@@ -363,6 +364,7 @@ export const concreteContainerConfigSchema = yup.object().shape({
   metrics: metricsRule.optional().nullable(),
 })
 
+// TODO(@robot9706): Fix labels & config bundles conflicting
 type KeyValueLike = {
   key: string
   value: string
@@ -440,6 +442,7 @@ const testRules = (rules: [string, EnvironmentRule][], arr: UniqueKeyValue[], fi
   return null
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export const createStartDeploymentSchema = (instanceValidation: Record<string, ImageValidation>) =>
   yup.object({
     config: containerConfigSchema,
@@ -462,6 +465,7 @@ export const createStartDeploymentSchema = (instanceValidation: Record<string, I
         'Container names must be unique',
         instances => new Set(instances.map(it => it.config.name)).size === instances.length,
       )
+      // TODO(@robot9706): Fix labels & config bundles conflicting
       .test('instanceLabelRules', 'Instance must match their image label rules.', instances => {
         const errors = instances
           .map(it => {

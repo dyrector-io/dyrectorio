@@ -1,8 +1,13 @@
-import { Cache } from 'cache-manager'
 import { getRegistryApiException } from 'src/exception/registry-exception'
 import { GitlabNamespace } from '../registry.dto'
 import { RegistryImageWithTags } from '../registry.message'
-import { RegistryApiClient, RegistryImageTagInfo, fetchInfoForTags } from './registry-api-client'
+import {
+  RegistryApiClient,
+  RegistryImageTagInfo,
+  TagsList,
+  fetchInfoForTags,
+  tagNamesToImageTags,
+} from './registry-api-client'
 import V2HttpApiClient from './v2-http-api-client'
 import RegistryV2ApiClient, { RegistryV2ApiClientOptions } from './v2-registry-api-client'
 
@@ -11,9 +16,9 @@ export type GitlabRegistryClientUrls = {
   registryUrl: string
 }
 
-type TagsList = {
-  name: string
-  tags: string[]
+type GitlabRegistryClientOptions = RegistryV2ApiClientOptions & {
+  namespaceId: string
+  namespace: GitlabNamespace
 }
 
 export class GitlabRegistryClient implements RegistryApiClient {
@@ -24,11 +29,8 @@ export class GitlabRegistryClient implements RegistryApiClient {
   private namespace: string
 
   constructor(
-    private namespaceId: string,
-    options: RegistryV2ApiClientOptions,
-    private urls: GitlabRegistryClientUrls,
-    namespace: GitlabNamespace,
-    private readonly cache: Cache | null,
+    private readonly urls: GitlabRegistryClientUrls,
+    private readonly options: GitlabRegistryClientOptions,
   ) {
     this.basicAuthHeaders = {
       Authorization: `Basic ${Buffer.from(`${options.username}:${options.password}`).toString('base64')}`,
@@ -38,12 +40,12 @@ export class GitlabRegistryClient implements RegistryApiClient {
       Authorization: `Bearer ${options.password}`,
     }
 
-    this.namespace = namespace === 'group' ? 'groups' : 'projects'
+    this.namespace = options.namespace === 'group' ? 'groups' : 'projects'
   }
 
   async catalog(text: string): Promise<string[]> {
     const res = await fetch(
-      `https://${this.urls.apiUrl}/api/v4/${this.namespace}/${this.namespaceId}/registry/repositories`,
+      `https://${this.urls.apiUrl}/api/v4/${this.namespace}/${this.options.namespaceId}/registry/repositories`,
       {
         headers: this.patAuthHeaders,
       },
@@ -83,13 +85,15 @@ export class GitlabRegistryClient implements RegistryApiClient {
       throw getRegistryApiException(res, `Gitlab tags for image ${image}`)
     }
 
-    const json = (await res.json()) as TagsList[]
-    const tags = json.flatMap(it => it.tags)
-    const tagInfo = await fetchInfoForTags(image, tags, this)
+    const tagsList = (await res.json()) as TagsList[]
+    const tagNames = tagsList.flatMap(it => it.tags)
+    const tags = this.options.disableTagInfo
+      ? tagNamesToImageTags(tagNames)
+      : await fetchInfoForTags(image, tagNames, this)
 
     return {
       name: image,
-      tags: tagInfo,
+      tags,
     }
   }
 
@@ -101,7 +105,7 @@ export class GitlabRegistryClient implements RegistryApiClient {
           headers: this.basicAuthHeaders,
         },
       },
-      this.cache,
+      this.options.cache,
     )
   }
 

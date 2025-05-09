@@ -16,6 +16,7 @@ import { EditorLeftMessage, EditorMessage } from '../editor/editor.message'
 import EditorServiceProvider from '../editor/editor.service.provider'
 import ContainerConfigDomainEventListener from './container-config.domain-event.listener'
 import { ConfigUpdatedMessage, WS_TYPE_CONFIG_UPDATED } from './container-config.message'
+import { ContainerConfigProperty } from './container.const'
 import {
   ContainerConfigDetailsDto,
   ContainerConfigRelationsDto,
@@ -265,13 +266,13 @@ export default class ContainerConfigService {
       },
     })
 
-    const data: ContainerConfigData = this.mapper.configDtoToConfigData(
+    let data: ContainerConfigData = this.mapper.configDtoToConfigData(
       config as any as ContainerConfigData,
       req.config ?? {},
     )
 
     if (req.resetSection) {
-      data[req.resetSection] = null
+      data = this.resetSection(data, req.resetSection)
     }
 
     await this.prisma.containerConfig.update({
@@ -317,6 +318,18 @@ export default class ContainerConfigService {
     }
 
     return message
+  }
+
+  private resetSection(config: ContainerConfigData, resetKey: ContainerConfigProperty) {
+    config[resetKey] = null
+
+    if (resetKey === 'storage') {
+      config.storageSet = false
+      config.storageId = null
+      config.storageConfig = null
+    }
+
+    return config
   }
 
   private async checkMutability(configId: string): Promise<boolean> {

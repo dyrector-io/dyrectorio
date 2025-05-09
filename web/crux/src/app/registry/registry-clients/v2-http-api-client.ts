@@ -201,7 +201,12 @@ export default class V2HttpApiClient {
       })
       const data = (await res.json()) as T
 
-      this.logger.debug(`Got response '${fullUrl}' - ${res.status}`)
+      if (res.status !== 200) {
+        this.logger.error(`Got response '${fullUrl}' - ${res.status}`)
+
+        const errors = data.errors.map(it => `${it.code} (${it.message})`).reduce((curr, it) => `${curr}, ${it}`)
+        this.logger.error(errors)
+      }
 
       return {
         res,
@@ -258,7 +263,7 @@ export default class V2HttpApiClient {
 
     const cached = await this.cache.get<T>(cacheKey)
     if (cached) {
-      this.logger.debug(`Cached ${cacheKey}`)
+      this.logger.verbose(`Cache hit ${cacheKey}`)
       return cached
     }
 
@@ -417,24 +422,36 @@ export default class V2HttpApiClient {
   }
 
   async fetchLabels(image: string, tag: string): Promise<Record<string, string>> {
-    const tagManifest = await this.fetchTagManifest(image, tag)
-    if (!tagManifest) {
+    try {
+      const tagManifest = await this.fetchTagManifest(image, tag)
+      if (!tagManifest) {
+        return {}
+      }
+
+      return this.fetchLabelsByManifest(image, tagManifest, 0)
+    } catch (err: any) {
+      this.logger.error(`Failed to fetch labels '${image}:${tag}'`)
+      this.logger.error(`${err.name} ${err.message}`, err.stack)
       return {}
     }
-
-    return this.fetchLabelsByManifest(image, tagManifest, 0)
   }
 
   async fetchTagInfo(image: string, tag: string): Promise<RegistryImageTagInfo> {
-    const tagManifest = await this.fetchTagManifest(image, tag)
-    if (!tagManifest) {
+    try {
+      const tagManifest = await this.fetchTagManifest(image, tag)
+      if (!tagManifest) {
+        return null
+      }
+
+      const configBlob = await this.fetchConfigBlobByManifest(image, tagManifest, 0)
+
+      return {
+        created: configBlob.created,
+      }
+    } catch (err: any) {
+      this.logger.error(`Failed to fetch tag info '${image}:${tag}'`)
+      this.logger.error(`${err.name} ${err.message}`, err.stack)
       return null
-    }
-
-    const configBlob = await this.fetchConfigBlobByManifest(image, tagManifest, 0)
-
-    return {
-      created: configBlob.created,
     }
   }
 }

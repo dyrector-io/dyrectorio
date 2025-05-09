@@ -14,6 +14,7 @@ import TeamRepository from '../team/team.repository'
 import { AddImagesDto, ImageDetailsDto, PatchImageDto } from './image.dto'
 import ImageMapper from './image.mapper'
 
+// TODO(@robot9706): Fix labels & config bundles conflicting
 type LabelMap = Record<string, string>
 type ImageLabelMap = Record<string, LabelMap>
 type RegistryLabelMap = Record<string, ImageLabelMap>
@@ -58,11 +59,13 @@ export default class ImageService {
   }
 
   async addImagesToVersion(
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     teamSlug: string,
     versionId: string,
     request: AddImagesDto[],
     identity: Identity,
   ): Promise<ImageDetailsDto[]> {
+    // TODO(@robot9706): Fix labels & config bundles conflicting
     const labelsApiDisabled = this.appConfig.get('DISABLE_REGISTRY_LABEL_FETCHING')
 
     const teamId = await this.teamRepository.getTeamIdBySlug(teamSlug)
@@ -142,6 +145,7 @@ export default class ImageService {
       return await Promise.all(imgs)
     })
 
+    // TODO(@robot9706): Fix labels & config bundles conflicting
     await this.prisma.$transaction(prisma =>
       Promise.all(
         images.map(it => {
@@ -197,6 +201,7 @@ export default class ImageService {
     return dtos
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   async patchImage(teamSlug: string, imageId: string, request: PatchImageDto, identity: Identity): Promise<void> {
     const currentConfig = await this.prisma.containerConfig.findFirstOrThrow({
       where: {
@@ -264,10 +269,11 @@ export default class ImageService {
         registry: true,
       },
       data: {
+        // TODO(@robot9706): Fix labels & config bundles conflicting
         labels: labels ?? undefined,
+        config: configUpdate ?? undefined,
         tag: request.tag ?? undefined,
         updatedBy: identity.id,
-        config: configUpdate ?? undefined,
       },
     })
   }
@@ -318,6 +324,7 @@ export default class ImageService {
     return [imageName, imageTag]
   }
 
+  // TODO(@robot9706): Fix labels & config bundles conflicting
   private static mergeEnvironmentsRules(
     environment: UniqueKeyValue[],
     rules: Record<string, EnvironmentRule>,

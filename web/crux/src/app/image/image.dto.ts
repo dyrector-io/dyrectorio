@@ -14,7 +14,7 @@ import { ENVIRONMENT_VALUE_TYPES, EnvironmentValueType } from 'src/domain/image'
 import { ContainerConfigDto } from '../container/container.dto'
 import { BasicRegistryDto } from '../registry/registry.dto'
 
-export class EnvironmentRule {
+export class EnvironmentRuleDto {
   @IsIn(ENVIRONMENT_VALUE_TYPES)
   type: EnvironmentValueType
 
@@ -32,7 +32,7 @@ export class EnvironmentRule {
 
 export class ImageValidation {
   @IsObject()
-  environmentRules: Record<string, EnvironmentRule>
+  environmentRules: Record<string, EnvironmentRuleDto>
 }
 
 export class ImageDto {
