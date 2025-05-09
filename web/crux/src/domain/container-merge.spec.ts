@@ -844,7 +844,7 @@ describe('container-merge', () => {
             value: 'deployment.secret3.value',
             publicKey: 'deployment.secret3.publicKey',
           },
-        ]
+        ],
       }
 
       expect(merged).toEqual(expected)

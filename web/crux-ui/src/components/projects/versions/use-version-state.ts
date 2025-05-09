@@ -9,7 +9,6 @@ import {
   ContainerConfigData,
   DeleteImageMessage,
   DeploymentDetails,
-  FetchImageTagsMessage,
   GetImageMessage,
   ImageMessage,
   ImagesAddedMessage,

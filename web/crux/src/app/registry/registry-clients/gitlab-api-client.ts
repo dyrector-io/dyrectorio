@@ -1,4 +1,3 @@
-import { Cache } from 'cache-manager'
 import { getRegistryApiException } from 'src/exception/registry-exception'
 import { GitlabNamespace } from '../registry.dto'
 import { RegistryImageWithTags } from '../registry.message'

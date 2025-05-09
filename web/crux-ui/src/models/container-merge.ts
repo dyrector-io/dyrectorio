@@ -124,7 +124,7 @@ const mergeConfigs = (strong: ContainerConfigData, weak: ContainerConfigData): C
   expectedState: strong.expectedState ?? weak.expectedState,
 })
 
-const squashConfigs = (configs: ContainerConfigData[]): ContainerConfigData =>
+export const squashConfigs = (configs: ContainerConfigData[]): ContainerConfigData =>
   configs.reduce((result, conf) => mergeConfigs(conf, result), {} as ContainerConfigData)
 
 // this assumes that the concrete config takes care of any conflict between the other configs

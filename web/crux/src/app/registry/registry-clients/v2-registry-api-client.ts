@@ -19,7 +19,12 @@ export type RegistryV2ApiClientOptions = {
   password?: string
 }
 
-export const registryCredentialsToBasicAuth = (options: RegistryV2ApiClientOptions) =>
+export type RegistryV2Credentials = {
+  username: string
+  password: string
+}
+
+export const registryCredentialsToBasicAuth = (options: RegistryV2Credentials) =>
   `Basic ${Buffer.from(`${options.username}:${options.password}`).toString('base64')}`
 
 class RegistryV2ApiClient implements RegistryApiClient {
@@ -41,7 +46,7 @@ class RegistryV2ApiClient implements RegistryApiClient {
       }
 
       this.headers = {
-        Authorization: registryCredentialsToBasicAuth(options),
+        Authorization: registryCredentialsToBasicAuth(options as RegistryV2Credentials),
       }
     } else {
       this.headers = {}

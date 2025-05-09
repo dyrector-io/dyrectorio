@@ -18,6 +18,8 @@ import RegistryV2ApiClient, {
 export type GithubRegistryClientOptions = Omit<RegistryV2ApiClientOptions, 'imageNamePrefix'> & {
   repository: string
   namespace: GithubNamespace
+  username: string
+  password: string
 }
 
 class GithubRegistryClient implements RegistryApiClient {
