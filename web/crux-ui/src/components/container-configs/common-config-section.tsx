@@ -249,15 +249,15 @@ const CommonConfigSection = (props: CommonConfigSectionProps) => {
               disabled={disabled || !stringResettable(baseConfig?.name, resettableConfig.name)}
               onResetSection={() => onResetSection('name')}
             >
-              {t('common.containerName').toUpperCase()}
+              {t('common.name').toUpperCase()}
             </ConfigSectionLabel>
 
             <MultiInput
-              id="common.containerName"
+              id="common.name"
               labelClassName="text-bright font-semibold tracking-wide mb-2 my-auto mr-4"
               grow
               value={config.name ?? ''}
-              placeholder={t('common.containerName')}
+              placeholder={t('common.name')}
               onPatch={it => onChange({ name: it })}
               editorOptions={editorOptions}
               message={findErrorFor(fieldErrors, 'name') ?? conflictErrors?.name}
@@ -363,7 +363,7 @@ const CommonConfigSection = (props: CommonConfigSectionProps) => {
                   <DyoLabel className="font-semibold">{t('common.volumes')}</DyoLabel>
 
                   <KeyValueInput
-                    keyPlaceholder={t('common.name')}
+                    keyPlaceholder={t('common:name')}
                     valuePlaceholder={t('common.path')}
                     items={item.volumes?.map(it => ({ id: it.id, key: it.name, value: it.path }))}
                     onChange={it => {

@@ -25,8 +25,8 @@ test.describe('Versioned Project incremental version', () => {
     await configButton.click()
 
     await page.locator('button:has-text("Name")').click()
-    await page.waitForSelector('input[id="common.containerName"]')
-    await expect(await page.locator('input[id="common.containerName"]')).toBeEditable()
+    await page.waitForSelector('input[id="common.name"]')
+    await expect(await page.locator('input[id="common.name"]')).toBeEditable()
   })
 
   test('successful deployment should be immutable', async ({ page }, testInfo) => {
@@ -54,8 +54,8 @@ test.describe('Versioned Project incremental version', () => {
     await configButton.click()
 
     await page.locator('button:has-text("Name")').click()
-    await page.waitForSelector('input[id="common.containerName"]')
-    await expect(await page.locator('input[id="common.containerName"]')).toBeDisabled()
+    await page.waitForSelector('input[id="common.name"]')
+    await expect(await page.locator('input[id="common.name"]')).toBeDisabled()
   })
 
   test('obsolete deployment should be immutable', async ({ page }, testInfo) => {
@@ -85,7 +85,7 @@ test.describe('Versioned Project incremental version', () => {
     await configButton.click()
 
     await page.locator('button:has-text("Name")').click()
-    await page.waitForSelector('input[id="common.containerName"]')
-    await expect(await page.locator('input[id="common.containerName"]')).toBeDisabled()
+    await page.waitForSelector('input[id="common.name"]')
+    await expect(await page.locator('input[id="common.name"]')).toBeDisabled()
   })
 })

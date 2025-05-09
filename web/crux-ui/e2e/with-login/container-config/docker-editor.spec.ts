@@ -38,13 +38,13 @@ test.describe('Image docker config from editor', () => {
 
     const wsSent = wsPatchSent(ws, wsRoute, WS_TYPE_PATCH_CONFIG, wsPatchMatchNetworkMode(mode))
     await page.locator('button:has-text("Network mode")').click()
-    await page.locator(`div.grid:has(label:has-text("NETWORK MODE")) button:has-text("${mode}")`).click()
+    await page.locator(`div:has(label:has-text("NETWORK MODE")) button:has-text("${mode}")`).click()
     await wsSent
 
     await page.reload()
 
     await expect(
-      page.locator(`div.grid:has(label:has-text("NETWORK MODE")) button.bg-dyo-turquoise:has-text("${mode}")`),
+      page.locator(`div:has(label:has-text("NETWORK MODE")) button.bg-dyo-turquoise:has-text("${mode}")`),
     ).toBeVisible()
   })
 
@@ -58,8 +58,8 @@ test.describe('Image docker config from editor', () => {
 
     const key = 'docker-key'
     const value = 'docker-value'
-    const keyInput = page.locator('div.grid:has(label:has-text("DOCKER LABELS")) input[placeholder="Key"]').first()
-    const valueInput = page.locator('div.grid:has(label:has-text("DOCKER LABELS")) input[placeholder="Value"]').first()
+    const keyInput = page.locator('div:has(label:has-text("DOCKER LABELS")) input[placeholder="Key"]').first()
+    const valueInput = page.locator('div:has(label:has-text("DOCKER LABELS")) input[placeholder="Value"]').first()
 
     await page.locator('button:has-text("Docker labels")').click()
 
@@ -84,13 +84,13 @@ test.describe('Image docker config from editor', () => {
 
     const wsSent = wsPatchSent(ws, wsRoute, WS_TYPE_PATCH_CONFIG, wsPatchMatchRestartPolicy('always'))
     await page.locator('button:has-text("Restart policy")').click()
-    await page.locator('div.grid:has(label:has-text("RESTART POLICY")) button:has-text("Always")').click()
+    await page.locator('div:has(label:has-text("RESTART POLICY")) button:has-text("Always")').click()
     await wsSent
 
     await page.reload()
 
     await expect(
-      page.locator('div.grid:has(label:has-text("RESTART POLICY")) button.bg-dyo-turquoise:has-text("Always")'),
+      page.locator('div:has(label:has-text("RESTART POLICY")) button.bg-dyo-turquoise:has-text("Always")'),
     ).toBeVisible()
   })
 
@@ -108,7 +108,7 @@ test.describe('Image docker config from editor', () => {
     const key = 'logger-key'
     const value = 'logger-value'
 
-    const loggerConf = page.locator('div.grid:has(label:has-text("LOG CONFIG"))')
+    const loggerConf = page.locator('div:has(label:has-text("LOG CONFIG"))')
 
     const wsSent = wsPatchSent(ws, wsRoute, WS_TYPE_PATCH_CONFIG, wsPatchMatchLogConfig(type, key, value))
     await loggerConf.locator('input[placeholder="Key"]').first().fill(key)
@@ -136,13 +136,13 @@ test.describe('Image docker config from editor', () => {
     const network = '10.16.128.196'
 
     const wsSent = wsPatchSent(ws, wsRoute, WS_TYPE_PATCH_CONFIG, wsPatchMatchNetwork(network))
-    await page.locator('div.grid:has(label:has-text("NETWORKS")) input[placeholder="Network"]').first().fill(network)
+    await page.locator('div:has(label:has-text("NETWORKS")) input[placeholder="Network"]').first().fill(network)
     await wsSent
 
     await page.reload()
 
-    await expect(
-      page.locator('div.grid:has(label:has-text("NETWORKS")) input[placeholder="Network"]').first(),
-    ).toHaveValue(network)
+    await expect(page.locator('div:has(label:has-text("NETWORKS")) input[placeholder="Network"]').first()).toHaveValue(
+      network,
+    )
   })
 })

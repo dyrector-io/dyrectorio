@@ -17,7 +17,6 @@
   "common": {
     "user": "User",
     "workingDirectory": "Working directory",
-    "containerName": "Container name",
     "port": "Port",
     "exposePort": "Expose port",
     "default": "Default",
@@ -25,7 +24,7 @@
     "portBinding": "Port binding",
     "volumes": "Volumes",
     "capabilities": "Capabilities",
-    "name": "Container Name",
+    "name": "Container name",
     "size": "Size",
     "path": "Path",
     "class": "Class (k8s)",

@@ -205,7 +205,7 @@ test.describe('Image common config from editor', () => {
     await page.locator('button:has-text("Secrets")').click()
 
     const secret = 'secretName'
-    const secretInput = page.locator('input[placeholder="SECRETS"] >> visible=true').nth(0)
+    const secretInput = page.locator('input[placeholder="Secrets"] >> visible=true').nth(0)
 
     const wsSent = wsPatchSent(ws, wsRoute, WS_TYPE_PATCH_CONFIG, wsPatchMatchSecret(secret, true))
     await secretInput.fill(secret)
@@ -349,7 +349,7 @@ test.describe('Image common config from editor', () => {
     const wsRoute = TEAM_ROUTES.containerConfig.detailsSocket(imageConfigId)
 
     await page.locator('button:has-text("Config container")').click()
-    const confDiv = page.locator('div.grid:has(label:has-text("CONFIG CONTAINER"))')
+    const confDiv = page.locator('div:has(label:has-text("CONFIG CONTAINER"))')
 
     const img = 'image'
     const volume = 'volume'
@@ -487,7 +487,7 @@ test.describe('Image common config from editor', () => {
     await page.getByLabel('Class (k8s)').fill(volumeClass)
     await wsSent
 
-    const storageDiv = page.locator('div.grid:has(label:has-text("STORAGE"))')
+    const storageDiv = page.locator('div:has(label:has-text("STORAGE"))')
     const bucketPath = '/storage/'
     await page.locator('button:has-text("Storage")').click()
 

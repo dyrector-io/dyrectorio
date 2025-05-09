@@ -52,7 +52,7 @@ test.describe('Image docker config from JSON', () => {
     await page.reload()
 
     await expect(
-      page.locator(`div.grid:has(label:has-text("NETWORK MODE")) button.bg-dyo-turquoise:has-text("${mode}")`),
+      page.locator(`div:has(label:has-text("NETWORK MODE")) button.bg-dyo-turquoise:has-text("${mode}")`),
     ).toBeVisible()
   })
 
@@ -80,11 +80,11 @@ test.describe('Image docker config from JSON', () => {
 
     await page.reload()
 
+    await expect(page.locator('div:has(label:has-text("DOCKER LABELS")) input[placeholder="Key"]').first()).toHaveValue(
+      key,
+    )
     await expect(
-      page.locator('div.grid:has(label:has-text("DOCKER LABELS")) input[placeholder="Key"]').first(),
-    ).toHaveValue(key)
-    await expect(
-      page.locator('div.grid:has(label:has-text("DOCKER LABELS")) input[placeholder="Value"]').first(),
+      page.locator('div:has(label:has-text("DOCKER LABELS")) input[placeholder="Value"]').first(),
     ).toHaveValue(value)
   })
 
@@ -110,7 +110,7 @@ test.describe('Image docker config from JSON', () => {
     await page.reload()
 
     await expect(
-      page.locator('div.grid:has(label:has-text("RESTART POLICY")) button.bg-dyo-turquoise:has-text("Always")'),
+      page.locator('div:has(label:has-text("RESTART POLICY")) button.bg-dyo-turquoise:has-text("Always")'),
     ).toBeVisible()
   })
 
@@ -139,7 +139,7 @@ test.describe('Image docker config from JSON', () => {
 
     await page.reload()
 
-    const loggerConf = page.locator('div.grid:has(label:has-text("LOG CONFIG"))')
+    const loggerConf = page.locator('div:has(label:has-text("LOG CONFIG"))')
     await expect(loggerConf.locator(`button.bg-dyo-turquoise:has-text("${type}")`)).toBeVisible()
     await expect(loggerConf.locator('input[placeholder="Key"]').first()).toHaveValue(key)
     await expect(loggerConf.locator('input[placeholder="Value"]').first()).toHaveValue(value)
@@ -170,8 +170,8 @@ test.describe('Image docker config from JSON', () => {
 
     await page.reload()
 
-    await expect(
-      page.locator('div.grid:has(label:has-text("NETWORKS")) input[placeholder="Network"]').first(),
-    ).toHaveValue(network)
+    await expect(page.locator('div:has(label:has-text("NETWORKS")) input[placeholder="Network"]').first()).toHaveValue(
+      network,
+    )
   })
 })

@@ -295,7 +295,7 @@ const portRangeConfigRule = yup
 const volumeConfigRule = yup
   .array(
     yup.object().shape({
-      name: yup.string().required().label('container:common.name'),
+      name: yup.string().required().label('common:name'),
       path: yup.string().required().label('container:common.path'),
       size: yup
         .string()
@@ -313,7 +313,7 @@ const volumeConfigRule = yup
 
 const initContainerVolumeLinkRule = yup.array(
   yup.object().shape({
-    name: yup.string().required().label('container:common.name'),
+    name: yup.string().required().label('common:name'),
     path: yup.string().required().label('container:common.path'),
   }),
 )
@@ -321,7 +321,7 @@ const initContainerVolumeLinkRule = yup.array(
 const initContainerRule = yup
   .array(
     yup.object().shape({
-      name: matchNoWhitespace(yup.string().required().label('container:common.name')),
+      name: matchNoWhitespace(yup.string().required().label('common:name')),
       image: yup.string().required().label('container:common.image'),
       command: shellCommandSchema.default([]).nullable().label('container:common.images'),
       args: shellCommandSchema.default([]).nullable().label('container:common.arguments'),
@@ -533,7 +533,7 @@ const testSecretRules = (imageLabels: Record<string, string>) => (secrets: Uniqu
 
 const createContainerConfigBaseSchema = (imageLabels: Record<string, string>) =>
   yup.object().shape({
-    name: matchContainerName(yup.string().nullable().optional().label('container:common.containerName')),
+    name: matchContainerName(yup.string().nullable().optional().label('container:containerName')),
     environment: uniqueKeyValuesSchema
       .default(null)
       .nullable()
