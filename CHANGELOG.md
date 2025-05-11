@@ -1,6 +1,18 @@
 # CHANGELOG
 
 
+<a name="0.15.4"></a>
+## [0.15.4](https://github.com/dyrector-io/dyrectorio/compare/0.15.3...0.15.4) (2025-05-11)
+
+### Feat
+
+* full width container config layout ([#1065](https://github.com/dyrector-io/dyrectorio/issues/1065))
+
+### Fix
+
+* **(web):** config merges ([#1067](https://github.com/dyrector-io/dyrectorio/issues/1067))
+
+
 <a name="0.15.3"></a>
 ## [0.15.3](https://github.com/dyrector-io/dyrectorio/compare/0.15.2...0.15.3) (2025-04-16)
 
@@ -188,11 +200,7 @@
 
 
 <a name="0.11.5"></a>
-## [0.11.5](https://github.com/dyrector-io/dyrectorio/compare/help...0.11.5) (2024-04-05)
-
-
-<a name="help"></a>
-## [help](https://github.com/dyrector-io/dyrectorio/compare/0.11.4...help) (2024-04-05)
+## [0.11.5](https://github.com/dyrector-io/dyrectorio/compare/0.11.4...0.11.5) (2024-04-05)
 
 ### Feat
 
@@ -226,20 +234,7 @@
 
 
 <a name="0.11.3"></a>
-## [0.11.3](https://github.com/dyrector-io/dyrectorio/compare/ls...0.11.3) (2024-03-11)
-
-### Feat
-
-* container log api ([#931](https://github.com/dyrector-io/dyrectorio/issues/931))
-
-### Fix
-
-* container log new line ([#932](https://github.com/dyrector-io/dyrectorio/issues/932))
-* add ENCRYPTION_SECRET_KEY to compose files ([#927](https://github.com/dyrector-io/dyrectorio/issues/927))
-
-
-<a name="ls"></a>
-## [ls](https://github.com/dyrector-io/dyrectorio/compare/0.11.2...ls) (2024-02-26)
+## [0.11.3](https://github.com/dyrector-io/dyrectorio/compare/0.11.2...0.11.3) (2024-03-11)
 
 ### Doc
 
@@ -247,7 +242,13 @@
 
 ### Feat
 
+* container log api ([#931](https://github.com/dyrector-io/dyrectorio/issues/931))
 * **(web):** update kratos to 1.1.0 ([#925](https://github.com/dyrector-io/dyrectorio/issues/925))
+
+### Fix
+
+* container log new line ([#932](https://github.com/dyrector-io/dyrectorio/issues/932))
+* add ENCRYPTION_SECRET_KEY to compose files ([#927](https://github.com/dyrector-io/dyrectorio/issues/927))
 
 
 <a name="0.11.2"></a>
