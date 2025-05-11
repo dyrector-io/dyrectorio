@@ -266,10 +266,8 @@ export default class ContainerConfigService {
       },
     })
 
-    let data: ContainerConfigData = this.mapper.configDtoToConfigData(
-      config as any as ContainerConfigData,
-      req.config ?? {},
-    )
+    const dbConnfig: ContainerConfigData = this.mapper.dbConfigToContainerConfigData(config)
+    let data: ContainerConfigData = this.mapper.configDtoToConfigData(dbConnfig, req.config ?? {})
 
     if (req.resetSection) {
       data = this.resetSection(data, req.resetSection)

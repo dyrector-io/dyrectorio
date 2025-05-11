@@ -55,6 +55,8 @@ export type SecretInfo = {
   origins: SecertOrigin[]
 }
 
+export type SecretStatus = 'unknown' | 'saved' | 'encrypted' | 'defined'
+
 const processConfigSecrets = (
   infos: Map<string, SecretInfo>,
   config: ContainerConfig,

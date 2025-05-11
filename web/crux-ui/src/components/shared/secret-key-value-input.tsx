@@ -5,6 +5,7 @@ import {
   mapSecretKeyToSecretKeyValue,
   SecertOrigin,
   SecretInfo,
+  SecretStatus,
   UniqueSecretKey,
   UniqueSecretKeyValue,
 } from '@app/models'
@@ -16,11 +17,17 @@ import { useEffect, useMemo, useState } from 'react'
 import { v4 as uuid } from 'uuid'
 import MultiInput from '../editor/multi-input'
 import { ItemEditorState } from '../editor/use-item-editor-state'
-import SecretStatus from './secret-status'
+import SecretStatusIndicator from './secret-status-indicator'
 import ConfigSectionLabel from '../container-configs/config-section-label'
 import useRepatch from '@app/hooks/use-repatch'
 import { MessageType } from '@app/elements/dyo-input'
 import { Translate } from 'next-translate'
+
+type SecretElement = UniqueSecretKeyValue & {
+  message?: string
+  messageType?: MessageType
+  status: SecretStatus
+}
 
 const EMPTY_SECRET_KEY_VALUE = {
   id: uuid(),
@@ -30,12 +37,6 @@ const EMPTY_SECRET_KEY_VALUE = {
   encrypted: false,
   publicKey: null,
 } as UniqueSecretKeyValue
-
-type SecretElement = UniqueSecretKeyValue & {
-  message?: string
-  messageType?: MessageType
-  defined: boolean
-}
 
 const secretOriginsToString = (t: Translate, origins: SecertOrigin[], configType: ContainerConfigType): string =>
   origins
@@ -61,9 +62,16 @@ const encryptWithPGP = async (text: string, key: string): Promise<string> => {
   if (!text) {
     return Promise.resolve('')
   }
-  const publicKey = await readKey({ armoredKey: key })
 
-  return (await encrypt({ message: await createMessage({ text }), encryptionKeys: publicKey })) as Promise<string>
+  if (!key) {
+    return null
+  }
+
+  const publicKey = await readKey({ armoredKey: key })
+  const message = await createMessage({ text })
+  const encrypted = await encrypt({ message, encryptionKeys: publicKey })
+
+  return encrypted as Promise<string>
 }
 
 // actions
@@ -113,6 +121,42 @@ const resetItems =
     const missing = items.filter(it => !overridenKeys.has(it.key)).map(it => mapSecretKeyToSecretKeyValue(it))
 
     return [...overriden, ...missing, generateEmptyLine()]
+  }
+
+const removeItem =
+  (index: number) =>
+  (state: UniqueSecretKeyValue[]): UniqueSecretKeyValue[] => {
+    if (index < 0 || index >= state.length) {
+      return state
+    }
+
+    const item = state[index]
+    if (isCompletelyEmpty(item)) {
+      return state
+    }
+
+    const newItems = [...state]
+    newItems.splice(index, 1)
+    return newItems
+  }
+
+const clearItem =
+  (index: number) =>
+  (state: UniqueSecretKeyValue[]): UniqueSecretKeyValue[] => {
+    if (index < 0 || index >= state.length) {
+      return state
+    }
+
+    const item = state[index]
+    if (isCompletelyEmpty(item)) {
+      return state
+    }
+
+    item.value = ''
+    item.encrypted = false
+    item.publicKey = null
+
+    return [...state]
   }
 
 type SecretKeyValueInputProps = {
@@ -165,12 +209,15 @@ const SecretKeyValueInput = (props: SecretKeyValueInputProps) => {
         message = secretOriginsToString(t, info.origins, configType)
       }
 
+      const saved = items.find(it => it.key === item.key && it.value === item.value)
+      const encrypted = item.encrypted ?? false
+
       result.push({
         ...item,
-        encrypted: item.encrypted ?? false,
+        encrypted,
         message,
         messageType: duplicated ? 'error' : 'info',
-        defined: info?.defined,
+        status: info?.defined ? 'defined' : encrypted ? 'encrypted' : saved ? 'saved' : 'unknown',
       })
     })
 
@@ -220,6 +267,14 @@ const SecretKeyValueInput = (props: SecretKeyValueInputProps) => {
         let encryptedWithPublicKey = it.publicKey
 
         if (!it.encrypted) {
+          if (!publicKey) {
+            return {
+              ...it,
+              encrypted: false,
+              publicKey: null,
+            }
+          }
+
           value = await encryptWithPGP(it.value, publicKey)
           encryptedWithPublicKey = publicKey
         }
@@ -238,23 +293,14 @@ const SecretKeyValueInput = (props: SecretKeyValueInputProps) => {
     setChanged(false)
   }
 
-  const onRemoveOrClear = async (index: number) => {
-    const newItems = [...state].filter(it => !isCompletelyEmpty(it))
+  const onRemove = async (index: number) => {
+    dispatch(removeItem(index))
+    setChanged(true)
+  }
 
-    if (newItems[index].required) {
-      newItems[index] = {
-        ...newItems[index],
-        encrypted: false,
-        value: '',
-      }
-    } else {
-      newItems.splice(index, 1)
-    }
-
-    if (!duplicates) {
-      propsOnSubmit(newItems)
-    }
-    dispatch(setItems(newItems))
+  const onClear = async (index: number) => {
+    dispatch(clearItem(index))
+    setChanged(true)
   }
 
   const onResetSection = () => dispatch(resetItems(baseItems))
@@ -262,10 +308,12 @@ const SecretKeyValueInput = (props: SecretKeyValueInputProps) => {
   const elements = stateToElements(state)
 
   const renderItem = (entry: SecretElement, index: number) => {
-    const { id, key, value, encrypted, required, message, messageType, defined } = entry
+    const { id, key, value, encrypted, required, message, messageType, status } = entry
 
     const keyId = `${id}-key`
     const valueId = `${id}-value`
+
+    const empty = isCompletelyEmpty(entry)
 
     return (
       <div key={id} className="flex-1 p-1 flex flex-row">
@@ -277,7 +325,7 @@ const SecretKeyValueInput = (props: SecretKeyValueInputProps) => {
           )}
           <div className="flex flex-row">
             <div className="mr-2 flex flex-row basis-[32px] my-auto">
-              {!isCompletelyEmpty(entry) && <SecretStatus className="mr-2" defined={defined} />}
+              {!isCompletelyEmpty(entry) && <SecretStatusIndicator className="mr-2" status={status} />}
             </div>
             <MultiInput
               key={keyId}
@@ -317,13 +365,21 @@ const SecretKeyValueInput = (props: SecretKeyValueInputProps) => {
               })
             }
           />
+
           <div className="ml-2 flex flex-row basis-[64px] my-auto">
             <DyoImgButton
-              disabled={!encrypted || disabled}
+              disabled={disabled || empty || (!encrypted && !value)}
               className="basis-12 flex-initial cursor-pointer w-12 focus:outline-none focus:dark text-bright-muted ring-light-grey-muted flex justify-center"
-              src={required ? '/clear.svg' : '/trash-can.svg'}
-              alt={t(required ? 'clear' : 'common:delete')}
-              onClick={() => onRemoveOrClear(index)}
+              src="/clear.svg"
+              alt={t('clear')}
+              onClick={() => onClear(index)}
+            />
+            <DyoImgButton
+              disabled={disabled || empty || required}
+              className="basis-12 flex-initial cursor-pointer w-12 focus:outline-none focus:dark text-bright-muted ring-light-grey-muted flex justify-center"
+              src="/trash-can.svg"
+              alt={t('common:delete')}
+              onClick={() => onRemove(index)}
             />
           </div>
         </div>
@@ -333,6 +389,7 @@ const SecretKeyValueInput = (props: SecretKeyValueInputProps) => {
 
   const currentKeys = new Set(items.map(it => it.key))
   const hasMissingKeys = baseItems && baseItems.some(it => !currentKeys.has(it.key))
+  const canEncryptSome = publicKey && items.some(it => !it.encrypted && it.value)
 
   return (
     <form className={clsx(className, 'flex flex-col gap-2')}>
@@ -353,7 +410,7 @@ const SecretKeyValueInput = (props: SecretKeyValueInputProps) => {
           <DyoButton className="px-10 mr-1" disabled={!changed} secondary onClick={onDiscard}>
             {t('discard')}
           </DyoButton>
-          <DyoButton className="px-10 ml-1" disabled={!changed || duplicates} onClick={onSubmit}>
+          <DyoButton className="px-10 ml-1" disabled={(!changed && !canEncryptSome) || duplicates} onClick={onSubmit}>
             {t('save')}
           </DyoButton>
         </div>
