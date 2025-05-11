@@ -105,8 +105,8 @@ const NodeDetailsPage = (props: NodeDetailsPageProps) => {
       {state.section === 'editing' ? (
         <EditNodeSection node={node} onNodeEdited={onNodeEdited} submit={submit} />
       ) : (
-        <>
-          <div className="flex flex-row gap-4 mb-4">
+        <div className="flex flex-col gap-4">
+          <div className="flex flex-row gap-2">
             <DyoNodeCard className="w-2/3 p-6" node={node} disableTitleHref hideConnectionInfo />
 
             <NodeConnectionCard className="w-1/3 px-6 py-4" node={node} />
@@ -125,7 +125,7 @@ const NodeDetailsPage = (props: NodeDetailsPageProps) => {
           ) : (
             <FilteredDeploymentList deployments={deployments} />
           )}
-        </>
+        </div>
       )}
 
       {!state.confirmationModal ? null : <DyoConfirmationModal config={state.confirmationModal} />}

@@ -37,7 +37,7 @@ export default class RegistryClientProvider {
   private readonly labelsApiDisabled: boolean
 
   constructor(
-    private readonly appConfig: ConfigService,
+    appConfig: ConfigService,
     @Inject(forwardRef(() => RegistryService))
     private readonly service: RegistryService,
     @Inject(CACHE_MANAGER)

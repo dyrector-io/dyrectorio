@@ -94,7 +94,21 @@ const mergeSecretKeys = (one: UniqueSecretKey[], other: UniqueSecretKey[]): Uniq
   return [...one, ...other.filter(it => !one.includes(it))]
 }
 
+export const mapSecretKeyToSecretKeyValue = (secret: UniqueSecretKey): UniqueSecretKeyValue => ({
+  ...secret,
+  value: '',
+  encrypted: false,
+  publicKey: null,
+})
+
 export const mergeSecrets = (strong: UniqueSecretKeyValue[], weak: UniqueSecretKey[]): UniqueSecretKeyValue[] => {
+  if (!weak) {
+    return strong ?? []
+  }
+
+  if (!strong) {
+    return weak.map(it => mapSecretKeyToSecretKeyValue(it))
+  }
   weak = weak ?? []
   strong = strong ?? []
 
@@ -102,13 +116,8 @@ export const mergeSecrets = (strong: UniqueSecretKeyValue[], weak: UniqueSecretK
 
   // removes non required secrets, when they are not present in the concrete config
   const missing: UniqueSecretKeyValue[] = weak
-    .filter(it => !overriddenKeys.has(it.key) || it.required)
-    .map(it => ({
-      ...it,
-      value: '',
-      encrypted: false,
-      publicKey: null,
-    }))
+    .filter(it => !overriddenKeys.has(it.key) && it.required)
+    .map(it => mapSecretKeyToSecretKeyValue(it))
 
   return [...missing, ...strong]
 }

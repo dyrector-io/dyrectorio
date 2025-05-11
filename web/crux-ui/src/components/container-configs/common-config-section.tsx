@@ -21,8 +21,10 @@ import {
   ContainerConfigExposeStrategy,
   ContainerConfigKey,
   ContainerConfigSectionType,
+  ContainerConfigType,
   InitContainerVolumeLink,
   Port,
+  SecretInfo,
   StorageOption,
   UniqueSecretKeyValue,
   Volume,
@@ -55,12 +57,13 @@ type CommonConfigSectionProps = {
   selectedFilters: ContainerConfigKey[]
   editorOptions: ItemEditorState
   resettableConfig: ContainerConfigData | ConcreteContainerConfigData
+  configType: ContainerConfigType
   config: ContainerConfigData | ConcreteContainerConfigData
   onChange: (config: ContainerConfigData | ConcreteContainerConfigData) => void
   onResetSection: (section: CommonConfigKey) => void
   fieldErrors: ContainerConfigValidationErrors
   conflictErrors: ContainerConfigErrors
-  definedSecrets?: string[]
+  secretInfos?: Map<string, SecretInfo>
   publicKey?: string
   baseConfig: ContainerConfigData | null
 }
@@ -77,8 +80,9 @@ const CommonConfigSection = (props: CommonConfigSectionProps) => {
     editorOptions,
     fieldErrors,
     conflictErrors,
-    definedSecrets,
+    secretInfos,
     publicKey,
+    configType,
     resettableConfig,
     config,
     baseConfig,
@@ -686,17 +690,19 @@ const CommonConfigSection = (props: CommonConfigSectionProps) => {
                 label={t('common.secrets').toUpperCase()}
                 onSubmit={it => onChange({ secrets: it })}
                 items={config.secrets as UniqueSecretKeyValue[]}
+                baseItems={baseConfig.secrets ?? null}
                 editorOptions={editorOptions}
-                definedSecrets={definedSecrets}
+                secretInfos={secretInfos}
                 publicKey={publicKey}
                 disabled={disabled}
+                configType={configType}
               />
             ) : (
               <SecretKeyInput
                 keyPlaceholder={t('common.secrets')}
                 labelClassName="text-bright font-semibold tracking-wide mb-3"
                 label={t('common.secrets').toUpperCase()}
-                onChange={it => onChange({ secrets: it.map(sit => ({ ...sit })) })}
+                onChange={secrets => onChange({ secrets: secrets.map(it => ({ ...it })) })}
                 onResetSection={resettableConfig.secrets ? () => onResetSection('secrets') : null}
                 items={config.secrets}
                 editorOptions={editorOptions}

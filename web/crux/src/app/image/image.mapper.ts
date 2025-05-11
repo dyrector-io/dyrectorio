@@ -19,8 +19,8 @@ export default class ImageMapper {
   private readonly labelsApiDisabled: boolean
 
   constructor(
-    private appConfig: ConfigService,
-    private registryMapper: RegistryMapper,
+    appConfig: ConfigService,
+    private readonly registryMapper: RegistryMapper,
     @Inject(forwardRef(() => ContainerMapper))
     private readonly containerMapper: ContainerMapper,
   ) {

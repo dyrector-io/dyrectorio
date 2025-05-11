@@ -76,13 +76,15 @@ const ConfigBundleDetailsPage = (props: ConfigBundleDetailsPageProps) => {
         />
       </PageHeading>
 
-      {editing ? (
-        <EditConfigBundleCard submit={submit} configBundle={configBundle} onConfigBundleEdited={setConfigBundle} />
-      ) : (
-        <ConfigBundleCard configBundle={detailsToConfigBundle(configBundle)} />
-      )}
+      <div className="flex flex-col gap-4">
+        {editing ? (
+          <EditConfigBundleCard submit={submit} configBundle={configBundle} onConfigBundleEdited={setConfigBundle} />
+        ) : (
+          <ConfigBundleCard configBundle={detailsToConfigBundle(configBundle)} />
+        )}
 
-      {deployments.length > 0 && <FilteredDeploymentList deployments={deployments} />}
+        <div>{deployments.length > 0 && <FilteredDeploymentList deployments={deployments} />}</div>
+      </div>
     </Layout>
   )
 }

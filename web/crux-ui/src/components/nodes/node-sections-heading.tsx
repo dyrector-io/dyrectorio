@@ -13,7 +13,7 @@ const NodeSectionsHeading = (props: NodeSectionsHeadingProps) => {
   const { t } = useTranslation('nodes')
 
   return (
-    <div className="flex flex-row my-4">
+    <div className="flex flex-row">
       <DyoButton
         text
         thin

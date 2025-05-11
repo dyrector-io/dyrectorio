@@ -1,27 +1,61 @@
 import DyoButton from '@app/elements/dyo-button'
 import DyoImgButton from '@app/elements/dyo-img-button'
-import { DyoLabel } from '@app/elements/dyo-label'
-import { UniqueSecretKeyValue } from '@app/models'
+import {
+  ContainerConfigType,
+  mapSecretKeyToSecretKeyValue,
+  SecertOrigin,
+  SecretInfo,
+  UniqueSecretKey,
+  UniqueSecretKeyValue,
+} from '@app/models'
 import clsx from 'clsx'
 import useTranslation from 'next-translate/useTranslation'
 import Image from 'next/image'
 import { createMessage, encrypt, readKey } from 'openpgp'
-import { useEffect, useMemo, useReducer, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { v4 as uuid } from 'uuid'
 import MultiInput from '../editor/multi-input'
 import { ItemEditorState } from '../editor/use-item-editor-state'
 import SecretStatus from './secret-status'
+import ConfigSectionLabel from '../container-configs/config-section-label'
+import useRepatch from '@app/hooks/use-repatch'
+import { MessageType } from '@app/elements/dyo-input'
+import { Translate } from 'next-translate'
 
-const EMPTY_SECRET_KEY_VALUE_PAIR = {
+const EMPTY_SECRET_KEY_VALUE = {
   id: uuid(),
   key: '',
   value: '',
+  required: false,
+  encrypted: false,
+  publicKey: null,
 } as UniqueSecretKeyValue
 
-type KeyValueElement = UniqueSecretKeyValue & {
+type SecretElement = UniqueSecretKeyValue & {
   message?: string
-  present?: boolean
+  messageType?: MessageType
+  defined: boolean
 }
+
+const secretOriginsToString = (t: Translate, origins: SecertOrigin[], configType: ContainerConfigType): string =>
+  origins
+    .filter(it => it.type !== configType)
+    .map(it => {
+      const type = t(`container:configType.${it.type}`)
+      if (!it.name) {
+        return type
+      }
+
+      return `${type}: ${it.name}`
+    })
+    .join(', ')
+
+const isCompletelyEmpty = (it: UniqueSecretKeyValue): boolean => !it.key?.trim() && !it.value?.trim()
+
+const generateEmptyLine = () => ({
+  ...EMPTY_SECRET_KEY_VALUE,
+  id: uuid(),
+})
 
 const encryptWithPGP = async (text: string, key: string): Promise<string> => {
   if (!text) {
@@ -32,37 +66,25 @@ const encryptWithPGP = async (text: string, key: string): Promise<string> => {
   return (await encrypt({ message: await createMessage({ text }), encryptionKeys: publicKey })) as Promise<string>
 }
 
-type KeyValueInputActionType = 'merge-items' | 'set-items' | 'remove-item'
+// actions
+const setItems = (items: UniqueSecretKeyValue[]) => (): UniqueSecretKeyValue[] => {
+  const lastLine = items.length > 0 ? items[items.length - 1] : null
+  const emptyLine = lastLine && isCompletelyEmpty(lastLine) ? lastLine : generateEmptyLine()
 
-type KeyValueInputAction = {
-  type: KeyValueInputActionType
-  items: UniqueSecretKeyValue[]
+  return [...items.filter(it => !isCompletelyEmpty(it)), emptyLine]
 }
 
-const isCompletelyEmpty = (it: UniqueSecretKeyValue) => it.key.trim().length < 1 && it.value.trim().length < 1
+const mergeItems =
+  (updatedItems: UniqueSecretKeyValue[]) =>
+  (state: UniqueSecretKeyValue[]): UniqueSecretKeyValue[] => {
+    if (!updatedItems) {
+      updatedItems = []
+    }
 
-const pushEmptyLineIfNecessary = (items: UniqueSecretKeyValue[]) => {
-  if (items.length < 1 || (items[items.length - 1].key?.trim() ?? '') !== '') {
-    items.push({
-      ...EMPTY_SECRET_KEY_VALUE_PAIR,
-      id: uuid(),
-    })
-  }
-}
+    const lastLine = state.length > 0 ? state[state.length - 1] : null
+    const emptyLine = lastLine && isCompletelyEmpty(lastLine) ? lastLine : generateEmptyLine()
 
-const reducer = (state: UniqueSecretKeyValue[], action: KeyValueInputAction): UniqueSecretKeyValue[] => {
-  const { type } = action
-
-  if (type === 'set-items') {
-    const result = action.items ? [...action.items] : []
-    pushEmptyLineIfNecessary(result)
-    return result
-  }
-  if (type === 'merge-items') {
-    const updatedItems = action.items ?? []
-    const result = [
-      ...state.filter(old => !isCompletelyEmpty(old) && updatedItems.filter(it => old.id === it.id).length > 0),
-    ]
+    const result = [...state.filter(old => !isCompletelyEmpty(old) && updatedItems.find(it => old.id === it.id))]
 
     updatedItems.forEach(newItem => {
       const index = result.findIndex(it => it.id === newItem.id)
@@ -74,30 +96,38 @@ const reducer = (state: UniqueSecretKeyValue[], action: KeyValueInputAction): Un
       }
     })
 
-    pushEmptyLineIfNecessary(result)
-    return result
-  }
-  if (type === 'remove-item') {
-    const toRemove = action.items[0]
-    const result = [...state.filter(old => old.id === toRemove.id)]
-    pushEmptyLineIfNecessary(result)
+    result.push(emptyLine)
+
     return result
   }
 
-  throw Error(`Invalid KeyValueInput action: ${type}`)
-}
+const resetItems =
+  (items: UniqueSecretKey[]) =>
+  (state: UniqueSecretKeyValue[]): UniqueSecretKeyValue[] => {
+    if (!items) {
+      return state
+    }
 
-interface SecretKeyValueInputProps {
+    const overriden = state.filter(it => it.value)
+    const overridenKeys = new Set(overriden.map(it => it.key))
+    const missing = items.filter(it => !overridenKeys.has(it.key)).map(it => mapSecretKeyToSecretKeyValue(it))
+
+    return [...overriden, ...missing, generateEmptyLine()]
+  }
+
+type SecretKeyValueInputProps = {
   disabled?: boolean
   className?: string
   label?: string
   labelClassName?: string
   description?: string
   items: UniqueSecretKeyValue[]
+  baseItems: UniqueSecretKey[]
   keyPlaceholder?: string
   editorOptions: ItemEditorState
   publicKey: string
-  definedSecrets?: string[]
+  configType: ContainerConfigType
+  secretInfos: Map<string, SecretInfo>
   onSubmit: (items: UniqueSecretKeyValue[]) => void
 }
 
@@ -109,42 +139,48 @@ const SecretKeyValueInput = (props: SecretKeyValueInputProps) => {
     labelClassName,
     description,
     items,
+    baseItems,
     keyPlaceholder,
     editorOptions,
     publicKey,
-    definedSecrets,
+    configType,
+    secretInfos,
     onSubmit: propsOnSubmit,
   } = props
 
   const { t } = useTranslation('common')
 
-  const [state, dispatch] = useReducer(reducer, items ?? [])
+  const [state, dispatch] = useRepatch(items ?? [])
   const [changed, setChanged] = useState<boolean>(false)
 
-  const stateToElements = (secretKeys: UniqueSecretKeyValue[], secrets: string[]) => {
-    const result = new Array<KeyValueElement>()
+  const stateToElements = (secretKeys: UniqueSecretKeyValue[]) => {
+    const result = new Array<SecretElement>()
 
     secretKeys.forEach(item => {
-      const repeating = result.find(it => it.key === item.key)
+      const info = secretInfos.get(item.key)
+      const duplicated = !isCompletelyEmpty(item) && result.find(it => it.key === item.key)
+
+      let message: string = duplicated ? t('keyMustUnique') : null
+      if (info && !message) {
+        message = secretOriginsToString(t, info.origins, configType)
+      }
 
       result.push({
         ...item,
         encrypted: item.encrypted ?? false,
-        message: repeating && !isCompletelyEmpty(item) ? t('keyMustUnique') : null,
-        present: isCompletelyEmpty(item) || secrets === undefined ? undefined : secrets.includes(item.key),
+        message,
+        messageType: duplicated ? 'error' : 'info',
+        defined: info?.defined,
       })
     })
 
-    return result as KeyValueElement[]
+    return result as SecretElement[]
   }
 
   useEffect(() => {
-    dispatch({
-      type: 'merge-items',
-      items,
-    })
+    dispatch(mergeItems(items))
     setChanged(false)
-  }, [items])
+  }, [items, dispatch])
 
   const duplicates = useMemo(() => {
     const keys = state.map(it => it.key)
@@ -152,31 +188,22 @@ const SecretKeyValueInput = (props: SecretKeyValueInputProps) => {
     return keys.some((item, index) => keys.indexOf(item) !== index)
   }, [state])
 
-  const onChange = async (index: number, key: string, value: string) => {
-    let newItems = [...state]
+  const onChange = async (index: number, patch: Partial<UniqueSecretKeyValue>) => {
+    const newItems = [...state]
 
     const item = {
       ...newItems[index],
-      key,
-      value,
+      ...patch,
     }
 
     newItems[index] = item
 
-    newItems = newItems.filter(it => !isCompletelyEmpty(it))
-
-    dispatch({
-      type: 'set-items',
-      items: newItems,
-    })
+    dispatch(setItems(newItems))
     setChanged(true)
   }
 
   const onDiscard = () => {
-    dispatch({
-      type: 'set-items',
-      items,
-    })
+    dispatch(setItems(items))
     setChanged(false)
   }
 
@@ -207,10 +234,7 @@ const SecretKeyValueInput = (props: SecretKeyValueInputProps) => {
     )
 
     propsOnSubmit(newItems)
-    dispatch({
-      type: 'set-items',
-      items: newItems,
-    })
+    dispatch(setItems(newItems))
     setChanged(false)
   }
 
@@ -230,16 +254,15 @@ const SecretKeyValueInput = (props: SecretKeyValueInputProps) => {
     if (!duplicates) {
       propsOnSubmit(newItems)
     }
-    dispatch({
-      type: 'set-items',
-      items: newItems,
-    })
+    dispatch(setItems(newItems))
   }
 
-  const elements = stateToElements(state, definedSecrets)
+  const onResetSection = () => dispatch(resetItems(baseItems))
 
-  const renderItem = (entry: KeyValueElement, index: number) => {
-    const { id, key, value, message, encrypted, required } = entry
+  const elements = stateToElements(state)
+
+  const renderItem = (entry: SecretElement, index: number) => {
+    const { id, key, value, encrypted, required, message, messageType, defined } = entry
 
     const keyId = `${id}-key`
     const valueId = `${id}-value`
@@ -254,7 +277,7 @@ const SecretKeyValueInput = (props: SecretKeyValueInputProps) => {
           )}
           <div className="flex flex-row">
             <div className="mr-2 flex flex-row basis-[32px] my-auto">
-              {!isCompletelyEmpty(entry) && <SecretStatus className="mr-2" present={entry.present} />}
+              {!isCompletelyEmpty(entry) && <SecretStatus className="mr-2" defined={defined} />}
             </div>
             <MultiInput
               key={keyId}
@@ -265,8 +288,14 @@ const SecretKeyValueInput = (props: SecretKeyValueInputProps) => {
               placeholder={t('key') ?? keyPlaceholder}
               value={key}
               message={message}
+              messageType={messageType}
               editorOptions={editorOptions}
-              onPatch={it => onChange(index, it, value)}
+              onPatch={it =>
+                onChange(index, {
+                  key: it,
+                  value,
+                })
+              }
             />
           </div>
         </div>
@@ -281,7 +310,12 @@ const SecretKeyValueInput = (props: SecretKeyValueInputProps) => {
             placeholder={t('value')}
             value={value}
             editorOptions={editorOptions}
-            onPatch={it => onChange(index, key, it)}
+            onPatch={it =>
+              onChange(index, {
+                key,
+                value: it,
+              })
+            }
           />
           <div className="ml-2 flex flex-row basis-[64px] my-auto">
             <DyoImgButton
@@ -297,13 +331,20 @@ const SecretKeyValueInput = (props: SecretKeyValueInputProps) => {
     )
   }
 
-  return (
-    <form className={clsx(className, 'flex flex-col')}>
-      {!label ? null : (
-        <DyoLabel className={clsx(labelClassName ?? 'mb-2 whitespace-nowrap text-light-eased')}>{label}</DyoLabel>
-      )}
+  const currentKeys = new Set(items.map(it => it.key))
+  const hasMissingKeys = baseItems && baseItems.some(it => !currentKeys.has(it.key))
 
-      {!description ? null : <div className="text-light-eased mb-2 ml-1">{description}</div>}
+  return (
+    <form className={clsx(className, 'flex flex-col gap-2')}>
+      <ConfigSectionLabel
+        disabled={disabled || !hasMissingKeys}
+        onResetSection={hasMissingKeys ? onResetSection : null}
+        labelClassName={labelClassName}
+      >
+        {label}
+      </ConfigSectionLabel>
+
+      {!description ? null : <div className="text-light-eased ml-1">{description}</div>}
 
       {elements.map((it, index) => renderItem(it, index))}
 

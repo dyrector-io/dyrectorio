@@ -148,6 +148,13 @@
     }
   },
 
+  "configType": {
+    "config-bundle": "Bundle",
+    "deployment": "Deployment",
+    "image": "Image",
+    "instance": "Instance"
+  },
+
   "validation": {
     "kubernetesQuantity": "{{path}} must be a valid Kubernetes quantity",
     "noSensitive": "{{path}} must not contain sensitive keywords",
