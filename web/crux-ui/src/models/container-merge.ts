@@ -52,16 +52,17 @@ export const mergeMarkers = (strong: Marker, weak: Marker): Marker => {
   }
 }
 
-const mergeSecretKeys = (one: UniqueSecretKey[], other: UniqueSecretKey[]): UniqueSecretKey[] => {
-  if (!one) {
-    return other
+const mergeUniqueKeys = <T extends UniqueKey>(strong: T[], weak: T[]): T[] => {
+  if (!strong) {
+    return weak ?? null
   }
 
-  if (!other) {
-    return one
+  if (!weak) {
+    return strong
   }
 
-  return [...one, ...other.filter(it => !one.includes(it))]
+  const missing = weak.filter(w => !strong.find(it => it.key === w.key))
+  return [...strong, ...missing]
 }
 
 export const mapSecretKeyToSecretKeyValue = (secret: UniqueSecretKey): UniqueSecretKeyValue => ({
@@ -82,7 +83,7 @@ export const mergeSecrets = (strong: UniqueSecretKeyValue[], weak: UniqueSecretK
 
   const overriddenKeys: Set<string> = new Set(strong.map(it => it.key))
 
-  // removes non required secrets, when they are not present in the concrete config
+  // remove non required secrets, when they are not present in the concrete config
   const missing: UniqueSecretKeyValue[] = weak
     .filter(it => !overriddenKeys.has(it.key) && it.required)
     .map(it => mapSecretKeyToSecretKeyValue(it))
@@ -94,7 +95,7 @@ const mergeConfigs = (strong: ContainerConfigData, weak: ContainerConfigData): C
   // common
   name: strong.name ?? weak.name,
   environment: strong.environment ?? weak.environment,
-  secrets: mergeSecretKeys(strong.secrets, weak.secrets),
+  secrets: mergeUniqueKeys(strong.secrets, weak.secrets),
   user: mergeNumber(strong.user, weak.user),
   workingDirectory: strong.workingDirectory ?? weak.workingDirectory,
   tty: mergeBoolean(strong.tty, weak.tty),
@@ -148,19 +149,6 @@ export const mergeConfigsWithConcreteConfig = (
     ...baseConfig,
     secrets: mergeSecrets(concrete.secrets, squashed.secrets),
   }
-}
-
-const mergeUniqueKeys = <T extends UniqueKey>(strong: T[], weak: T[]): T[] => {
-  if (!strong) {
-    return weak ?? null
-  }
-
-  if (!weak) {
-    return strong
-  }
-
-  const missing = weak.filter(w => !strong.find(it => it.key === w.key))
-  return [...strong, ...missing]
 }
 
 const mergeUniqueKeyValues = <T extends UniqueKeyValue>(strong: T[], weak: T[]): T[] => {
