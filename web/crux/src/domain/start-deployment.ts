@@ -137,8 +137,10 @@ type SecretCandidate = {
   deployedAt: Date
   value: string
 }
+
 export const mergePrefixNeighborSecrets = (
   deployments: DeploymentWithConfig[],
+  currentSecrets: UniqueSecretKeyValue[],
   publicKey: string,
 ): Record<string, string> => {
   const result = new Map<string, SecretCandidate>()
@@ -168,6 +170,13 @@ export const mergePrefixNeighborSecrets = (
         })
       })
     })
+
+  currentSecrets.forEach(it => {
+    result.set(it.key, {
+      value: it.value,
+      deployedAt: null,
+    })
+  })
 
   const entries = [...result.entries()].map(entry => {
     const [key, candidate] = entry

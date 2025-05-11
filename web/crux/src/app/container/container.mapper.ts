@@ -132,8 +132,11 @@ export default class ContainerMapper {
     }
   }
 
-  configDtoToConfigData(current: ContainerConfigData, patch: ContainerConfigDataDto): ContainerConfigData {
-    let result: ContainerConfigData = {
+  configDtoToConfigData<ConfigData extends ContainerConfigData, ConfigDataDto extends ContainerConfigDataDto>(
+    current: ConfigData,
+    patch: ConfigDataDto,
+  ): ConfigData {
+    let result: ConfigData = {
       ...current,
       ...patch,
     }
@@ -175,6 +178,15 @@ export default class ContainerMapper {
     }
 
     return result
+  }
+
+  dbConfigToContainerConfigData<ConfigData extends ContainerConfigData>(config: ContainerConfig): ConfigData {
+    delete config.id
+    delete config.type
+    delete config.updatedBy
+    delete config.updatedAt
+
+    return config as any as ConfigData
   }
 
   dbConfigToCreateConfigStatement(
