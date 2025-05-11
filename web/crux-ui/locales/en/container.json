@@ -4,6 +4,7 @@
   "json": "JSON",
 
   "sensitiveKey": "Sensitive config data should be stored as secrets",
+  "templateTips": "Available templates in environments and storage: {{versionName}}",
 
   "base": {
     "all": "All",
@@ -145,6 +146,13 @@
       "memoryUsageExample": "512Mi",
       "metricsPath": "/metrics"
     }
+  },
+
+  "configType": {
+    "config-bundle": "Bundle",
+    "deployment": "Deployment",
+    "image": "Image",
+    "instance": "Instance"
   },
 
   "validation": {

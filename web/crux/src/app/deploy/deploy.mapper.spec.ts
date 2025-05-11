@@ -1,4 +1,5 @@
 import { DeploymentStatusEnum, NodeTypeEnum, ProjectTypeEnum, Storage, VersionTypeEnum } from '.prisma/client'
+import { ConfigService } from '@nestjs/config'
 import { Test, TestingModule } from '@nestjs/testing'
 import { ConcreteContainerConfigData, ContainerConfigData } from 'src/domain/container'
 import { DeploymentWithNodeVersion } from 'src/domain/deployment'
@@ -25,6 +26,7 @@ describe('DeployMapper', () => {
       imports: [],
       controllers: [],
       providers: [
+        ConfigService,
         AuditMapper,
         RegistryMapper,
         VersionMapper,

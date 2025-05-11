@@ -4,10 +4,19 @@ import { GetAccessTokenResponse } from 'google-auth-library/build/src/auth/oauth
 import { CruxUnauthorizedException } from 'src/exception/crux-exception'
 import { getRegistryApiException } from 'src/exception/registry-exception'
 import { RegistryImageWithTags } from '../registry.message'
-import { RegistryApiClient, RegistryImageTagInfo, fetchInfoForTags } from './registry-api-client'
+import {
+  RegistryApiClient,
+  RegistryImageTagInfo,
+  TagsList,
+  fetchInfoForTags,
+  tagNamesToImageTags,
+} from './registry-api-client'
 import V2HttpApiClient from './v2-http-api-client'
 
 export type GoogleClientOptions = {
+  disableTagInfo: boolean
+  imageNamePrefix: string
+  cache: Cache | null
   username?: string
   password?: string
 }
@@ -19,9 +28,7 @@ export class GoogleRegistryClient implements RegistryApiClient {
 
   constructor(
     private url: string,
-    private imageNamePrefix: string,
-    private readonly cache: Cache | null,
-    options?: GoogleClientOptions,
+    private readonly options: GoogleClientOptions,
   ) {
     if (options?.username) {
       if (!options.password) {
@@ -61,7 +68,7 @@ export class GoogleRegistryClient implements RegistryApiClient {
       await this.registryCredentialsToBearerAuth()
     }
 
-    const url = `https://${this.url}/v2/${this.imageNamePrefix}/tags/list`
+    const url = `https://${this.url}/v2/${this.options.imageNamePrefix}/tags/list`
 
     const res = await fetch(url, {
       headers: this.headers,
@@ -81,7 +88,7 @@ export class GoogleRegistryClient implements RegistryApiClient {
       await this.registryCredentialsToBearerAuth()
     }
 
-    const url = `https://${this.url}/v2/${this.imageNamePrefix}/${image}/tags/list`
+    const url = `https://${this.url}/v2/${this.options.imageNamePrefix}/${image}/tags/list`
 
     const tagRes = await fetch(url, {
       headers: this.headers,
@@ -91,8 +98,11 @@ export class GoogleRegistryClient implements RegistryApiClient {
       throw getRegistryApiException(tagRes, 'Google tags request')
     }
 
-    const json = (await tagRes.json()) as { tags: string[] }
-    const tags = await fetchInfoForTags(image, json.tags, this)
+    const tagList = (await tagRes.json()) as TagsList
+
+    const tags = this.options.disableTagInfo
+      ? tagNamesToImageTags(tagList.tags)
+      : await fetchInfoForTags(image, tagList.tags, this)
 
     return {
       name: image,
@@ -114,7 +124,7 @@ export class GoogleRegistryClient implements RegistryApiClient {
           },
         },
       },
-      this.cache,
+      this.options.cache,
     )
   }
 

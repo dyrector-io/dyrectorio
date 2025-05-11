@@ -16,7 +16,7 @@ type SortState = {
 
 export const sortString = (a: string, b: string) => (a ?? '').localeCompare(b)
 
-export const sortNumber = (a: number, b: number) => b - a
+export const sortNumber = (a: number, b: number) => a - b
 
 export const sortDate = (a: string, b: string): number => {
   if (a && b) {

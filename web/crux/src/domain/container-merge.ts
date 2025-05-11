@@ -5,6 +5,7 @@ import {
   Marker,
   Port,
   UniqueKey,
+  UniqueKeyValue,
   UniqueSecretKey,
   UniqueSecretKeyValue,
   Volume,
@@ -37,18 +38,7 @@ const mergeBoolean = (strong: boolean, weak: boolean): boolean => {
 
 type StorageProperties = Pick<ContainerConfigData, 'storageSet' | 'storageId' | 'storageConfig'>
 const mergeStorage = (strong: StorageProperties, weak: StorageProperties): StorageProperties => {
-  const set = mergeBoolean(strong.storageSet, weak.storageSet)
-  if (!set) {
-    // neither of them are set
-
-    return {
-      storageSet: false,
-      storageId: null,
-      storageConfig: null,
-    }
-  }
-
-  if (typeof strong.storageSet === 'boolean') {
+  if (strong.storageSet) {
     // strong is set
 
     return {
@@ -58,10 +48,21 @@ const mergeStorage = (strong: StorageProperties, weak: StorageProperties): Stora
     }
   }
 
+  if (weak.storageSet) {
+    // weak is set
+
+    return {
+      storageSet: true,
+      storageId: weak.storageId,
+      storageConfig: weak.storageConfig,
+    }
+  }
+
+  // neither of them are set
   return {
-    storageSet: true,
-    storageId: weak.storageId,
-    storageConfig: weak.storageConfig,
+    storageSet: false,
+    storageId: null,
+    storageConfig: null,
   }
 }
 
@@ -93,25 +94,35 @@ const mergeSecretKeys = (one: UniqueSecretKey[], other: UniqueSecretKey[]): Uniq
   return [...one, ...other.filter(it => !one.includes(it))]
 }
 
+export const mapSecretKeyToSecretKeyValue = (secret: UniqueSecretKey): UniqueSecretKeyValue => ({
+  ...secret,
+  value: '',
+  encrypted: false,
+  publicKey: null,
+})
+
 export const mergeSecrets = (strong: UniqueSecretKeyValue[], weak: UniqueSecretKey[]): UniqueSecretKeyValue[] => {
+  if (!weak) {
+    return strong ?? []
+  }
+
+  if (!strong) {
+    return weak.map(it => mapSecretKeyToSecretKeyValue(it))
+  }
   weak = weak ?? []
   strong = strong ?? []
 
-  const overriddenIds: Set<string> = new Set(strong?.map(it => it.id))
+  const overriddenKeys: Set<string> = new Set(strong.map(it => it.key))
 
+  // removes non required secrets, when they are not present in the concrete config
   const missing: UniqueSecretKeyValue[] = weak
-    .filter(it => !overriddenIds.has(it.id))
-    .map(it => ({
-      ...it,
-      value: '',
-      encrypted: false,
-      publicKey: null,
-    }))
+    .filter(it => !overriddenKeys.has(it.key) && it.required)
+    .map(it => mapSecretKeyToSecretKeyValue(it))
 
   return [...missing, ...strong]
 }
 
-export const mergeConfigs = (strong: ContainerConfigData, weak: ContainerConfigData): ContainerConfigData => ({
+const mergeConfigs = (strong: ContainerConfigData, weak: ContainerConfigData): ContainerConfigData => ({
   // common
   name: strong.name ?? weak.name,
   environment: strong.environment ?? weak.environment,
@@ -184,6 +195,27 @@ const mergeUniqueKeys = <T extends UniqueKey>(strong: T[], weak: T[]): T[] => {
   return [...strong, ...missing]
 }
 
+const mergeUniqueKeyValues = <T extends UniqueKeyValue>(strong: T[], weak: T[]): T[] => {
+  if (!strong) {
+    return weak ?? null
+  }
+
+  if (!weak) {
+    return strong
+  }
+
+  const overriddenKeys = new Set(strong.map(it => it.key))
+  const overriddenValues = new Set(strong.filter(it => it.value).map(it => it.key))
+  const weakValues = new Set(
+    weak.filter(it => it.value && !overriddenValues.has(it.key) && overriddenKeys.has(it.key)).map(it => it.key),
+  )
+
+  const missing = weak.filter(it => weakValues.has(it.key) || !overriddenKeys.has(it.key))
+  const overriden = strong.filter(it => !weakValues.has(it.key))
+
+  return [...overriden, ...missing]
+}
+
 const mergePorts = (strong: Port[], weak: Port[]): Port[] => {
   if (!strong) {
     return weak ?? null
@@ -221,18 +253,18 @@ const mergeVolumes = (strong: Volume[], weak: Volume[]): Volume[] => {
     return strong
   }
 
-  const missing = weak.filter(w => !strong.find(it => it.path === w.path || it.name === w.path))
+  const missing = weak.filter(w => !strong.find(it => it.path === w.path || it.name === w.name))
   return [...strong, ...missing]
 }
 
 export const mergeInstanceConfigWithDeploymentConfig = (
-  deployment: ConcreteContainerConfigData,
   instance: ConcreteContainerConfigData,
+  deployment: ConcreteContainerConfigData,
 ): ConcreteContainerConfigData => ({
   // common
   name: instance.name ?? deployment.name ?? null,
-  environment: mergeUniqueKeys(instance.environment, deployment.environment),
-  secrets: mergeUniqueKeys(instance.secrets, deployment.secrets),
+  environment: mergeUniqueKeyValues(instance.environment, deployment.environment),
+  secrets: mergeUniqueKeyValues(instance.secrets, deployment.secrets),
   user: mergeNumber(instance.user, deployment.user),
   workingDirectory: instance.workingDirectory ?? deployment.workingDirectory ?? null,
   tty: mergeBoolean(instance.tty, deployment.tty),
@@ -249,9 +281,9 @@ export const mergeInstanceConfigWithDeploymentConfig = (
   ...mergeStorage(instance, deployment),
 
   // crane
-  customHeaders: mergeUniqueKeys(deployment.customHeaders, instance.customHeaders),
+  customHeaders: mergeUniqueKeys(instance.customHeaders, deployment.customHeaders),
   proxyHeaders: mergeBoolean(instance.proxyHeaders, deployment.proxyHeaders),
-  extraLBAnnotations: mergeUniqueKeys(instance.extraLBAnnotations, deployment.extraLBAnnotations),
+  extraLBAnnotations: mergeUniqueKeyValues(instance.extraLBAnnotations, deployment.extraLBAnnotations),
   healthCheckConfig: instance.healthCheckConfig ?? deployment.healthCheckConfig ?? null,
   resourceConfig: instance.resourceConfig ?? deployment.resourceConfig ?? null,
   useLoadBalancer: mergeBoolean(instance.useLoadBalancer, deployment.useLoadBalancer),
@@ -265,6 +297,6 @@ export const mergeInstanceConfigWithDeploymentConfig = (
   networkMode: instance.networkMode ?? deployment.networkMode ?? null,
   restartPolicy: instance.restartPolicy ?? deployment.restartPolicy ?? null,
   networks: mergeUniqueKeys(instance.networks, deployment.networks),
-  dockerLabels: mergeUniqueKeys(instance.dockerLabels, deployment.dockerLabels),
+  dockerLabels: mergeUniqueKeyValues(instance.dockerLabels, deployment.dockerLabels),
   expectedState: instance.expectedState ?? deployment.expectedState ?? null,
 })

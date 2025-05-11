@@ -37,6 +37,7 @@ import {
   mergeConfigsWithConcreteConfig,
   mergeJsonWithContainerConfig,
   PatchConfigMessage,
+  secretInfosConcreteConfig,
   squashConfigs,
   ViewState,
   WebSocketSaveState,
@@ -59,7 +60,7 @@ import { getCruxFromContext } from '@server/crux-api'
 import { GetServerSidePropsContext } from 'next'
 import { Translate } from 'next-translate'
 import useTranslation from 'next-translate/useTranslation'
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
 const pageLinkOf = (t: Translate, url: string, type: ContainerConfigType): BreadcrumbLink => {
   switch (type) {
@@ -278,6 +279,11 @@ const ContainerConfigPage = (props: ContainerConfigPageProps) => {
     setTopBarContent(reactNode)
   }, [editorState.editors])
 
+  const secretInfos = useMemo(
+    () => secretInfosConcreteConfig(relations, resettableConfig, secrets?.keys),
+    [relations, resettableConfig, secrets],
+  )
+
   const getName = useCallback(() => {
     const parentName = config.parent.name
 
@@ -314,14 +320,11 @@ const ContainerConfigPage = (props: ContainerConfigPageProps) => {
     setFilters(current => configToFilters(current, config))
   }, [config])
 
-  const setErrorsForConfig = useCallback(
-    newConfig => {
-      const errors = getConfigErrors(newConfig, getImageLabels(propsConfig, relations), t)
-      setFieldErrors(errors)
-      setJsonError(jsonErrorOf(errors))
-    },
-    [t],
-  )
+  const setErrorsForConfig = (newConfig: ContainerConfigDetails) => {
+    const errors = getConfigErrors(newConfig, getImageLabels(propsConfig, relations), t)
+    setFieldErrors(errors)
+    setJsonError(jsonErrorOf(errors))
+  }
 
   const onChange = (newConfig: ContainerConfigData) => {
     setSaveState('saving')
@@ -422,13 +425,15 @@ const ContainerConfigPage = (props: ContainerConfigPageProps) => {
       </PageHeading>
 
       <DyoCard className="p-4">
-        <div className="flex mb-4 justify-between items-start">
+        <div className="flex mb-1 justify-between items-start">
           <DyoHeading element="h4" className="text-xl text-bright">
             {getName()}
           </DyoHeading>
 
           {getViewStateButtons()}
         </div>
+
+        <DyoMessage className="text-xs mt-2 mb-4" message={t('templateTips')} messageType="info" />
 
         {viewState === 'editor' && <ContainerConfigFilters onChange={setFilters} filters={filters} />}
       </DyoCard>
@@ -439,7 +444,8 @@ const ContainerConfigPage = (props: ContainerConfigPageProps) => {
             selectedFilters={filters}
             disabled={!mutable}
             publicKey={secrets?.publicKey ?? relations.deployment?.publicKey}
-            definedSecrets={secrets?.keys}
+            secretInfos={secretInfos}
+            configType={config.type}
             config={config}
             resettableConfig={resettableConfig}
             baseConfig={baseConfig}

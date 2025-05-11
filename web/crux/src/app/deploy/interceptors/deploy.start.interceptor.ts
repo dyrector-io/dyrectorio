@@ -7,7 +7,7 @@ import { getConflictsForConcreteConfig } from 'src/domain/container-conflict'
 import { mergeConfigsWithConcreteConfig } from 'src/domain/container-merge'
 import { checkDeploymentDeployability } from 'src/domain/deployment'
 import { parseDyrectorioEnvRules } from 'src/domain/image'
-import { missingSecretsOf } from 'src/domain/start-deployment'
+import { deploymentConfigOf, instanceConfigOf, missingSecretsOf } from 'src/domain/start-deployment'
 import { createStartDeploymentSchema, nullifyUndefinedProperties, yupValidate } from 'src/domain/validation'
 import { CruxPreconditionFailedException } from 'src/exception/crux-exception'
 import PrismaService from 'src/services/prisma.service'
@@ -110,25 +110,7 @@ export default class DeployStartValidationInterceptor implements NestInterceptor
     })
     yupValidate(createStartDeploymentSchema(instanceValidations), target)
 
-    const missingSecrets = deployment.instances
-      .map(it => {
-        const imageConfig = it.image.config as any as ContainerConfigData
-        const instanceConfig = it.config as any as ConcreteContainerConfigData
-        const mergedConfig = mergeConfigsWithConcreteConfig([imageConfig], instanceConfig)
-
-        return missingSecretsOf(it.configId, mergedConfig)
-      })
-      .filter(it => !!it)
-
-    if (missingSecrets.length > 0) {
-      throw new CruxPreconditionFailedException({
-        message: 'Required secrets must have values!',
-        property: 'instanceSecrets',
-        value: missingSecrets,
-      })
-    }
-
-    // config bundles
+    // check config bundle conflicts
     if (deployment.configBundles.length > 0) {
       const configs = deployment.configBundles.map(it => it.configBundle.config as any as ContainerConfigDataWithId)
       const concreteConfig = deployment.config as any as ConcreteContainerConfigData
@@ -140,16 +122,25 @@ export default class DeployStartValidationInterceptor implements NestInterceptor
           value: Object.keys(conflicts).join(', '),
         })
       }
+    }
 
-      const mergedConfig = mergeConfigsWithConcreteConfig(configs, concreteConfig)
-      const missingInstanceSecrets = missingSecretsOf(deployment.configId, mergedConfig)
-      if (missingInstanceSecrets) {
-        throw new CruxPreconditionFailedException({
-          message: 'Required secrets must have values!',
-          property: 'deploymentSecrets',
-          value: missingInstanceSecrets,
-        })
-      }
+    // validate instance configs
+    const deploymentConfig = deploymentConfigOf(deployment)
+
+    const missingSecrets = deployment.instances
+      .map(it => {
+        const instanceConfig = instanceConfigOf(deployment, deploymentConfig, it)
+
+        return missingSecretsOf(it.configId, instanceConfig)
+      })
+      .filter(it => !!it)
+
+    if (missingSecrets.length > 0) {
+      throw new CruxPreconditionFailedException({
+        message: 'Required secrets must have values!',
+        property: 'instanceSecrets',
+        value: missingSecrets,
+      })
     }
 
     // node

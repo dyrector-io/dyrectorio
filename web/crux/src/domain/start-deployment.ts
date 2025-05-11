@@ -112,6 +112,7 @@ export const instanceConfigOf = (
   ) {
     // this is a redeployment of a successful or an obsolete deployment of an incremental version
     // we should not merge and use only the concrete configs
+    // TODO (@m8vago): we might not need to save the configs on success, but when incrementing
 
     return instance.config as any as ConcreteContainerConfigData
   }
@@ -122,7 +123,7 @@ export const instanceConfigOf = (
 
   // then we merge and override the rest with the instance config
   const instanceConfig = instance.config as any as ConcreteContainerConfigData
-  const result = mergeInstanceConfigWithDeploymentConfig(mergedDeploymentConfig, instanceConfig)
+  const result = mergeInstanceConfigWithDeploymentConfig(instanceConfig, mergedDeploymentConfig)
 
   // set defaults
   if (!result.name) {

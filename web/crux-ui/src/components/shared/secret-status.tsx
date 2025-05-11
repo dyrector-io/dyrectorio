@@ -23,17 +23,17 @@ const altOfStatus = (present?: boolean) => {
   }
 }
 
-interface SecretStatusProps {
+type SecretStatusProps = {
   className?: string
-  present?: boolean
+  defined?: boolean
 }
 
 const SecretStatus = (props: SecretStatusProps) => {
-  const { className, present } = props
+  const { className, defined } = props
 
   const { t } = useTranslation('common')
 
-  return <DyoIndicator className={className} color={colorOfStatus(present)} title={t(altOfStatus(present))} />
+  return <DyoIndicator className={className} color={colorOfStatus(defined)} title={t(altOfStatus(defined))} />
 }
 
 export default SecretStatus

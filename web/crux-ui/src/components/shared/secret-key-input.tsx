@@ -19,7 +19,7 @@ type SecretElement = UniqueSecretKey & {
   message?: string
 }
 
-const isCompletelyEmpty = (it: UniqueSecretKey): boolean => !it.key || it.key.length < 1
+const isCompletelyEmpty = (it: UniqueSecretKey): boolean => !it.key?.trim()
 
 const generateEmptyLine = () => ({
   ...EMPTY_KEY,
@@ -58,7 +58,7 @@ const mergeItems =
     return result
   }
 
-interface SecretKeyInputProps {
+type SecretKeyInputProps = {
   disabled?: boolean
   className?: string
   label?: string
@@ -120,7 +120,7 @@ const SecretKeyInput = (props: SecretKeyInputProps) => {
     const updatedItems = newItems.filter(it => !isCompletelyEmpty(it))
     const keys = updatedItems.map(it => it.key)
 
-    if (keys.every((it, itIndex) => keys.indexOf(it) === itIndex)) {
+    if (keys.every((key, keyIndex) => keys.indexOf(key) === keyIndex)) {
       propsOnChange(updatedItems)
     }
     dispatch(setItems(newItems))
@@ -140,34 +140,30 @@ const SecretKeyInput = (props: SecretKeyInputProps) => {
     const keyId = `${id}-key`
 
     return (
-      <div key={keyId} className="flex flex-row flex-grow mb-2 ml-1">
-        <div className="basis-5/12">
-          <MultiInput
-            key={keyId}
-            id={keyId}
-            disabled={disabled}
-            editorOptions={editorOptions}
-            grow
-            inline
-            placeholder={keyPlaceholder}
-            value={key ?? ''}
-            message={message}
-            onPatch={it => onChange(index, { key: it })}
-          />
-        </div>
-        <div className="basis-7/12 flex items-center justify-end">
-          {!isCompletelyEmpty(entry) && (
-            <div className="flex-0">
-              <DyoToggle
-                id="required"
-                label={t('required')}
-                checked={required}
-                disabled={disabled}
-                onCheckedChange={it => onChange(index, { required: it })}
-              />
-            </div>
-          )}
-        </div>
+      <div key={keyId} className="flex flex-row justify-items-stretch gap-4 ml-1">
+        <MultiInput
+          key={keyId}
+          id={keyId}
+          disabled={disabled}
+          editorOptions={editorOptions}
+          containerClassName="w-full"
+          grow
+          placeholder={keyPlaceholder}
+          value={key ?? ''}
+          message={message}
+          onPatch={it => onChange(index, { key: it })}
+        />
+        {!isCompletelyEmpty(entry) && (
+          <div className="my-auto">
+            <DyoToggle
+              id="required"
+              label={t('required')}
+              checked={required}
+              disabled={disabled}
+              onCheckedChange={it => onChange(index, { required: it })}
+            />
+          </div>
+        )}
       </div>
     )
   }
@@ -175,7 +171,7 @@ const SecretKeyInput = (props: SecretKeyInputProps) => {
   const hasValue = items && items.length > 0
 
   return (
-    <div className={clsx(className, 'flex flex-col')}>
+    <div className={clsx(className, 'flex flex-col gap-4')}>
       {!label ? null : (
         <ConfigSectionLabel
           disabled={disabled || !propsOnResetSection || !hasValue}
@@ -186,7 +182,7 @@ const SecretKeyInput = (props: SecretKeyInputProps) => {
         </ConfigSectionLabel>
       )}
 
-      {!description ? null : <div className="text-light-eased mb-2 ml-1">{description}</div>}
+      {!description ? null : <div className="text-light-eased ml-1">{description}</div>}
 
       {elements.map((it, index) => renderItem(it, index))}
     </div>

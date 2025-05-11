@@ -172,7 +172,7 @@ export default class DeployMapper {
       ...this.toDto(deployment),
       publicKey: agent?.publicKey ?? null,
       configBundles: deployment.configBundles.map(it => this.configBundleMapper.detailsToDto(it.configBundle)),
-      config: this.instanceConfigToDto(deployment.config),
+      config: this.concreteConfigToDto(deployment.config),
     }
   }
 
@@ -190,7 +190,7 @@ export default class DeployMapper {
       id: it.id,
       updatedAt: it.config.updatedAt,
       image: this.imageMapper.toDetailsDto(it.image),
-      config: this.instanceConfigToDto(it.config),
+      config: this.concreteConfigToDto(it.config),
     }
   }
 
@@ -208,11 +208,11 @@ export default class DeployMapper {
     }
   }
 
-  instanceConfigToDto(it: ContainerConfig): ConcreteContainerConfigDto {
+  concreteConfigToDto(it: ContainerConfig): ConcreteContainerConfigDto {
     const concreteConf = it as any as ConcreteContainerConfigData
 
     return {
-      ...this.containerMapper.configDataToDto(it.id, 'instance', it as any as ContainerConfigData),
+      ...this.containerMapper.configDataToDto(it.id, it.type, it as any as ContainerConfigData),
       secrets: concreteConf.secrets,
     }
   }

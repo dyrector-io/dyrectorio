@@ -9,7 +9,6 @@ import {
   ContainerConfigData,
   DeleteImageMessage,
   DeploymentDetails,
-  FetchImageTagsMessage,
   GetImageMessage,
   ImageMessage,
   ImagesAddedMessage,
@@ -97,31 +96,11 @@ const mergeImagePatch = (oldImage: VersionImage, newImage: PatchVersionImage): V
     : oldImage.config,
 })
 
-export interface VersionStateOptions {
+export type VersionStateOptions = {
   projectId: string
   version: VersionDetails
   initialSection: VersionSectionsState
   setSaveState?: (saveState: WebSocketSaveState) => void
-}
-
-const refreshImageTags = (registriesSock: WebSocketClientEndpoint, images: VersionImage[]): void => {
-  const fetchTags = images.reduce((map, it) => {
-    let names = map.get(it.registry.id)
-    if (!names) {
-      names = new Set()
-      map.set(it.registry.id, names)
-    }
-
-    names.add(it.name)
-    return map
-  }, new Map())
-
-  fetchTags.forEach((names, registryId) => {
-    registriesSock.send(WS_TYPE_REGISTRY_FETCH_IMAGE_TAGS, {
-      registryId,
-      images: Array.from(names),
-    } as FetchImageTagsMessage)
-  })
 }
 
 export const selectTagsOfImage = (state: VerionState, image: VersionImage): RegistryImageTag[] | null => {
@@ -175,13 +154,7 @@ export const useVersionState = (options: VersionStateOptions): [VerionState, Ver
 
   const editor = useEditorState(versionSock)
 
-  const registriesSock = useWebSocket(routes.registry.socket(), {
-    onOpen: () =>
-      refreshImageTags(
-        registriesSock,
-        version.images.filter(it => it.registry.type !== 'unchecked'),
-      ),
-  })
+  const registriesSock = useWebSocket(routes.registry.socket())
 
   registriesSock.on(WS_TYPE_REGISTRY_IMAGE_TAGS, (message: RegistryImageTagsMessage) => {
     if (message.images.length < 1) {
