@@ -95,94 +95,6 @@ const mergeUniqueKeys = <T extends UniqueKey>(strong: T[], weak: T[]): T[] => {
   return [...strong, ...missing]
 }
 
-export const mapSecretKeyToSecretKeyValue = (secret: UniqueSecretKey): UniqueSecretKeyValue => ({
-  ...secret,
-  value: '',
-  encrypted: false,
-  publicKey: null,
-})
-
-export const mergeSecrets = (strong: UniqueSecretKeyValue[], weak: UniqueSecretKey[]): UniqueSecretKeyValue[] => {
-  if (!weak) {
-    return strong ?? []
-  }
-
-  if (!strong) {
-    return weak.map(it => mapSecretKeyToSecretKeyValue(it))
-  }
-  weak = weak ?? []
-  strong = strong ?? []
-
-  const overriddenKeys: Set<string> = new Set(strong.map(it => it.key))
-
-  // remove non required secrets, when they are not present in the concrete config
-  const missing: UniqueSecretKeyValue[] = weak
-    .filter(it => !overriddenKeys.has(it.key) && it.required)
-    .map(it => mapSecretKeyToSecretKeyValue(it))
-
-  return [...missing, ...strong]
-}
-
-const mergeConfigs = (strong: ContainerConfigData, weak: ContainerConfigData): ContainerConfigData => ({
-  // common
-  name: strong.name ?? weak.name,
-  environment: strong.environment ?? weak.environment,
-  secrets: mergeUniqueKeys(strong.secrets, weak.secrets),
-  user: mergeNumber(strong.user, weak.user),
-  workingDirectory: strong.workingDirectory ?? weak.workingDirectory,
-  tty: mergeBoolean(strong.tty, weak.tty),
-  portRanges: strong.portRanges ?? weak.portRanges,
-  args: strong.args ?? weak.args,
-  commands: strong.commands ?? weak.commands,
-  expose: strong.expose ?? weak.expose,
-  configContainer: strong.configContainer ?? weak.configContainer,
-  routing: strong.routing ?? weak.routing,
-  volumes: strong.volumes ?? weak.volumes,
-  initContainers: strong.initContainers ?? weak.initContainers,
-  capabilities: [], // TODO (@m8vago, @nandor-magyar): capabilities feature is still missing
-  ports: strong.ports ?? weak.ports,
-  ...mergeStorage(strong, weak),
-
-  // crane
-  customHeaders: strong.customHeaders ?? weak.customHeaders,
-  proxyHeaders: mergeBoolean(strong.proxyHeaders, weak.proxyHeaders),
-  extraLBAnnotations: strong.extraLBAnnotations ?? weak.extraLBAnnotations,
-  healthCheckConfig: strong.healthCheckConfig ?? weak.healthCheckConfig,
-  resourceConfig: strong.resourceConfig ?? weak.resourceConfig,
-  useLoadBalancer: mergeBoolean(strong.useLoadBalancer, weak.useLoadBalancer),
-  deploymentStrategy: strong.deploymentStrategy ?? weak.deploymentStrategy,
-  labels: mergeMarkers(strong.labels, weak.labels),
-  annotations: mergeMarkers(strong.annotations, weak.annotations),
-  metrics: strong.metrics ?? weak.metrics,
-
-  // dagent
-  logConfig: strong.logConfig ?? weak.logConfig,
-  networkMode: strong.networkMode ?? weak.networkMode,
-  restartPolicy: strong.restartPolicy ?? weak.restartPolicy,
-  networks: strong.networks ?? weak.networks,
-  dockerLabels: strong.dockerLabels ?? weak.dockerLabels,
-  expectedState: strong.expectedState ?? weak.expectedState,
-})
-
-const squashConfigs = (configs: ContainerConfigData[]): ContainerConfigData =>
-  configs.reduce((result, conf) => mergeConfigs(conf, result), {} as ContainerConfigData)
-
-// this assumes that the concrete config takes care of any conflict between the other configs
-export const mergeConfigsWithConcreteConfig = (
-  configs: ContainerConfigData[],
-  concrete: ConcreteContainerConfigData,
-): ConcreteContainerConfigData => {
-  const squashed = squashConfigs(configs.filter(it => !!it))
-  concrete = concrete ?? {}
-
-  const baseConfig = mergeConfigs(concrete, squashed)
-
-  return {
-    ...baseConfig,
-    secrets: mergeSecrets(concrete.secrets, squashed.secrets),
-  }
-}
-
 const mergeUniqueKeyValues = <T extends UniqueKeyValue>(strong: T[], weak: T[]): T[] => {
   if (!strong) {
     return weak ?? null
@@ -244,6 +156,142 @@ const mergeVolumes = (strong: Volume[], weak: Volume[]): Volume[] => {
   const missing = weak.filter(w => !strong.find(it => it.path === w.path || it.name === w.name))
   return [...strong, ...missing]
 }
+
+export const mapSecretKeyToSecretKeyValue = (secret: UniqueSecretKey): UniqueSecretKeyValue => ({
+  ...secret,
+  value: '',
+  encrypted: false,
+  publicKey: null,
+})
+
+export const mergeSecrets = (strong: UniqueSecretKeyValue[], weak: UniqueSecretKey[]): UniqueSecretKeyValue[] => {
+  if (!weak) {
+    return strong ?? []
+  }
+
+  if (!strong) {
+    return weak.map(it => mapSecretKeyToSecretKeyValue(it))
+  }
+  weak = weak ?? []
+  strong = strong ?? []
+
+  const overriddenKeys: Set<string> = new Set(strong.map(it => it.key))
+
+  // remove non required secrets, when they are not present in the concrete config
+  const missing: UniqueSecretKeyValue[] = weak
+    .filter(it => !overriddenKeys.has(it.key) && it.required)
+    .map(it => mapSecretKeyToSecretKeyValue(it))
+
+  return [...missing, ...strong]
+}
+
+const squashConfigs = (strong: ContainerConfigData, weak: ContainerConfigData): ContainerConfigData => ({
+  // common
+  name: strong.name ?? weak.name,
+  environment: strong.environment ?? weak.environment,
+  secrets: mergeUniqueKeys(strong.secrets, weak.secrets),
+  user: mergeNumber(strong.user, weak.user),
+  workingDirectory: strong.workingDirectory ?? weak.workingDirectory,
+  tty: mergeBoolean(strong.tty, weak.tty),
+  portRanges: strong.portRanges ?? weak.portRanges,
+  args: strong.args ?? weak.args,
+  commands: strong.commands ?? weak.commands,
+  expose: strong.expose ?? weak.expose,
+  configContainer: strong.configContainer ?? weak.configContainer,
+  routing: strong.routing ?? weak.routing,
+  volumes: strong.volumes ?? weak.volumes,
+  initContainers: strong.initContainers ?? weak.initContainers,
+  capabilities: [], // TODO (@m8vago, @nandor-magyar): capabilities feature is still missing
+  ports: strong.ports ?? weak.ports,
+  ...mergeStorage(strong, weak),
+
+  // crane
+  customHeaders: strong.customHeaders ?? weak.customHeaders,
+  proxyHeaders: mergeBoolean(strong.proxyHeaders, weak.proxyHeaders),
+  extraLBAnnotations: strong.extraLBAnnotations ?? weak.extraLBAnnotations,
+  healthCheckConfig: strong.healthCheckConfig ?? weak.healthCheckConfig,
+  resourceConfig: strong.resourceConfig ?? weak.resourceConfig,
+  useLoadBalancer: mergeBoolean(strong.useLoadBalancer, weak.useLoadBalancer),
+  deploymentStrategy: strong.deploymentStrategy ?? weak.deploymentStrategy,
+  labels: mergeMarkers(strong.labels, weak.labels),
+  annotations: mergeMarkers(strong.annotations, weak.annotations),
+  metrics: strong.metrics ?? weak.metrics,
+
+  // dagent
+  logConfig: strong.logConfig ?? weak.logConfig,
+  networkMode: strong.networkMode ?? weak.networkMode,
+  restartPolicy: strong.restartPolicy ?? weak.restartPolicy,
+  networks: strong.networks ?? weak.networks,
+  dockerLabels: strong.dockerLabels ?? weak.dockerLabels,
+  expectedState: strong.expectedState ?? weak.expectedState,
+})
+
+const mergeConfigs = (strong: ContainerConfigData, weak: ContainerConfigData): ContainerConfigData => ({
+  name: strong.name ?? weak.name ?? null,
+  environment: mergeUniqueKeyValues(strong.environment, weak.environment),
+  secrets: mergeUniqueKeys(strong.secrets, weak.secrets),
+  user: mergeNumber(strong.user, weak.user),
+  workingDirectory: strong.workingDirectory ?? weak.workingDirectory ?? null,
+  tty: mergeBoolean(strong.tty, weak.tty),
+  ports: mergePorts(strong.ports, weak.ports),
+  portRanges: mergePortRanges(strong.portRanges, weak.portRanges),
+  args: mergeUniqueKeys(strong.args, weak.args),
+  commands: mergeUniqueKeys(strong.commands, weak.commands),
+  expose: strong.expose ?? weak.expose ?? null,
+  configContainer: strong.configContainer ?? weak.configContainer ?? null,
+  routing: strong.routing ?? weak.routing ?? null,
+  volumes: mergeVolumes(strong.volumes, weak.volumes),
+  initContainers: strong.initContainers ?? weak.initContainers ?? null, // TODO (@m8vago): merge them correctly after the init container rework
+  capabilities: [], // TODO (@m8vago, @nandor-magyar): capabilities feature is still missing
+  ...mergeStorage(strong, weak),
+
+  // crane
+  customHeaders: mergeUniqueKeys(strong.customHeaders, weak.customHeaders),
+  proxyHeaders: mergeBoolean(strong.proxyHeaders, weak.proxyHeaders),
+  extraLBAnnotations: mergeUniqueKeyValues(strong.extraLBAnnotations, weak.extraLBAnnotations),
+  healthCheckConfig: strong.healthCheckConfig ?? weak.healthCheckConfig ?? null,
+  resourceConfig: strong.resourceConfig ?? weak.resourceConfig ?? null,
+  useLoadBalancer: mergeBoolean(strong.useLoadBalancer, weak.useLoadBalancer),
+  deploymentStrategy: strong.deploymentStrategy ?? weak.deploymentStrategy ?? null,
+  labels: mergeMarkers(strong.labels, weak.labels),
+  annotations: mergeMarkers(strong.annotations, weak.annotations),
+  metrics: strong.metrics ?? weak.metrics ?? null,
+
+  // dagent
+  logConfig: strong.logConfig ?? weak.logConfig ?? null,
+  networkMode: strong.networkMode ?? weak.networkMode ?? null,
+  restartPolicy: strong.restartPolicy ?? weak.restartPolicy ?? null,
+  networks: mergeUniqueKeys(strong.networks, weak.networks),
+  dockerLabels: mergeUniqueKeyValues(strong.dockerLabels, weak.dockerLabels),
+  expectedState: strong.expectedState ?? weak.expectedState ?? null,
+})
+
+export const mergeConfigList = (configs: ContainerConfigData[]): ContainerConfigData =>
+  configs.reduce((result, conf) => mergeConfigs(conf, result), {} as ContainerConfigData)
+
+// this assumes that the concrete config takes care of any conflict between the other configs
+export const mergeConfigsWithConcreteConfig = (
+  configs: ContainerConfigData[],
+  concrete: ConcreteContainerConfigData,
+): ConcreteContainerConfigData => {
+  const squashed = mergeConfigList(configs.filter(it => !!it))
+  concrete = concrete ?? {}
+
+  const baseConfig = squashConfigs(concrete, squashed)
+
+  return {
+    ...baseConfig,
+    secrets: mergeSecrets(concrete.secrets, squashed.secrets),
+  }
+}
+
+export const mergeDeploymentConfigWithImageConfig = (
+  deployment: ConcreteContainerConfigData,
+  image: ContainerConfigData,
+): ConcreteContainerConfigData => ({
+  ...mergeConfigs(deployment, image),
+  secrets: mergeSecrets(deployment.secrets, image.secrets),
+})
 
 export const mergeInstanceConfigWithDeploymentConfig = (
   instance: ConcreteContainerConfigData,

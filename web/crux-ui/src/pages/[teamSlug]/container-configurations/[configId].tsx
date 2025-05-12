@@ -34,11 +34,11 @@ import {
   containerConfigTypeToSectionType,
   getConflictsForConcreteConfig,
   JsonContainerConfig,
+  mergeConfigList,
   mergeConfigsWithConcreteConfig,
   mergeJsonWithContainerConfig,
   PatchConfigMessage,
   secretInfosConcreteConfig,
-  squashConfigs,
   ViewState,
   WebSocketSaveState,
   WS_TYPE_CONFIG_SECRETS,
@@ -150,7 +150,7 @@ const getBaseConfig = (config: ContainerConfigDetails, relations: ContainerConfi
     case 'instance':
       return relations.image.config
     case 'deployment':
-      return squashConfigs(relations.deployment.configBundles.map(it => it.config))
+      return mergeConfigList(relations.deployment.configBundles.map(it => it.config))
     default:
       return null
   }

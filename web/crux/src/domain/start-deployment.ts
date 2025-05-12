@@ -1,6 +1,10 @@
 import { ContainerConfig, DeploymentStatusEnum, VersionTypeEnum } from '@prisma/client'
 import { ConcreteContainerConfigData, ContainerConfigData, UniqueSecretKeyValue, nameOfInstance } from './container'
-import { mergeConfigsWithConcreteConfig, mergeInstanceConfigWithDeploymentConfig } from './container-merge'
+import {
+  mergeConfigsWithConcreteConfig,
+  mergeDeploymentConfigWithImageConfig,
+  mergeInstanceConfigWithDeploymentConfig,
+} from './container-merge'
 import { DeploymentWithConfig } from './deployment'
 
 export type InvalidSecrets = {
@@ -101,6 +105,7 @@ type DeployableInstance = {
   }
   config: ContainerConfig
 }
+
 export const instanceConfigOf = (
   deployment: DeployableDeployment,
   deploymentConfig: ConcreteContainerConfigData,
@@ -119,7 +124,7 @@ export const instanceConfigOf = (
 
   // first we merge the deployment config with the image config to resolve secrets globally
   const imageConfig = instance.image.config as any as ContainerConfigData
-  const mergedDeploymentConfig = mergeConfigsWithConcreteConfig([imageConfig], deploymentConfig)
+  const mergedDeploymentConfig = mergeDeploymentConfigWithImageConfig(deploymentConfig, imageConfig)
 
   // then we merge and override the rest with the instance config
   const instanceConfig = instance.config as any as ConcreteContainerConfigData
