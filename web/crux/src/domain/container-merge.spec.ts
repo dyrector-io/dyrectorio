@@ -225,8 +225,8 @@ describe('container-merge', () => {
         type: 'mem',
       },
     ],
-    metrics: undefined,
-    expectedState: undefined,
+    metrics: null,
+    expectedState: null,
   }
 
   const fullConcreteConfig: ConcreteContainerConfigData = {
@@ -450,8 +450,8 @@ describe('container-merge', () => {
         type: 'rwo',
       },
     ],
-    metrics: undefined,
-    expectedState: undefined,
+    metrics: null,
+    expectedState: null,
   }
 
   const fullDeploymentConfig: ConcreteContainerConfigData = {
@@ -683,8 +683,8 @@ describe('container-merge', () => {
         type: 'rwo',
       },
     ],
-    metrics: undefined,
-    expectedState: undefined,
+    metrics: null,
+    expectedState: null,
   }
 
   describe('mergeConfigsWithConcreteConfig', () => {
