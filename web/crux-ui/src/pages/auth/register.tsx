@@ -18,6 +18,7 @@ import {
   findMessage,
   isDyoError,
   mapOidcAvailability,
+  passwordMethodAvilable,
   redirectTo,
   removeError,
   sendForm,
@@ -53,6 +54,7 @@ const RegisterPage = (props: RegisterPageProps) => {
 
   const recaptcha = useRef<ReCAPTCHA>()
   const oidc = mapOidcAvailability(ui)
+  const passwordAvailable = passwordMethodAvilable(ui)
 
   const registerWithOidc = async (provider: OidcProvider) => {
     const captcha = await recaptcha.current?.executeAsync()
@@ -151,121 +153,123 @@ const RegisterPage = (props: RegisterPageProps) => {
     <SingleFormLayout title={t('common:signUp')}>
       <DyoSingleFormLogo />
 
-      <DyoCard className="p-6 mt-2">
-        <DyoForm className="flex flex-col" onSubmit={formik.handleSubmit} onReset={formik.handleReset}>
-          <DyoSingleFormHeading>{t('common:signUp')}</DyoSingleFormHeading>
+      <DyoCard className="flex flex-col min-w-80 p-6 mt-2">
+        <DyoSingleFormHeading>{t('common:signUp')}</DyoSingleFormHeading>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-x-4">
-            <DyoInput
-              label={t('common:firstName')}
-              name="firstName"
-              type="text"
-              onChange={formik.handleChange}
-              value={formik.values.firstName}
-              message={formik.errors.firstName}
-              messageType="error"
-            />
+        {passwordAvailable && (
+          <DyoForm className="flex flex-col" onSubmit={formik.handleSubmit} onReset={formik.handleReset}>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-4">
+              <DyoInput
+                label={t('common:firstName')}
+                name="firstName"
+                type="text"
+                onChange={formik.handleChange}
+                value={formik.values.firstName}
+                message={formik.errors.firstName}
+                messageType="error"
+              />
 
-            <DyoInput
-              label={t('common:lastName')}
-              name="lastName"
-              type="text"
-              onChange={formik.handleChange}
-              value={formik.values.lastName}
-              message={formik.errors.lastName}
-              messageType="error"
-            />
+              <DyoInput
+                label={t('common:lastName')}
+                name="lastName"
+                type="text"
+                onChange={formik.handleChange}
+                value={formik.values.lastName}
+                message={formik.errors.lastName}
+                messageType="error"
+              />
 
-            <DyoInput
-              containerClassName="col-span-2"
-              grow
-              label={t('common:email')}
-              name="email"
-              type="email"
-              onChange={formik.handleChange}
-              value={formik.values.email}
-              message={formik.errors.email ?? findMessage(ui, 'traits.email')}
-            />
+              <DyoInput
+                containerClassName="col-span-2"
+                grow
+                label={t('common:email')}
+                name="email"
+                type="email"
+                onChange={formik.handleChange}
+                value={formik.values.email}
+                message={formik.errors.email ?? findMessage(ui, 'traits.email')}
+              />
 
-            <DyoPassword
-              label={t('common:password')}
-              name="password"
-              onChange={formik.handleChange}
-              value={formik.values.password}
-            />
+              <DyoPassword
+                label={t('common:password')}
+                name="password"
+                onChange={formik.handleChange}
+                value={formik.values.password}
+              />
 
-            <DyoPassword
-              label={t('common:confirmPass')}
-              name="confirmPassword"
-              onChange={formik.handleChange}
-              value={formik.values.confirmPassword}
-            />
+              <DyoPassword
+                label={t('common:confirmPass')}
+                name="confirmPassword"
+                onChange={formik.handleChange}
+                value={formik.values.confirmPassword}
+              />
 
-            <DyoMessage
-              message={formik.errors.password ? formik.errors.password : findMessage(ui, 'password')}
-              messageType="error"
-            />
+              <DyoMessage
+                message={formik.errors.password ? formik.errors.password : findMessage(ui, 'password')}
+                messageType="error"
+              />
 
-            <DyoMessage
-              message={
-                formik.errors.confirmPassword ?? findError(errors, 'confirmPassword', it => t(`errors:${it.error}`))
-              }
-              messageType="error"
-            />
-          </div>
-
-          {ui.messages?.map((it, index) => (
-            <DyoMessage className="text-xs italic max-w-xl mt-2" key={`error-${index}`} message={it.text} />
-          ))}
-
-          <DyoMessage
-            className="text-xs italic max-w-xl mt-2"
-            message={findError(errors, 'captcha', it =>
-              t(`errors:${it.error}`, {
-                name: it.value,
-              }),
-            )}
-            messageType="error"
-          />
-
-          <DyoButton className="px-8 mx-auto mt-8" type="submit">
-            {t('createAcc')}
-          </DyoButton>
-
-          {oidcEnabled(oidc) && (
-            <div className="flex flex-col gap-2 items-center mx-auto mt-2">
-              <span className="text-light my-2">{t('orSignUpWith')}</span>
-
-              <div className="flex flex-row gap-8">
-                {oidc.gitlab && (
-                  <DyoIcon src="/oidc/gitlab.svg" size="lg" alt="Gitlab" onClick={() => registerWithOidc('gitlab')} />
-                )}
-
-                {oidc.github && (
-                  <DyoIcon src="/oidc/github.svg" size="lg" alt="Github" onClick={() => registerWithOidc('github')} />
-                )}
-
-                {oidc.google && (
-                  <DyoIcon src="/oidc/google.svg" size="lg" alt="Google" onClick={() => registerWithOidc('google')} />
-                )}
-
-                {oidc.azure && (
-                  <DyoIcon src="/oidc/azure.svg" size="lg" alt="Azure" onClick={() => registerWithOidc('azure')} />
-                )}
-              </div>
+              <DyoMessage
+                message={
+                  formik.errors.confirmPassword ?? findError(errors, 'confirmPassword', it => t(`errors:${it.error}`))
+                }
+                messageType="error"
+              />
             </div>
-          )}
 
-          <p className="text-bright text-center self-center max-w-xl mt-8">
-            {t(`whenYouRegister`)}
-            <a className="font-bold" href="https://dyrectorio.com/privacy" target="_blank" rel="noreferrer">
-              {t('privacyPolicy')}
-            </a>
-            .
-          </p>
+            {ui.messages?.map((it, index) => (
+              <DyoMessage className="text-xs italic max-w-xl mt-2" key={`error-${index}`} message={it.text} />
+            ))}
 
-          {recaptchaSiteKey ? <ReCAPTCHA ref={recaptcha} size="invisible" sitekey={recaptchaSiteKey} /> : null}
-        </DyoForm>
+            <DyoMessage
+              className="text-xs italic max-w-xl mt-2"
+              message={findError(errors, 'captcha', it =>
+                t(`errors:${it.error}`, {
+                  name: it.value,
+                }),
+              )}
+              messageType="error"
+            />
+
+            <DyoButton className="px-8 mx-auto mt-8" type="submit">
+              {t('createAcc')}
+            </DyoButton>
+
+            {recaptchaSiteKey ? <ReCAPTCHA ref={recaptcha} size="invisible" sitekey={recaptchaSiteKey} /> : null}
+          </DyoForm>
+        )}
+
+        {oidcEnabled(oidc) && (
+          <div className="flex flex-col gap-4 items-center mx-auto mt-4">
+            {passwordAvailable && <span className="text-light">{t('orSignUpWith')}</span>}
+
+            <div className="flex flex-row gap-8">
+              {oidc.gitlab && (
+                <DyoIcon src="/oidc/gitlab.svg" size="lg" alt="Gitlab" onClick={() => registerWithOidc('gitlab')} />
+              )}
+
+              {oidc.github && (
+                <DyoIcon src="/oidc/github.svg" size="lg" alt="Github" onClick={() => registerWithOidc('github')} />
+              )}
+
+              {oidc.google && (
+                <DyoIcon src="/oidc/google.svg" size="lg" alt="Google" onClick={() => registerWithOidc('google')} />
+              )}
+
+              {oidc.azure && (
+                <DyoIcon src="/oidc/azure.svg" size="lg" alt="Azure" onClick={() => registerWithOidc('azure')} />
+              )}
+            </div>
+          </div>
+        )}
+
+        <p className="text-bright text-center self-center max-w-xl mt-8">
+          {t(`whenYouRegister`)}
+          <a className="font-bold" href="https://dyrectorio.com/privacy" target="_blank" rel="noreferrer">
+            {t('privacyPolicy')}
+          </a>
+          .
+        </p>
       </DyoCard>
 
       <div className="flex justify-center text-bright mt-8">

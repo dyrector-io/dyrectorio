@@ -15,13 +15,23 @@ import { QASettings, QA_SETTINGS_PROP, fetchQualityAssuranceSettings } from 'qua
 import toast, { ToastOptions } from 'react-hot-toast'
 import { COOKIE_TEAM_SLUG } from './const'
 import { MessageType } from './elements/dyo-input'
-import { Audit, AxiosError, DyoApiError, DyoErrorDto, OidcAvailability, RegistryDetails, UserMeta } from './models'
+import {
+  Audit,
+  AxiosError,
+  DyoApiError,
+  DyoErrorDto,
+  OidcAvailability,
+  OidcConnectorAction,
+  OidcProvider,
+  RegistryDetails,
+  UserMeta,
+} from './models'
 import {
   API_USERS_ME,
   ROUTE_404,
   ROUTE_INDEX,
   ROUTE_LOGIN,
-  ROUTE_NEW_PASSWORD,
+  ROUTE_RECOVERED,
   ROUTE_STATUS,
   verificationUrl,
 } from './routes'
@@ -142,6 +152,15 @@ export const mapOidcAvailability = (ui: UiContainer): OidcAvailability => ({
   google: !!findAttributesByValue(ui, 'google'),
   azure: !!findAttributesByValue(ui, 'azure'),
 })
+
+export const mapUiToOidcProviders = (ui: UiContainer): Record<OidcProvider, OidcConnectorAction> => ({
+  gitlab: findAttributesByValue(ui, 'gitlab')?.name as OidcConnectorAction,
+  github: findAttributesByValue(ui, 'github')?.name as OidcConnectorAction,
+  google: findAttributesByValue(ui, 'google')?.name as OidcConnectorAction,
+  azure: findAttributesByValue(ui, 'azure')?.name as OidcConnectorAction,
+})
+
+export const passwordMethodAvilable = (ui: UiContainer): boolean => !!findAttributesByValue(ui, 'password')
 
 // errors
 export const isDyoError = (instance: any) => 'error' in instance && 'description' in instance
@@ -336,7 +355,7 @@ export const setupContextSession = async (
 
   const recovered = identityWasRecovered(session)
   if (recovered) {
-    return redirectTo(ROUTE_NEW_PASSWORD)
+    return redirectTo(ROUTE_RECOVERED)
   }
 
   const verifiableEmail = verifiableEmailOfIdentity(session.identity)

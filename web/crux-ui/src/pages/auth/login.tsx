@@ -25,8 +25,10 @@ import {
   findAttributes,
   findError,
   findMessage,
+  findUiMessage,
   isDyoError,
   mapOidcAvailability,
+  passwordMethodAvilable,
   redirectTo,
   sendForm,
   upsertDyoError,
@@ -63,6 +65,17 @@ const LoginPage = (props: LoginPageProps) => {
 
   const recaptcha = useRef<ReCAPTCHA>()
   const oidc = mapOidcAvailability(ui)
+  const passwordAvailable = passwordMethodAvilable(ui)
+
+  let errorMessage = findError(errors, 'captcha', it =>
+    t(`errors:${it.error}`, {
+      name: it.value,
+    }),
+  )
+
+  if (!errorMessage) {
+    errorMessage = findUiMessage(ui, 'error')
+  }
 
   const loginWithOidc = async (provider: OidcProvider) => {
     const captcha = await recaptcha.current?.executeAsync()
@@ -147,79 +160,78 @@ const LoginPage = (props: LoginPageProps) => {
     <SingleFormLayout title={t('common:logIn')}>
       <DyoSingleFormLogo />
 
-      <DyoCard className="text-bright p-8 mt-8">
-        <DyoForm className="flex flex-col" onSubmit={formik.handleSubmit} onReset={formik.handleReset}>
-          <DyoSingleFormHeading>{t('common:logIn')}</DyoSingleFormHeading>
+      <DyoCard className="flex flex-col gap-4 text-bright p-8 mt-8">
+        <DyoSingleFormHeading>{t('common:logIn')}</DyoSingleFormHeading>
 
-          {!refresh ? null : <p className="w-80 mx-auto mt-8">{t('refresh')}</p>}
+        {passwordAvailable && (
+          <DyoForm className="flex flex-col" onSubmit={formik.handleSubmit} onReset={formik.handleReset}>
+            {!refresh ? null : <p className="w-80 mx-auto mt-8">{t('refresh')}</p>}
 
-          {!invitation ? null : <p className="w-80 mx-auto mt-8">{t('loginToAcceptInv')}</p>}
+            {!invitation ? null : <p className="w-80 mx-auto mt-8">{t('loginToAcceptInv')}</p>}
 
-          <DyoInput
-            label={t('common:email')}
-            name="email"
-            type="email"
-            onChange={formik.handleChange}
-            value={formik.values.email}
-            message={findMessage(ui, 'identifier')}
-          />
+            <DyoInput
+              label={t('common:email')}
+              name="email"
+              type="email"
+              onChange={formik.handleChange}
+              value={formik.values.email}
+              message={findMessage(ui, 'identifier')}
+            />
 
-          <DyoPassword
-            label={t('common:password')}
-            name="password"
-            onChange={formik.handleChange}
-            value={formik.values.password}
-            message={findMessage(ui, 'password')}
-          />
+            <DyoPassword
+              label={t('common:password')}
+              name="password"
+              onChange={formik.handleChange}
+              value={formik.values.password}
+              message={findMessage(ui, 'password')}
+            />
 
-          {ui.messages?.map((it, index) => <DyoMessage key={`error-${index}`} message={it?.text} />)}
+            {ui.messages?.map((it, index) => <DyoMessage key={`error-${index}`} message={it?.text} />)}
 
-          <DyoMessage
-            message={findError(errors, 'captcha', it =>
-              t(`errors:${it.error}`, {
-                name: it.value,
-              }),
-            )}
-            messageType="error"
-          />
+            <DyoButton className="mt-8" type="submit">
+              {t('common:logIn')}
+            </DyoButton>
 
-          <DyoButton className="mt-8" type="submit">
-            {t('common:logIn')}
-          </DyoButton>
+            {recaptchaSiteKey ? <ReCAPTCHA ref={recaptcha} size="invisible" sitekey={recaptchaSiteKey} /> : null}
+          </DyoForm>
+        )}
 
-          {oidcEnabled(oidc) && (
-            <div className="flex flex-col gap-2 items-center mx-auto mt-2">
-              <span className="mt-2 mb-4">{t('orLogInWith')}</span>
+        <DyoMessage message={errorMessage} messageType="error" />
 
-              <div className="flex flex-row gap-4">
-                {oidc.gitlab && (
-                  <DyoIcon src="/oidc/gitlab.svg" size="lg" alt="Gitlab" onClick={() => loginWithOidc('gitlab')} />
-                )}
+        {oidcEnabled(oidc) && (
+          <div className="flex flex-col gap-4 items-center mx-auto mt-2">
+            {passwordAvailable && <span>{t('orLogInWith')}</span>}
 
-                {oidc.github && (
-                  <DyoIcon src="/oidc/github.svg" size="lg" alt="Github" onClick={() => loginWithOidc('github')} />
-                )}
+            <div className="flex flex-row gap-4">
+              {oidc.gitlab && (
+                <DyoIcon src="/oidc/gitlab.svg" size="lg" alt="Gitlab" onClick={() => loginWithOidc('gitlab')} />
+              )}
 
-                {oidc.google && (
-                  <DyoIcon src="/oidc/google.svg" size="lg" alt="Google" onClick={() => loginWithOidc('google')} />
-                )}
+              {oidc.github && (
+                <DyoIcon src="/oidc/github.svg" size="lg" alt="Github" onClick={() => loginWithOidc('github')} />
+              )}
 
-                {oidc.azure && (
-                  <DyoIcon src="/oidc/azure.svg" size="lg" alt="Azure" onClick={() => loginWithOidc('azure')} />
-                )}
-              </div>
+              {oidc.google && (
+                <DyoIcon src="/oidc/google.svg" size="lg" alt="Google" onClick={() => loginWithOidc('google')} />
+              )}
+
+              {oidc.azure && (
+                <DyoIcon src="/oidc/azure.svg" size="lg" alt="Azure" onClick={() => loginWithOidc('azure')} />
+              )}
             </div>
-          )}
-
-          {recaptchaSiteKey ? <ReCAPTCHA ref={recaptcha} size="invisible" sitekey={recaptchaSiteKey} /> : null}
-        </DyoForm>
-
-        <div className="flex justify-center mt-10">
-          <Link href={ROUTE_RECOVERY}>{t('forgotPassword')}</Link>
-        </div>
+          </div>
+        )}
       </DyoCard>
 
-      <div className="flex justify-center  text-bright mt-8">
+      <div className="flex justify-center text-bright mt-8">
+        <p className="mr-2">{t('cantLogin')}</p>
+
+        <Link className="font-bold underline" href={ROUTE_RECOVERY}>
+          {t('recovery')}
+        </Link>
+      </div>
+
+      <div className="flex justify-center text-bright mt-4">
         <p className="mr-2">{t('dontHaveAnAccount')}</p>
 
         <Link className="font-bold underline" href={ROUTE_REGISTER}>

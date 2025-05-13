@@ -60,7 +60,7 @@ export const identityRecovered = async (session: Session, flowId: string): Promi
   })
 }
 
-export const identityPasswordSet = async (session: Session): Promise<void> => {
+export const identityRecoverySuccess = async (session: Session): Promise<void> => {
   await updateMetadata(session, {
     recovered: null,
   })

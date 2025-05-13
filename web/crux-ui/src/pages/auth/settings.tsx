@@ -1,5 +1,5 @@
 import { Layout } from '@app/components/layout'
-import OidcConnector, { OidcConnectorAction } from '@app/components/settings/oidc-connector'
+import OidcConnector from '@app/components/settings/oidc-connector'
 import { BreadcrumbLink } from '@app/components/shared/breadcrumb'
 import PageHeading from '@app/components/shared/page-heading'
 import { HEADER_LOCATION } from '@app/const'
@@ -13,14 +13,14 @@ import { DyoConfirmationModal } from '@app/elements/dyo-modal'
 import DyoToggle from '@app/elements/dyo-toggle'
 import { defaultApiErrorHandler } from '@app/errors'
 import useConfirmation from '@app/hooks/use-confirmation'
-import { IdentityPublicMetadata, oidcEnabled, OidcProvider } from '@app/models'
+import { IdentityPublicMetadata, OidcConnectorAction, oidcEnabled, OidcProvider } from '@app/models'
 import { appendTeamSlug } from '@app/providers/team-routes'
 import {
   API_SETTINGS_OIDC,
   API_USERS_ME_PREFERENCES_ONBOARDING,
   ROUTE_INDEX,
   ROUTE_LOGIN,
-  ROUTE_NEW_PASSWORD,
+  ROUTE_RECOVERED,
   ROUTE_SETTINGS,
   ROUTE_SETTINGS_CHANGE_PASSWORD,
   ROUTE_SETTINGS_EDIT_PROFILE,
@@ -28,8 +28,8 @@ import {
   verificationUrl,
 } from '@app/routes'
 import {
-  findAttributesByValue,
   mapOidcAvailability,
+  mapUiToOidcProviders,
   redirectTo,
   sendForm,
   teamSlugOrFirstTeam,
@@ -48,13 +48,6 @@ type SettingsPageProps = {
   identity: Identity
   flow: SettingsFlow
 }
-
-const mapUiToOidcProviders = (ui: UiContainer): Record<OidcProvider, OidcConnectorAction> => ({
-  gitlab: findAttributesByValue(ui, 'gitlab')?.name as OidcConnectorAction,
-  github: findAttributesByValue(ui, 'github')?.name as OidcConnectorAction,
-  google: findAttributesByValue(ui, 'google')?.name as OidcConnectorAction,
-  azure: findAttributesByValue(ui, 'azure')?.name as OidcConnectorAction,
-})
 
 const SettingsPage = (props: SettingsPageProps) => {
   const { flow } = props
@@ -240,7 +233,7 @@ const getPageServerSideProps = async (context: GetServerSidePropsContext) => {
   const { identity } = session
 
   if (identityWasRecovered(session)) {
-    return redirectTo(`${ROUTE_NEW_PASSWORD}?flow=${flowId}`)
+    return redirectTo(`${ROUTE_RECOVERED}?flow=${flowId}`)
   }
 
   const { email } = identity.traits
