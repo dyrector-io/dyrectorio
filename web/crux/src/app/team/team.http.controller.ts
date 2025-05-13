@@ -33,7 +33,7 @@ import { API_CREATED_LOCATION_HEADERS } from 'src/shared/const'
 import { CreatedResponse, CreatedWithLocation } from '../../interceptors/created-with-location.decorator'
 import { IdentityFromRequest } from '../token/jwt-auth.guard'
 import TeamGuard, { TeamRoleRequired } from './guards/team.guard'
-import TeamCreatinDisabledInterceptor from './interceptors/team.creation-disabled.interceptor'
+import TeamCreationDisabledInterceptor from './interceptors/team.creation-disabled.interceptor'
 import TeamInviteUserValitationInterceptor from './interceptors/team.invite.interceptor'
 import TeamReinviteUserValidationInterceptor from './interceptors/team.reinvite.interceptor'
 import TeamOwnerImmutabilityValidationInterceptor from './interceptors/team.team-owner-immutability.interceptor'
@@ -108,7 +108,7 @@ export default class TeamHttpController {
   @ApiForbiddenResponse({ description: 'Unauthorized request for team creation.' })
   @ApiConflictResponse({ description: 'Team name taken.' })
   @TeamRoleRequired('none')
-  @UseInterceptors(TeamCreatinDisabledInterceptor)
+  @UseInterceptors(TeamCreationDisabledInterceptor)
   async createTeam(
     @Body(TeamSlugValidationPipe) request: CreateTeamDto,
     @IdentityFromRequest() identity: Identity,
@@ -157,7 +157,7 @@ export default class TeamHttpController {
   @ApiNotFoundResponse({ description: 'Team not found.' })
   @UuidParams(PARAM_TEAM_ID)
   @AuditLogLevel('disabled')
-  @UseInterceptors(TeamCreatinDisabledInterceptor)
+  @UseInterceptors(TeamCreationDisabledInterceptor)
   async deleteTeam(@TeamId() teamId: string): Promise<void> {
     await this.service.deleteTeam(teamId)
   }
@@ -233,7 +233,7 @@ export default class TeamHttpController {
   @ApiForbiddenResponse({ description: 'Unauthorized request for user removal.' })
   @ApiNotFoundResponse({ description: 'User not found.' })
   @UuidParams(PARAM_TEAM_ID)
-  @UseInterceptors(TeamCreatinDisabledInterceptor)
+  @UseInterceptors(TeamCreationDisabledInterceptor)
   async leaveTeam(
     @TeamId() teamId: string,
     @IdentityFromRequest() identity: Identity,
