@@ -123,7 +123,7 @@ const RecoveryPage = (props: RecoveryPageProps) => {
 
   return (
     <SingleFormLayout title={t('recovery')}>
-      <DyoCard className="text-bright p-8 m-auto">
+      <DyoCard className="min-w-80 text-bright p-8 m-auto">
         <DyoSingleFormHeading>{t('recovery')}</DyoSingleFormHeading>
 
         <DyoForm className="flex flex-col" onSubmit={formik.handleSubmit} onReset={formik.handleReset}>

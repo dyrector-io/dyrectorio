@@ -1,10 +1,8 @@
 import DyoButton from '@app/elements/dyo-button'
 import DyoIcon from '@app/elements/dyo-icon'
-import { OidcProvider } from '@app/models'
+import { OidcConnectorAction, OidcProvider } from '@app/models'
 import clsx from 'clsx'
 import useTranslation from 'next-translate/useTranslation'
-
-export type OidcConnectorAction = 'link' | 'unlink'
 
 type OidcConnectorProps = {
   className?: string

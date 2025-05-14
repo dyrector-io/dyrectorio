@@ -58,3 +58,5 @@ export const postCruxFromContext = async <Res>(
 
   return await res.json()
 }
+
+export const teamCreationDisabled = (): boolean => process.env.DISABLE_TEAM_CREATION === 'true'

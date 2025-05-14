@@ -1,6 +1,7 @@
 {
   "teamsName": "Teams - {{name}}",
   "teamsNameInvite": "Teams - {{name}} - Invitation",
+  "creationDisabled": "Team creation is disabled. You need to be invited to a team to use dyrector.io",
 
   "invite": "Invite",
   "reinvite": "Reinvite",

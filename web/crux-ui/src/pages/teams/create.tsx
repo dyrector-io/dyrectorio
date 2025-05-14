@@ -1,14 +1,21 @@
 import { SingleFormLayout } from '@app/components/layout'
 import CreateTeamCard from '@app/components/team/create-team-card'
 import { Team, UserMeta } from '@app/models'
-import { API_USERS_ME, ROUTE_INDEX } from '@app/routes'
+import { API_USERS_ME, ROUTE_INDEX, ROUTE_LOGOUT } from '@app/routes'
 import { redirectTo, withContextAuthorization } from '@app/utils'
-import { postCruxFromContext } from '@server/crux-api'
+import { postCruxFromContext, teamCreationDisabled } from '@server/crux-api'
 import { GetServerSidePropsContext } from 'next'
 import useTranslation from 'next-translate/useTranslation'
+import Link from 'next/link'
 import { useRouter } from 'next/router'
 
-const CreateTeamPage = () => {
+type CreateTeamPageProps = {
+  disabled: boolean
+}
+
+const CreateTeamPage = (props: CreateTeamPageProps) => {
+  const { disabled } = props
+
   const { t } = useTranslation('teams')
 
   const router = useRouter()
@@ -17,7 +24,16 @@ const CreateTeamPage = () => {
 
   return (
     <SingleFormLayout title={t('createTeam')}>
-      <CreateTeamCard className="p-8 m-auto" onTeamCreated={onTeamCreated} />
+      {!disabled ? (
+        <CreateTeamCard className="p-8 m-auto" onTeamCreated={onTeamCreated} />
+      ) : (
+        <div className="flex flex-col gap-4 items-center text-bright">
+          <span>{t('creationDisabled')}</span>
+          <Link className="font-bold underline" href={ROUTE_LOGOUT}>
+            {t('common:logOut')}
+          </Link>
+        </div>
+      )}
     </SingleFormLayout>
   )
 }
@@ -32,7 +48,9 @@ const getPageServerSideProps = async (context: GetServerSidePropsContext) => {
   }
 
   return {
-    props: {},
+    props: {
+      disabled: teamCreationDisabled(),
+    },
   }
 }
 
