@@ -1,5 +1,7 @@
 import DyoButton from '@app/elements/dyo-button'
 import DyoImgButton from '@app/elements/dyo-img-button'
+import { MessageType } from '@app/elements/dyo-input'
+import useRepatch from '@app/hooks/use-repatch'
 import {
   ContainerConfigType,
   mapSecretKeyToSecretKeyValue,
@@ -10,18 +12,16 @@ import {
   UniqueSecretKeyValue,
 } from '@app/models'
 import clsx from 'clsx'
+import { Translate } from 'next-translate'
 import useTranslation from 'next-translate/useTranslation'
 import Image from 'next/image'
 import { createMessage, encrypt, readKey } from 'openpgp'
 import { useEffect, useMemo, useState } from 'react'
 import { v4 as uuid } from 'uuid'
+import ConfigSectionLabel from '../container-configs/config-section-label'
 import MultiInput from '../editor/multi-input'
 import { ItemEditorState } from '../editor/use-item-editor-state'
 import SecretStatusIndicator from './secret-status-indicator'
-import ConfigSectionLabel from '../container-configs/config-section-label'
-import useRepatch from '@app/hooks/use-repatch'
-import { MessageType } from '@app/elements/dyo-input'
-import { Translate } from 'next-translate'
 
 type SecretElement = UniqueSecretKeyValue & {
   message?: string
@@ -198,9 +198,11 @@ const SecretKeyValueInput = (props: SecretKeyValueInputProps) => {
   const [changed, setChanged] = useState<boolean>(false)
 
   const stateToElements = (secretKeys: UniqueSecretKeyValue[]) => {
-    const result = new Array<SecretElement>()
+    const result: SecretElement[] = []
 
     secretKeys.forEach(item => {
+      const baseItemRequired = baseItems.some(it => it.key === item.key && it.required)
+
       const info = secretInfos.get(item.key)
       const duplicated = !isCompletelyEmpty(item) && result.find(it => it.key === item.key)
 
@@ -214,6 +216,7 @@ const SecretKeyValueInput = (props: SecretKeyValueInputProps) => {
 
       result.push({
         ...item,
+        required: baseItemRequired,
         encrypted,
         message,
         messageType: duplicated ? 'error' : 'info',
