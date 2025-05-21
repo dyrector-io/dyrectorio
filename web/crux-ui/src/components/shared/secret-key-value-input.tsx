@@ -201,7 +201,7 @@ const SecretKeyValueInput = (props: SecretKeyValueInputProps) => {
     const result: SecretElement[] = []
 
     secretKeys.forEach(item => {
-      const baseItemRequired = baseItems.some(it => it.key === item.key && it.required)
+      const baseItemRequired = baseItems?.some(it => it.key === item.key && it.required)
 
       const info = secretInfos.get(item.key)
       const duplicated = !isCompletelyEmpty(item) && result.find(it => it.key === item.key)
