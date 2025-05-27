@@ -17,6 +17,7 @@
   "invalidCredentials": "Invalid credentials",
   "confirmPassMismatch": "Passwords must match",
 
+  "keysMustBeUniqueFor": "Keys must be unique in {{path}}",
   "validationFailedForDeployment": "Validation failed for deployment. Please open the deployment details and check for any instance configuration errors.",
   "validationFailedForInstance": "Validation failed for instance '{{path}}'",
   "validationFailedForInstanceMessage": "Validation failed for instance '{{path}}': {{message}}",

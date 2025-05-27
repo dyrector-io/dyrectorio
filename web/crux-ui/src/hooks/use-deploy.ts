@@ -143,8 +143,7 @@ export const useDeploy = (opts: UseDeployOptions): UseDeployAction => {
     if (res.status === 400) {
       if (error === 'keysAreUnique') {
         toast.error(
-          t('errors:validationFailed', {
-            message: dto.description,
+          t('errors:keysMustBeUniqueFor', {
             path: dto.property,
           }),
           {

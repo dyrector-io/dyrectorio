@@ -2,7 +2,7 @@ import { ContainerConfigPortRangeDto } from 'src/app/container/container.dto'
 import { ImageValidation } from 'src/app/image/image.dto'
 import { ContainerPort } from 'src/app/node/node.dto'
 import { CruxBadRequestException } from 'src/exception/crux-exception'
-import { UID_MAX, UID_MIN } from 'src/shared/const'
+import { UID_MAX } from 'src/shared/const'
 import * as yup from 'yup'
 import {
   CONTAINER_DEPLOYMENT_STRATEGY_VALUES,
@@ -225,15 +225,6 @@ const markerRule = yup.object().shape({
   ingress: uniqueKeyValuesSchema.default([]).nullable(),
 })
 
-const uniqueSecretKeySchema = yup
-  .array(
-    yup.object().shape({
-      key: yup.string().required().ensure().matches(/^\S+$/g), // all characters are non-whitespaces
-    }),
-  )
-  .ensure()
-  .test('keysAreUnique', 'Keys must be unique', arr => new Set(arr.map(it => it.key)).size === arr.length)
-
 const uniqueSecretKeyValuesSchema = yup
   .array(
     yup.object().shape({
@@ -281,47 +272,6 @@ const expectedContainerStateRule = yup.object().shape({
   state: yup.string().default(null).nullable().oneOf(CONTAINER_STATE_VALUES),
   timeout: yup.number().default(null).nullable().min(0),
   exitCode: yup.number().default(0).nullable().min(-127).max(128),
-})
-
-const containerConfigSchema = yup.object().shape({
-  name: yup.string().optional().nullable().matches(/^\S+$/g),
-  environment: uniqueKeyValuesSchema.optional().nullable(),
-  secrets: uniqueSecretKeySchema.optional().nullable(),
-  routing: routingRule.optional().nullable(),
-  expose: exposeRule.optional().nullable(),
-  user: yup.number().default(null).min(UID_MIN).max(UID_MAX).optional().nullable(),
-  workingDirectory: yup.string().optional().nullable().matches(/^\S+$/g),
-  tty: yup.boolean().optional().nullable(),
-  configContainer: configContainerRule.optional().nullable(),
-  ports: portConfigRule.optional().nullable(),
-  portRanges: portRangeConfigRule.optional().nullable(),
-  volumes: volumeConfigRule.optional().nullable(),
-  commands: shellCommandSchema.optional().nullable(),
-  args: shellCommandSchema.optional().nullable(),
-  initContainers: initContainerRule.optional().nullable(),
-  capabilities: uniqueKeyValuesSchema.optional().nullable(),
-  storageId: yup.string().optional().nullable(),
-  storageConfig: storageRule.optional().nullable(),
-
-  // dagent
-  logConfig: logConfigRule.optional().nullable(),
-  restartPolicy: restartPolicyRule.optional().nullable(),
-  networkMode: networkModeRule.optional().nullable(),
-  networks: uniqueKeysOnlySchema.optional().nullable(),
-  dockerLabels: uniqueKeyValuesSchema.optional().nullable(),
-  expectedState: expectedContainerStateRule.optional().nullable(),
-
-  // crane
-  deploymentStrategy: deploymentStrategyRule.optional().nullable(),
-  customHeaders: uniqueKeysOnlySchema.optional().nullable(),
-  proxyHeaders: yup.boolean().optional().nullable(),
-  useLoadBalancer: yup.boolean().optional().nullable(),
-  extraLBAnnotations: uniqueKeyValuesSchema.optional().nullable(),
-  healthCheckConfig: healthCheckConfigRule.optional().nullable(),
-  resourceConfig: resourceConfigRule.optional().nullable(),
-  annotations: markerRule.optional().nullable(),
-  labels: markerRule.optional().nullable(),
-  metrics: metricsRule.optional().nullable(),
 })
 
 export const concreteContainerConfigSchema = yup.object().shape({
@@ -443,58 +393,48 @@ const testRules = (rules: [string, EnvironmentRule][], arr: UniqueKeyValue[], fi
 }
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-export const createStartDeploymentSchema = (instanceValidation: Record<string, ImageValidation>) =>
-  yup.object({
-    config: containerConfigSchema,
-    configBundles: yup.array(
+export const createInstancesSchema = (instanceValidation: Record<string, ImageValidation>) =>
+  yup
+    .array(
       yup.object({
-        configBundle: yup.object({
-          config: containerConfigSchema,
-        }),
+        id: yup.string(),
+        config: concreteContainerConfigSchema,
       }),
-    ),
-    instances: yup
-      .array(
-        yup.object({
-          id: yup.string(),
-          config: concreteContainerConfigSchema,
-        }),
-      )
-      .test(
-        'containerNameAreUnique',
-        'Container names must be unique',
-        instances => new Set(instances.map(it => it.config.name)).size === instances.length,
-      )
-      // TODO(@robot9706): Fix labels & config bundles conflicting
-      .test('instanceLabelRules', 'Instance must match their image label rules.', instances => {
-        const errors = instances
-          .map(it => {
-            const validation = instanceValidation[it.id]
-            if (!validation) {
-              return null
-            }
+    )
+    .test(
+      'containerNameAreUnique',
+      'Container names must be unique',
+      instances => new Set(instances.map(it => it.config.name)).size === instances.length,
+    )
+    // TODO(@robot9706): Fix labels & config bundles conflicting
+    .test('instanceLabelRules', 'Instance must match their image label rules.', instances => {
+      const errors = instances
+        .map(instance => {
+          const validation = instanceValidation[instance.id]
+          if (!validation) {
+            return null
+          }
 
-            const requiredRules = Object.entries(validation.environmentRules).filter(([, rule]) => rule.required)
+          const requiredRules = Object.entries(validation.environmentRules).filter(([, rule]) => rule.required)
 
-            const envRules = requiredRules.filter(([, rule]) => !rule.secret)
-            const secretRules = requiredRules.filter(([, rule]) => rule.secret)
+          const envRules = requiredRules.filter(([, rule]) => !rule.secret)
+          const secretRules = requiredRules.filter(([, rule]) => rule.secret)
 
-            const envError = testRules(envRules, it.config.environment as UniqueKeyValue[], 'environment')
-            if (envError) {
-              return envError
-            }
+          const envError = testRules(envRules, instance.config.environment as UniqueKeyValue[], 'environment')
+          if (envError) {
+            return envError
+          }
 
-            return testRules(secretRules, it.config.secrets as UniqueKeyValue[], 'secret')
-          })
-          .filter(it => !!it)
+          return testRules(secretRules, instance.config.secrets as UniqueKeyValue[], 'secret')
+        })
+        .filter(it => !!it)
 
-        if (errors.length > 0) {
-          return new yup.ValidationError(errors, null, 'environment')
-        }
+      if (errors.length > 0) {
+        return new yup.ValidationError(errors, null, 'environment')
+      }
 
-        return true
-      }),
-  })
+      return true
+    })
 
 const templateRegistrySchema = yup.object().shape({
   name: nameRule,
