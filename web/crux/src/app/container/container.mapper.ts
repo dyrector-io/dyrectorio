@@ -14,7 +14,7 @@ import { ContainerConfigData } from 'src/domain/container'
 import { deploymentIsMutable, DeploymentWithConfigAndBundles } from 'src/domain/deployment'
 import { ContainerConfigUpdatedEvent } from 'src/domain/domain-events'
 import { ImageDetails } from 'src/domain/image'
-import { toNullableBoolean, toNullableNumber, toPrismaJson } from 'src/domain/utils'
+import { toNullableBoolean, toNullableNumber, toPrismaJson, toPrismaJsonArray } from 'src/domain/utils'
 import { versionIsMutable } from 'src/domain/version'
 import { ListSecretsResponse } from 'src/grpc/protobuf/proto/common'
 import ConfigBundleMapper from '../config.bundle/config.bundle.mapper'
@@ -55,29 +55,31 @@ export default class ContainerMapper {
     }
   }
 
-  configDataToDto(id: string, type: ContainerConfigType, config: ContainerConfigData): ContainerConfigDto {
+  configDataToDto(config: ContainerConfig): ContainerConfigDto {
     if (!config) {
       return null
     }
 
+    const containerConfig = this.dbConfigToContainerConfigData(config)
+
     return {
-      ...config,
-      id,
-      type: this.typeToDto(type),
+      ...containerConfig,
+      id: config.id,
+      type: this.typeToDto(config.type),
       capabilities: null,
-      storage: !config.storageSet
+      storage: !containerConfig.storageSet
         ? null
         : {
-            storageId: config.storageId,
-            bucket: config.storageConfig?.bucket,
-            path: config.storageConfig?.path,
+            storageId: containerConfig.storageId,
+            bucket: containerConfig.storageConfig?.bucket,
+            path: containerConfig.storageConfig?.path,
           },
     }
   }
 
   configDetailsToDto(config: ContainerConfigDetails): ContainerConfigDetailsDto {
     return {
-      ...this.configDataToDto(config.id, config.type, config as any as ContainerConfigData),
+      ...this.configDataToDto(config),
       parent: this.configDetailsToParentDto(config),
       updatedAt: config.updatedAt,
       updatedBy: config.updatedBy,
@@ -180,13 +182,57 @@ export default class ContainerMapper {
     return result
   }
 
-  dbConfigToContainerConfigData<ConfigData extends ContainerConfigData>(config: ContainerConfig): ConfigData {
+  dbConfigToContainerConfigData<ConfigData extends ContainerConfigData>(dbConfig: ContainerConfig): ConfigData {
+    const config = {
+      ...dbConfig,
+    }
+
     delete config.id
     delete config.type
     delete config.updatedBy
     delete config.updatedAt
 
-    return config as any as ConfigData
+    return {
+      name: config.name ?? null,
+      expose: config.expose ?? null,
+      routing: config.routing ?? null,
+      configContainer: config.configContainer ?? null,
+      user: toNullableNumber(config.user),
+      workingDirectory: config.workingDirectory ?? null,
+      tty: toNullableBoolean(config.tty),
+      ports: config.ports ?? null,
+      portRanges: config.portRanges ?? null,
+      volumes: config.volumes ?? null,
+      commands: config.commands ?? null,
+      args: config.args ?? null,
+      environment: config.environment ?? null,
+      secrets: config.secrets ?? null,
+      initContainers: config.initContainers ?? null,
+      logConfig: config.logConfig ?? null,
+      storageSet: toNullableBoolean(config.storageSet),
+      storageId: config.storageId ?? null,
+      storageConfig: config.storageSet ? config.storageConfig : null,
+
+      // dagent
+      restartPolicy: config.restartPolicy ?? null,
+      networkMode: config.networkMode ?? null,
+      networks: config.networks ?? null,
+      dockerLabels: config.dockerLabels ?? null,
+      expectedState: config.expectedState ?? null,
+
+      // crane
+      deploymentStrategy: config.deploymentStrategy ?? null,
+      healthCheckConfig: config.healthCheckConfig ?? null,
+      resourceConfig: config.resourceConfig ?? null,
+      proxyHeaders: toNullableBoolean(config.proxyHeaders),
+      useLoadBalancer: toNullableBoolean(config.useLoadBalancer),
+      customHeaders: config.customHeaders ?? null,
+      extraLBAnnotations: config.extraLBAnnotations ?? null,
+      capabilities: config.capabilities ?? null,
+      annotations: config.annotations ?? null,
+      labels: config.labels ?? null,
+      metrics: config.metrics ?? null,
+    } as any as ConfigData
   }
 
   dbConfigToCreateConfigStatement(
@@ -202,14 +248,14 @@ export default class ContainerMapper {
       user: toNullableNumber(config.user),
       workingDirectory: config.workingDirectory ?? null,
       tty: toNullableBoolean(config.tty),
-      ports: toPrismaJson(config.ports),
-      portRanges: toPrismaJson(config.portRanges),
-      volumes: toPrismaJson(config.volumes),
-      commands: toPrismaJson(config.commands),
-      args: toPrismaJson(config.args),
-      environment: toPrismaJson(config.environment),
-      secrets: toPrismaJson(config.secrets),
-      initContainers: toPrismaJson(config.initContainers),
+      ports: toPrismaJsonArray(config.ports),
+      portRanges: toPrismaJsonArray(config.portRanges),
+      volumes: toPrismaJsonArray(config.volumes),
+      commands: toPrismaJsonArray(config.commands),
+      args: toPrismaJsonArray(config.args),
+      environment: toPrismaJsonArray(config.environment),
+      secrets: toPrismaJsonArray(config.secrets),
+      initContainers: toPrismaJsonArray(config.initContainers),
       logConfig: toPrismaJson(config.logConfig),
       storageSet: toNullableBoolean(config.storageSet),
       storageId: config.storageId ?? null,
@@ -218,8 +264,8 @@ export default class ContainerMapper {
       // dagent
       restartPolicy: config.restartPolicy ?? null,
       networkMode: config.networkMode ?? null,
-      networks: toPrismaJson(config.networks),
-      dockerLabels: toPrismaJson(config.dockerLabels),
+      networks: toPrismaJsonArray(config.networks),
+      dockerLabels: toPrismaJsonArray(config.dockerLabels),
       expectedState: toPrismaJson(config.expectedState),
 
       // crane
@@ -228,11 +274,11 @@ export default class ContainerMapper {
       resourceConfig: toPrismaJson(config.resourceConfig),
       proxyHeaders: toNullableBoolean(config.proxyHeaders),
       useLoadBalancer: toNullableBoolean(config.useLoadBalancer),
-      customHeaders: toPrismaJson(config.customHeaders),
-      extraLBAnnotations: toPrismaJson(config.extraLBAnnotations),
-      capabilities: toPrismaJson(config.capabilities),
-      annotations: toPrismaJson(config.annotations),
-      labels: toPrismaJson(config.labels),
+      customHeaders: toPrismaJsonArray(config.customHeaders),
+      extraLBAnnotations: toPrismaJsonArray(config.extraLBAnnotations),
+      capabilities: toPrismaJsonArray(config.capabilities),
+      annotations: toPrismaJsonArray(config.annotations),
+      labels: toPrismaJsonArray(config.labels),
       metrics: toPrismaJson(config.metrics),
     }
   }
@@ -246,14 +292,14 @@ export default class ContainerMapper {
       user: 'user' in config ? toNullableNumber(config.user) : undefined,
       workingDirectory: 'workingDirectory' in config ? (config.workingDirectory ?? null) : undefined,
       tty: 'tty' in config ? toNullableBoolean(config.tty) : undefined,
-      ports: 'ports' in config ? toPrismaJson(config.ports) : undefined,
-      portRanges: 'portRanges' in config ? toPrismaJson(config.portRanges) : undefined,
-      volumes: 'volumes' in config ? toPrismaJson(config.volumes) : undefined,
-      commands: 'commands' in config ? toPrismaJson(config.commands) : undefined,
-      args: 'args' in config ? toPrismaJson(config.args) : undefined,
-      environment: 'environment' in config ? toPrismaJson(config.environment) : undefined,
-      secrets: 'secrets' in config ? toPrismaJson(config.secrets) : undefined,
-      initContainers: 'initContainers' in config ? toPrismaJson(config.initContainers) : undefined,
+      ports: 'ports' in config ? toPrismaJsonArray(config.ports) : undefined,
+      portRanges: 'portRanges' in config ? toPrismaJsonArray(config.portRanges) : undefined,
+      volumes: 'volumes' in config ? toPrismaJsonArray(config.volumes) : undefined,
+      commands: 'commands' in config ? toPrismaJsonArray(config.commands) : undefined,
+      args: 'args' in config ? toPrismaJsonArray(config.args) : undefined,
+      environment: 'environment' in config ? toPrismaJsonArray(config.environment) : undefined,
+      secrets: 'secrets' in config ? toPrismaJsonArray(config.secrets) : undefined,
+      initContainers: 'initContainers' in config ? toPrismaJsonArray(config.initContainers) : undefined,
       logConfig: 'logConfig' in config ? toPrismaJson(config.logConfig) : undefined,
       storageSet: 'storageSet' in config ? toNullableBoolean(config.storageSet) : undefined,
       storageId: 'storageId' in config ? (config.storageId ?? null) : undefined,
@@ -262,8 +308,8 @@ export default class ContainerMapper {
       // dagent
       restartPolicy: 'restartPolicy' in config ? (config.restartPolicy ?? null) : undefined,
       networkMode: 'networkMode' in config ? (config.networkMode ?? null) : undefined,
-      networks: 'networks' in config ? toPrismaJson(config.networks) : undefined,
-      dockerLabels: 'dockerLabels' in config ? toPrismaJson(config.dockerLabels) : undefined,
+      networks: 'networks' in config ? toPrismaJsonArray(config.networks) : undefined,
+      dockerLabels: 'dockerLabels' in config ? toPrismaJsonArray(config.dockerLabels) : undefined,
       expectedState: 'expectedState' in config ? toPrismaJson(config.expectedState) : undefined,
 
       // crane
@@ -272,11 +318,11 @@ export default class ContainerMapper {
       resourceConfig: 'resourceConfig' in config ? toPrismaJson(config.resourceConfig) : undefined,
       proxyHeaders: 'proxyHeaders' in config ? toNullableBoolean(config.proxyHeaders) : undefined,
       useLoadBalancer: 'useLoadBalancer' in config ? toNullableBoolean(config.useLoadBalancer) : undefined,
-      customHeaders: 'customHeaders' in config ? toPrismaJson(config.customHeaders) : undefined,
-      extraLBAnnotations: 'extraLBAnnotations' in config ? toPrismaJson(config.extraLBAnnotations) : undefined,
-      capabilities: 'capabilities' in config ? toPrismaJson(config.capabilities) : undefined,
-      annotations: 'annotations' in config ? toPrismaJson(config.annotations) : undefined,
-      labels: 'labels' in config ? toPrismaJson(config.labels) : undefined,
+      customHeaders: 'customHeaders' in config ? toPrismaJsonArray(config.customHeaders) : undefined,
+      extraLBAnnotations: 'extraLBAnnotations' in config ? toPrismaJsonArray(config.extraLBAnnotations) : undefined,
+      capabilities: 'capabilities' in config ? toPrismaJsonArray(config.capabilities) : undefined,
+      annotations: 'annotations' in config ? toPrismaJsonArray(config.annotations) : undefined,
+      labels: 'labels' in config ? toPrismaJsonArray(config.labels) : undefined,
       metrics: 'metrics' in config ? toPrismaJson(config.metrics) : undefined,
     }
   }

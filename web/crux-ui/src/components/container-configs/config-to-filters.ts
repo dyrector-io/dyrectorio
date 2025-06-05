@@ -22,6 +22,10 @@ const configToFilters = <T extends ContainerConfigData>(
     }
 
     if (typeof value === 'object') {
+      if (Array.isArray(value)) {
+        return true
+      }
+
       return Object.keys(value).length > 0
     }
 

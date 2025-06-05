@@ -3,7 +3,7 @@ import { EventEmitter2 } from '@nestjs/event-emitter'
 import { Identity } from '@ory/kratos-client'
 import { Prisma } from '@prisma/client'
 import { Observable, filter, map } from 'rxjs'
-import { ContainerConfigData, nameOfInstance } from 'src/domain/container'
+import { ContainerConfigData, containerNameOfInstance } from 'src/domain/container'
 import { deploymentIsMutable } from 'src/domain/deployment'
 import { CONTAINER_CONFIG_EVENT_UPDATE, ContainerConfigUpdatedEvent } from 'src/domain/domain-events'
 import { versionIsMutable } from 'src/domain/version'
@@ -191,7 +191,7 @@ export default class ContainerConfigService {
           : {
               container: {
                 prefix: deployment.prefix,
-                name: nameOfInstance(config.instance),
+                name: containerNameOfInstance(config.instance),
               },
             },
     })
@@ -266,8 +266,8 @@ export default class ContainerConfigService {
       },
     })
 
-    const dbConnfig: ContainerConfigData = this.mapper.dbConfigToContainerConfigData(config)
-    let data: ContainerConfigData = this.mapper.configDtoToConfigData(dbConnfig, req.config ?? {})
+    const dbConfig: ContainerConfigData = this.mapper.dbConfigToContainerConfigData(config)
+    let data: ContainerConfigData = this.mapper.configDtoToConfigData(dbConfig, req.config ?? {})
 
     if (req.resetSection) {
       data = this.resetSection(data, req.resetSection)

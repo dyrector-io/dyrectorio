@@ -1,22 +1,25 @@
 import { CallHandler, ExecutionContext, Injectable, NestInterceptor } from '@nestjs/common'
 import { Observable } from 'rxjs'
 import AgentService from 'src/app/agent/agent.service'
+import ContainerMapper from 'src/app/container/container.mapper'
 import { ImageValidation } from 'src/app/image/image.dto'
-import { ConcreteContainerConfigData, ContainerConfigDataWithId } from 'src/domain/container'
+import { ContainerConfigDataWithId } from 'src/domain/container'
 import { getConflictsForConcreteConfig } from 'src/domain/container-conflict'
 import { checkDeploymentDeployability } from 'src/domain/deployment'
-import { parseDyrectorioEnvRules } from 'src/domain/image'
 import { deploymentConfigOf, instanceConfigOf, missingSecretsOf } from 'src/domain/start-deployment'
 import { createInstancesSchema, nullifyUndefinedProperties, yupValidate } from 'src/domain/validation'
 import { CruxPreconditionFailedException } from 'src/exception/crux-exception'
 import PrismaService from 'src/services/prisma.service'
 import { StartDeploymentDto } from '../deploy.dto'
+import DeployMapper from '../deploy.mapper'
 
 @Injectable()
 export default class DeployStartValidationInterceptor implements NestInterceptor {
   constructor(
     private prisma: PrismaService,
     private agentService: AgentService,
+    private containerMapper: ContainerMapper,
+    private deployMapper: DeployMapper,
   ) {}
 
   async intercept(context: ExecutionContext, next: CallHandler): Promise<Observable<any>> {
@@ -25,7 +28,7 @@ export default class DeployStartValidationInterceptor implements NestInterceptor
 
     const dto = req.body as StartDeploymentDto
 
-    const deployment = await this.prisma.deployment.findUniqueOrThrow({
+    const dbDeployment = await this.prisma.deployment.findUniqueOrThrow({
       include: {
         version: true,
         config: true,
@@ -43,6 +46,7 @@ export default class DeployStartValidationInterceptor implements NestInterceptor
             config: true,
             image: {
               include: {
+                registry: true,
                 config: true,
               },
             },
@@ -60,6 +64,8 @@ export default class DeployStartValidationInterceptor implements NestInterceptor
         id: deploymentId,
       },
     })
+
+    const deployment = this.deployMapper.dbDeploymentToDeployableDeployment(dbDeployment)
 
     // deployment
     if (!checkDeploymentDeployability(deployment.status, deployment.version.type)) {
@@ -80,9 +86,9 @@ export default class DeployStartValidationInterceptor implements NestInterceptor
 
     // check config bundle conflicts
     if (deployment.configBundles.length > 0) {
-      const configs = deployment.configBundles.map(it => it.configBundle.config as any as ContainerConfigDataWithId)
-      const concreteConfig = deployment.config as any as ConcreteContainerConfigData
-      const conflicts = getConflictsForConcreteConfig(configs, concreteConfig)
+      const bundleConfigs: ContainerConfigDataWithId[] = deployment.configBundles.map(it => it.configBundle.config)
+
+      const conflicts = getConflictsForConcreteConfig(bundleConfigs, deployment.config)
       if (conflicts) {
         throw new CruxPreconditionFailedException({
           message: 'Unresolved conflicts between config bundles',
@@ -93,7 +99,10 @@ export default class DeployStartValidationInterceptor implements NestInterceptor
     }
 
     const instanceValidations = deployment.instances.reduce((prev, it) => {
-      const rules = parseDyrectorioEnvRules(it.image.labels as Record<string, string>)
+      const rules = {}
+
+      // TODO (@m8vago): fix image env rules
+      // const rules = parseDyrectorioEnvRules(it.image.labels as Record<string, string>)
       const validation: ImageValidation = {
         environmentRules: rules,
       }
@@ -106,7 +115,7 @@ export default class DeployStartValidationInterceptor implements NestInterceptor
     nullifyUndefinedProperties(deploymentConfig)
 
     const instances = deployment.instances.map(instance => {
-      const conf = instanceConfigOf(deployment, deploymentConfig, instance)
+      const conf = instanceConfigOf(deployment, instance)
       nullifyUndefinedProperties(conf)
       return {
         ...instance,

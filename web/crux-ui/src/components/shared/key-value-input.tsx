@@ -99,7 +99,7 @@ const KeyValueInput = (props: KeyValueInputProps) => {
     message,
     messageType,
     onChange: propsOnChange,
-    onResetSection: propsOnResetSection,
+    onResetSection,
     errors = {},
     findErrorMessage,
   } = props
@@ -142,10 +142,6 @@ const KeyValueInput = (props: KeyValueInputProps) => {
 
     propsOnChange(updatedItems)
     dispatch(setItems(newItems))
-  }
-
-  const onResetSection = () => {
-    propsOnResetSection()
   }
 
   const elements = stateToElements(state)
@@ -196,13 +192,11 @@ const KeyValueInput = (props: KeyValueInputProps) => {
     )
   }
 
-  const hasValue = !!items && items.length > 0
-
   return (
     <div className={clsx(className, 'flex flex-col')}>
       {!label ? null : (
         <ConfigSectionLabel
-          disabled={disabled || !propsOnResetSection || !hasValue}
+          disabled={disabled || !onResetSection}
           onResetSection={onResetSection}
           labelClassName={labelClassName}
         >

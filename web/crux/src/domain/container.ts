@@ -270,13 +270,18 @@ export const CONTAINER_CONFIG_COMPOSITE_FIELDS = {
 
 export const configIsEmpty = <T extends ContainerConfigData>(config: T): boolean => Object.keys(config).length < 1
 
-type InstanceWithConfigAndImageConfig = {
-  config: { name: string }
-  image: {
-    name: string
-    config: { name: string }
-  }
+type ImageWithConfigAndName = {
+  name: string
+  config: { name?: string }
 }
 
-export const nameOfInstance = (instance: InstanceWithConfigAndImageConfig) =>
-  instance.config.name ?? instance.image.config.name ?? registryImageNameToContainerName(instance.image.name)
+type InstanceWithConfigAndImageConfig = {
+  config: { name?: string }
+  image: ImageWithConfigAndName
+}
+
+export const containerNameOfImage = (image: ImageWithConfigAndName): string =>
+  image.config.name ?? registryImageNameToContainerName(image.name)
+
+export const containerNameOfInstance = (instance: InstanceWithConfigAndImageConfig) =>
+  instance.config.name ?? containerNameOfImage(instance.image)
