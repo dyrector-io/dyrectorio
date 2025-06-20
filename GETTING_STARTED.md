@@ -23,7 +23,7 @@ Using the following step, you can generate the appropriate docker compose files.
 ```bash
 # make sure to be in a folder where docker compose and config files should be generated
 docker run --rm -it -v $PWD:/work --workdir /work ghcr.io/dyrector-io/dyrectorio/cli/dyo:stable generate compose
-docker-compose up -d
+docker compose up -d
 ```
 
 ## Option 1: Go install
