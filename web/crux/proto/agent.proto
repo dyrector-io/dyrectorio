@@ -103,9 +103,7 @@ message DeployRequest {
 /*
  * Request for a keys of existing secrets in a prefix, eg. namespace
  */
-message ListSecretsRequest {
-  common.ContainerOrPrefix target = 1;
-}
+message ListSecretsRequest { common.ContainerOrPrefix target = 1; }
 
 message RegistryAuth {
   string name = 1;
@@ -204,6 +202,7 @@ message CraneContainerConfig {
   optional Marker annotations = 105;
   optional Marker labels = 106;
   optional Metrics metrics = 107;
+  optional int32 replicaCount = 108;
 
   repeated string customHeaders = 1000;
   map<string, string> extraLBAnnotations = 1001;

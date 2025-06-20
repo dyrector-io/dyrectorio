@@ -517,6 +517,51 @@ export function exposeStrategyToJSON(object: ExposeStrategy): string {
   }
 }
 
+export enum ProbeType {
+  PROBE_UNSPECIFIED = 0,
+  HTTP = 1,
+  GRPC = 2,
+  EXEC = 3,
+  UNRECOGNIZED = -1,
+}
+
+export function probeTypeFromJSON(object: any): ProbeType {
+  switch (object) {
+    case 0:
+    case 'PROBE_UNSPECIFIED':
+      return ProbeType.PROBE_UNSPECIFIED
+    case 1:
+    case 'HTTP':
+      return ProbeType.HTTP
+    case 2:
+    case 'GRPC':
+      return ProbeType.GRPC
+    case 3:
+    case 'EXEC':
+      return ProbeType.EXEC
+    case -1:
+    case 'UNRECOGNIZED':
+    default:
+      return ProbeType.UNRECOGNIZED
+  }
+}
+
+export function probeTypeToJSON(object: ProbeType): string {
+  switch (object) {
+    case ProbeType.PROBE_UNSPECIFIED:
+      return 'PROBE_UNSPECIFIED'
+    case ProbeType.HTTP:
+      return 'HTTP'
+    case ProbeType.GRPC:
+      return 'GRPC'
+    case ProbeType.EXEC:
+      return 'EXEC'
+    case ProbeType.UNRECOGNIZED:
+    default:
+      return 'UNRECOGNIZED'
+  }
+}
+
 export enum ContainerOperation {
   CONTAINER_OPERATION_UNSPECIFIED = 0,
   START_CONTAINER = 1,
@@ -646,11 +691,17 @@ export interface ConfigContainer {
   keepFiles: boolean
 }
 
+export interface Probe {
+  path: string
+  type: ProbeType
+  port: number
+  command: string[]
+}
+
 export interface HealthCheckConfig {
-  port?: number | undefined
-  livenessProbe?: string | undefined
-  readinessProbe?: string | undefined
-  startupProbe?: string | undefined
+  livenessProbe?: Probe | undefined
+  readinessProbe?: Probe | undefined
+  startupProbe?: Probe | undefined
 }
 
 export interface Resource {
@@ -1022,6 +1073,34 @@ export const ConfigContainer = {
   },
 }
 
+function createBaseProbe(): Probe {
+  return { path: '', type: 0, port: 0, command: [] }
+}
+
+export const Probe = {
+  fromJSON(object: any): Probe {
+    return {
+      path: isSet(object.path) ? String(object.path) : '',
+      type: isSet(object.type) ? probeTypeFromJSON(object.type) : 0,
+      port: isSet(object.port) ? Number(object.port) : 0,
+      command: Array.isArray(object?.command) ? object.command.map((e: any) => String(e)) : [],
+    }
+  },
+
+  toJSON(message: Probe): unknown {
+    const obj: any = {}
+    message.path !== undefined && (obj.path = message.path)
+    message.type !== undefined && (obj.type = probeTypeToJSON(message.type))
+    message.port !== undefined && (obj.port = Math.round(message.port))
+    if (message.command) {
+      obj.command = message.command.map(e => e)
+    } else {
+      obj.command = []
+    }
+    return obj
+  },
+}
+
 function createBaseHealthCheckConfig(): HealthCheckConfig {
   return {}
 }
@@ -1029,19 +1108,20 @@ function createBaseHealthCheckConfig(): HealthCheckConfig {
 export const HealthCheckConfig = {
   fromJSON(object: any): HealthCheckConfig {
     return {
-      port: isSet(object.port) ? Number(object.port) : undefined,
-      livenessProbe: isSet(object.livenessProbe) ? String(object.livenessProbe) : undefined,
-      readinessProbe: isSet(object.readinessProbe) ? String(object.readinessProbe) : undefined,
-      startupProbe: isSet(object.startupProbe) ? String(object.startupProbe) : undefined,
+      livenessProbe: isSet(object.livenessProbe) ? Probe.fromJSON(object.livenessProbe) : undefined,
+      readinessProbe: isSet(object.readinessProbe) ? Probe.fromJSON(object.readinessProbe) : undefined,
+      startupProbe: isSet(object.startupProbe) ? Probe.fromJSON(object.startupProbe) : undefined,
     }
   },
 
   toJSON(message: HealthCheckConfig): unknown {
     const obj: any = {}
-    message.port !== undefined && (obj.port = Math.round(message.port))
-    message.livenessProbe !== undefined && (obj.livenessProbe = message.livenessProbe)
-    message.readinessProbe !== undefined && (obj.readinessProbe = message.readinessProbe)
-    message.startupProbe !== undefined && (obj.startupProbe = message.startupProbe)
+    message.livenessProbe !== undefined &&
+      (obj.livenessProbe = message.livenessProbe ? Probe.toJSON(message.livenessProbe) : undefined)
+    message.readinessProbe !== undefined &&
+      (obj.readinessProbe = message.readinessProbe ? Probe.toJSON(message.readinessProbe) : undefined)
+    message.startupProbe !== undefined &&
+      (obj.startupProbe = message.startupProbe ? Probe.toJSON(message.startupProbe) : undefined)
     return obj
   },
 }

@@ -184,7 +184,7 @@ func mapCraneConfig(crane *agent.CraneContainerConfig, containerConfig *v1.Conta
 	}
 
 	if crane.HealthCheckConfig != nil {
-		containerConfig.HealthCheckConfig = mapHealthCheckConfig(crane.HealthCheckConfig)
+		containerConfig.HealthCheck = mapHealthCheckConfig(crane.HealthCheckConfig)
 	}
 
 	if crane.ResourceConfig != nil {
@@ -216,6 +216,10 @@ func mapCraneConfig(crane *agent.CraneContainerConfig, containerConfig *v1.Conta
 			Path: crane.Metrics.Path,
 			Port: int(crane.Metrics.Port),
 		}
+	}
+
+	if count := pointer.GetInt32(crane.ReplicaCount); count != 0 {
+		containerConfig.Replicas = uint8(count) //#nosec G115
 	}
 }
 
@@ -269,23 +273,28 @@ func mapResourceConfig(resourceConfig *common.ResourceConfig) v1.ResourceConfig 
 func mapHealthCheckConfig(healthCheckConfig *common.HealthCheckConfig) v1.HealthCheckConfig {
 	mappedConfig := v1.HealthCheckConfig{}
 
-	if healthCheckConfig.Port != nil {
-		mappedConfig.Port = uint16(*healthCheckConfig.Port) //#nosec G115
-	}
-
 	if healthCheckConfig.LivenessProbe != nil {
-		mappedConfig.LivenessProbe = &v1.Probe{Path: *healthCheckConfig.LivenessProbe}
+		mappedConfig.LivenessProbe = mapProbe(healthCheckConfig.LivenessProbe)
 	}
 
 	if healthCheckConfig.ReadinessProbe != nil {
-		mappedConfig.ReadinessProbe = &v1.Probe{Path: *healthCheckConfig.ReadinessProbe}
+		mappedConfig.ReadinessProbe = mapProbe(healthCheckConfig.ReadinessProbe)
 	}
 
 	if healthCheckConfig.StartupProbe != nil {
-		mappedConfig.StartupProbe = &v1.Probe{Path: *healthCheckConfig.StartupProbe}
+		mappedConfig.StartupProbe = mapProbe(healthCheckConfig.StartupProbe)
 	}
 
 	return mappedConfig
+}
+
+func mapProbe(in *common.Probe) *v1.Probe {
+	return &v1.Probe{
+		Path:    in.Path,
+		Port:    uint16(in.Port), //#nosec G115
+		Type:    v1.ProbeType(strings.ToLower(in.Type.String())),
+		Command: in.Command,
+	}
 }
 
 func mapVolumes(in []*agent.Volume) []v1.Volume {
@@ -306,7 +315,9 @@ func mapVolumes(in []*agent.Volume) []v1.Volume {
 		}
 
 		if in[i].Type != nil {
-			if *in[i].Type == common.VolumeType_MEM || *in[i].Type == common.VolumeType_TMP || *in[i].Type == common.VolumeType_SECRET {
+			if *in[i].Type == common.VolumeType_MEM ||
+				*in[i].Type == common.VolumeType_TMP ||
+				*in[i].Type == common.VolumeType_SECRET {
 				volume.Type = v1.VolumeType(strings.ToLower(in[i].Type.String()))
 			} else {
 				volume.Type = v1.VolumeType(in[i].Type.String())

@@ -165,11 +165,24 @@ message ConfigContainer {
   bool keepFiles = 103;
 }
 
+enum ProbeType {
+  PROBE_UNSPECIFIED = 0;
+  HTTP = 1;
+  GRPC = 2;
+  EXEC = 3;
+}
+
+message Probe {
+  string path = 101;
+  ProbeType type = 102;
+  int32 port = 103;
+  repeated string command = 104;
+}
+
 message HealthCheckConfig {
-  optional int32 port = 100;
-  optional string livenessProbe = 101;
-  optional string readinessProbe = 102;
-  optional string startupProbe = 103;
+  optional Probe livenessProbe = 101;
+  optional Probe readinessProbe = 102;
+  optional Probe startupProbe = 103;
 }
 
 message Resource {
@@ -222,6 +235,4 @@ message ContainerCommandRequest {
   common.ContainerOperation operation = 101;
 }
 
-message DeleteContainersRequest {
-  ContainerOrPrefix target = 1;
-}
+message DeleteContainersRequest { ContainerOrPrefix target = 1; }

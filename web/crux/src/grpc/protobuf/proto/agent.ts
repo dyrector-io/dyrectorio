@@ -288,6 +288,7 @@ export interface CraneContainerConfig {
   annotations?: Marker | undefined
   labels?: Marker | undefined
   metrics?: Metrics | undefined
+  replicaCount?: number | undefined
   customHeaders: string[]
   extraLBAnnotations: { [key: string]: string }
 }
@@ -1132,6 +1133,7 @@ export const CraneContainerConfig = {
       annotations: isSet(object.annotations) ? Marker.fromJSON(object.annotations) : undefined,
       labels: isSet(object.labels) ? Marker.fromJSON(object.labels) : undefined,
       metrics: isSet(object.metrics) ? Metrics.fromJSON(object.metrics) : undefined,
+      replicaCount: isSet(object.replicaCount) ? Number(object.replicaCount) : undefined,
       customHeaders: Array.isArray(object?.customHeaders) ? object.customHeaders.map((e: any) => String(e)) : [],
       extraLBAnnotations: isObject(object.extraLBAnnotations)
         ? Object.entries(object.extraLBAnnotations).reduce<{ [key: string]: string }>((acc, [key, value]) => {
@@ -1159,6 +1161,7 @@ export const CraneContainerConfig = {
       (obj.annotations = message.annotations ? Marker.toJSON(message.annotations) : undefined)
     message.labels !== undefined && (obj.labels = message.labels ? Marker.toJSON(message.labels) : undefined)
     message.metrics !== undefined && (obj.metrics = message.metrics ? Metrics.toJSON(message.metrics) : undefined)
+    message.replicaCount !== undefined && (obj.replicaCount = Math.round(message.replicaCount))
     if (message.customHeaders) {
       obj.customHeaders = message.customHeaders.map(e => e)
     } else {
