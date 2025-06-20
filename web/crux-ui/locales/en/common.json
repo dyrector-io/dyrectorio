@@ -175,10 +175,11 @@
     "removed": "Removed"
   },
 
-  "secretStatuses": {
+  "secretStatus": {
     "unknown": "Unknown",
-    "present": "Present",
-    "missing": "Missing"
+    "saved": "Saved",
+    "encrypted": "Encrypted",
+    "defined": "Defined"
   },
 
   "viewMode": {

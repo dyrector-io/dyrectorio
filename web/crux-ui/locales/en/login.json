@@ -1,6 +1,7 @@
 {
   "orLogInWith": "Or log in with",
-  "forgotPassword": "Forgot your password?",
+  "cantLogin": "Can't log in?",
+  "recovery": "Recovery",
   "dontHaveAccount": "Don't have an account?",
   "refresh": "Your login session is too old. Please log in again.",
   "loginToAcceptInv": "You have to log in to accept the invitation.",

@@ -37,6 +37,8 @@ export type OidcAvailability = {
   azure: boolean
 }
 
+export type OidcConnectorAction = 'link' | 'unlink'
+
 export const oidcEnabled = (oidc: OidcAvailability) => oidc.gitlab || oidc.github || oidc.google || oidc.azure
 
 type LoginBase = {

@@ -43,10 +43,10 @@ test('sign up navigates to the register page', async ({ page }) => {
   await expect(page).toHaveURL('/auth/register')
 })
 
-test('forgot password navigates to the recovery page', async ({ page }) => {
+test('recovery navigates to the recovery page', async ({ page }) => {
   await page.goto(ROUTE_LOGIN)
 
-  await page.locator('"Forgot your password?"').click()
+  await page.locator('"Recovery"').click()
 
   await expect(page).toHaveURL('/auth/recovery')
   await expect(page.locator('h1')).toContainText('Account recovery')

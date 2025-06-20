@@ -6,7 +6,7 @@ export default class RecaptchaService {
   constructor(private configService: ConfigService) {}
 
   public captchaEnabled(): boolean {
-    return this.configService.get('DISABLE_RECAPTCHA') !== 'true'
+    return !this.configService.get('DISABLE_RECAPTCHA')
   }
 
   public async validateCaptcha(captcha: string): Promise<boolean> {

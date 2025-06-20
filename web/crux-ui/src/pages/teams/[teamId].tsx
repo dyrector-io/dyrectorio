@@ -45,7 +45,7 @@ import { redirectTo, utcDateToLocale, withContextAuthorization } from '@app/util
 import { Identity } from '@ory/kratos-client'
 import { captchaDisabled } from '@server/captcha'
 import { getCookie } from '@server/cookie'
-import { getCruxFromContext } from '@server/crux-api'
+import { getCruxFromContext, teamCreationDisabled } from '@server/crux-api'
 import { sessionOfContext } from '@server/kratos'
 import { GetServerSidePropsContext } from 'next'
 import useTranslation from 'next-translate/useTranslation'
@@ -55,14 +55,15 @@ import { useState } from 'react'
 import toast from 'react-hot-toast'
 import { useSWRConfig } from 'swr'
 
-interface TeamDetailsPageProps {
+type TeamDetailsPageProps = {
+  creationDisabled: boolean
   me: Identity
   team: TeamDetails
   recaptchaSiteKey?: string
 }
 
 const TeamDetailsPage = (props: TeamDetailsPageProps) => {
-  const { me, team: propsTeam, recaptchaSiteKey } = props
+  const { creationDisabled, me, team: propsTeam, recaptchaSiteKey } = props
 
   const { t } = useTranslation('teams')
   const routes = useTeamRoutes()
@@ -80,7 +81,7 @@ const TeamDetailsPage = (props: TeamDetailsPageProps) => {
   const activeTeam = team.slug === routes.teamSlug
   const actor = team.users.find(it => it.id === me.id)
   const canEdit = userIsAdmin(actor)
-  const canDelete = userIsOwner(actor)
+  const canDelete = userIsOwner(actor) && !creationDisabled
 
   const submit = useSubmit()
 
@@ -251,7 +252,7 @@ const TeamDetailsPage = (props: TeamDetailsPageProps) => {
   return (
     <Layout title={t('teamsName', team)}>
       <PageHeading pageLink={selfLink} sublinks={sublinks}>
-        {!userIsOwner(actor) && (
+        {!userIsOwner(actor) && !creationDisabled && (
           <DyoButton className="mx-2 px-6" color="bg-error-red" onClick={onLeaveTeam}>
             {t('leave')}
           </DyoButton>
@@ -382,6 +383,7 @@ const getPageServerSideProps = async (context: GetServerSidePropsContext) => {
 
   return {
     props: appendTeamSlug(teamSlug, {
+      creationDisabled: teamCreationDisabled(),
       me: sessionOfContext(context).identity,
       team,
       recaptchaSiteKey: captchaDisabled() ? null : process.env.RECAPTCHA_SITE_KEY,

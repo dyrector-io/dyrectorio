@@ -392,15 +392,20 @@ export default class DeployService {
       },
     })
 
+    const imageConfig: ContainerConfigData = this.containerMapper.dbConfigToContainerConfigData(instance.image.config)
+    const instanceConfig: ConcreteContainerConfigData = this.containerMapper.dbConfigToContainerConfigData(
+      instance.config,
+    )
+
     const configData = this.mapper.concreteConfigDtoToConcreteContainerConfigData(
-      instance.image.config as any as ContainerConfigData,
-      (instance.config ?? {}) as any as ConcreteContainerConfigData,
+      imageConfig,
+      instanceConfig,
       req.config,
     )
 
     const config: Omit<ContainerConfig, 'id'> = {
       ...this.containerMapper.configDataToDbPatch(configData),
-      type: 'deployment',
+      type: 'instance',
       updatedAt: new Date(),
       updatedBy: identity.id,
     }
@@ -557,8 +562,12 @@ export default class DeployService {
       await this.updateInvalidSecretsAndThrow(invalidSecrets)
     }
 
-    const prefixNeighbors = await this.collectLatestSuccessfulDeploymentsForPrefix(deployment.nodeId, deployment.prefix)
-    const sharedSecrets = mergePrefixNeighborSecrets(prefixNeighbors, publicKey)
+    const prefixNeighbors = await this.collectLatestSuccessfulDeploymentsForPrefix(
+      deployment.id,
+      deployment.nodeId,
+      deployment.prefix,
+    )
+    const sharedSecrets = mergePrefixNeighborSecrets(prefixNeighbors, deploymentConfig.secrets, publicKey)
 
     const tries = deployment.tries + 1
     await this.prisma.deployment.update({
@@ -1235,6 +1244,7 @@ export default class DeployService {
   }
 
   private async collectLatestSuccessfulDeploymentsForPrefix(
+    currentDeploymentId: string,
     nodeId: string,
     prefix: string,
   ): Promise<DeploymentWithConfig[]> {
@@ -1266,7 +1276,7 @@ export default class DeployService {
       },
     })
 
-    return versions.flatMap(it => it.deployments)
+    return versions.flatMap(it => it.deployments).filter(it => it.id !== currentDeploymentId)
   }
 
   private applyInstanceConfigTemplate(config: ConcreteContainerConfigData, template: InstanceConfigTemplate) {

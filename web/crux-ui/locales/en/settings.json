@@ -13,5 +13,7 @@
   "onboarding": "Onboarding tips",
   "connect": "Connect",
   "remove": "Remove",
+  "orConnectWith": "Or connect with",
+  "connectYourAccount": "Connect your account",
   "areYouSureWantToRemoveAccount": "Are you sure you want to remove your {{account}} account connection?"
 }

@@ -237,10 +237,7 @@ export default class DeployMapper {
     concreteConfig: ConcreteContainerConfigData,
     patch: ConcreteContainerConfigDataDto,
   ): ConcreteContainerConfigData {
-    const config = this.containerMapper.configDtoToConfigData(
-      concreteConfig as ContainerConfigData,
-      patch as ConcreteContainerConfigDto,
-    )
+    const config = this.containerMapper.configDtoToConfigData(concreteConfig, patch)
 
     if ('labels' in patch) {
       const currentLabels = concreteConfig.labels ?? baseConfig.labels ?? {}
@@ -261,7 +258,7 @@ export default class DeployMapper {
       }
     }
 
-    return config as ConcreteContainerConfigData
+    return config
   }
 
   eventTypeToDto(it: DeploymentEventTypeEnum): DeploymentEventTypeDto {

@@ -14,7 +14,7 @@
     "/auth/settings": ["settings", "tokens"],
     "/auth/settings/edit-profile": ["settings"],
     "/auth/settings/change-password": ["settings"],
-    "/auth/settings/new-password": ["settings"],
+    "/auth/settings/recovered": ["settings"],
     "/auth/settings/tokens": ["settings", "tokens"],
     "/auth/verify": ["verify"],
     "/[teamSlug]/projects": ["projects"],
