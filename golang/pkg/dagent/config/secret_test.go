@@ -87,7 +87,7 @@ func TestCheckOrGenerateKeys(t *testing.T) {
 	// read newly generated key file and compare
 	key, err := os.ReadFile(missingKeyFile)
 	assert.NoError(t, err)
-	assert.Equal(t, string(key), privateKey)
+	assert.Equal(t, privateKey, string(key))
 
 	// valid key
 	_, err = f.WriteString(testPrivateKey)

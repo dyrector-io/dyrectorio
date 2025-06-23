@@ -7,23 +7,21 @@ import (
 	"time"
 
 	"github.com/AlekSi/pointer"
+	dockerTypes "github.com/docker/docker/api/types"
+	"github.com/docker/docker/api/types/container"
+	"github.com/iancoleman/strcase"
 	"github.com/rs/zerolog/log"
 	"google.golang.org/protobuf/types/known/timestamppb"
+	appsv1 "k8s.io/api/apps/v1"
+	corev1 "k8s.io/api/core/v1"
 
 	v1 "github.com/dyrector-io/dyrectorio/golang/api/v1"
 	"github.com/dyrector-io/dyrectorio/golang/internal/config"
 	imageHelper "github.com/dyrector-io/dyrectorio/golang/internal/helper/image"
 	"github.com/dyrector-io/dyrectorio/golang/internal/util"
-
 	builder "github.com/dyrector-io/dyrectorio/golang/pkg/builder/container"
 	"github.com/dyrector-io/dyrectorio/protobuf/go/agent"
 	"github.com/dyrector-io/dyrectorio/protobuf/go/common"
-
-	dockerTypes "github.com/docker/docker/api/types"
-	"github.com/docker/docker/api/types/container"
-	"github.com/iancoleman/strcase"
-	appsv1 "k8s.io/api/apps/v1"
-	corev1 "k8s.io/api/core/v1"
 )
 
 var ErrNoTargetContainerOrPrefix = errors.New("no target container or prefix")
@@ -289,10 +287,18 @@ func mapHealthCheckConfig(healthCheckConfig *common.HealthCheckConfig) v1.Health
 }
 
 func mapProbe(in *common.Probe) *v1.Probe {
+	probeType := ""
+
+	if in.Type == common.ProbeType_PROBE_UNSPECIFIED {
+		probeType = string(v1.HTTPProbe)
+	} else {
+		probeType = strings.ToLower(in.Type.String())
+	}
+
 	return &v1.Probe{
 		Path:    in.Path,
 		Port:    uint16(in.Port), //#nosec G115
-		Type:    v1.ProbeType(strings.ToLower(in.Type.String())),
+		Type:    v1.ProbeType(probeType),
 		Command: in.Command,
 	}
 }

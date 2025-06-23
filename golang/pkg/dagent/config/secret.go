@@ -61,7 +61,7 @@ func generateKey(path string) (string, error) {
 		return "", keyErr
 	}
 
-	fileErr := os.WriteFile(path, []byte(keyStr), fs.FileMode(os.O_CREATE|os.O_WRONLY|os.O_TRUNC))
+	fileErr := os.WriteFile(path, []byte(keyStr), permbits.UserReadWrite)
 	if fileErr != nil {
 		return "", fileErr
 	}

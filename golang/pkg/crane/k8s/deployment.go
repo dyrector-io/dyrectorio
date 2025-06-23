@@ -97,7 +97,7 @@ func (d *Deployment) DeployDeployment(p *DeploymentParams) error {
 	deployment := appsv1.Deployment(name, p.namespace).
 		WithSpec(
 			appsv1.DeploymentSpec().
-				WithReplicas(getReplicaCount(p.containerConfig.Replicas)).
+				WithReplicas(replicaCountOrDefault(p.containerConfig.Replicas)).
 				WithStrategy(appsv1.DeploymentStrategy().WithType(kappsv1.DeploymentStrategyType(p.containerConfig.DeploymentStrategy))).
 				WithSelector(metav1.LabelSelector().WithMatchLabels(map[string]string{
 					"app": name,
@@ -276,7 +276,7 @@ func (d *Deployment) GetPodDeployment(namespace, name string) (*kappsv1.Deployme
 	return client.AppsV1().Deployments(namespace).Get(d.ctx, owner.Name, metaV1.GetOptions{})
 }
 
-func getReplicaCount(count uint8) int32 {
+func replicaCountOrDefault(count uint8) int32 {
 	if count == 0 {
 		return 1
 	}

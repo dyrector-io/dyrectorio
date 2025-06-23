@@ -11,13 +11,12 @@ import (
 	"github.com/docker/docker/api/types/container"
 	"github.com/stretchr/testify/assert"
 
+	v1 "github.com/dyrector-io/dyrectorio/golang/api/v1"
 	"github.com/dyrector-io/dyrectorio/golang/internal/config"
 	"github.com/dyrector-io/dyrectorio/golang/internal/helper/image"
 	builder "github.com/dyrector-io/dyrectorio/golang/pkg/builder/container"
 	"github.com/dyrector-io/dyrectorio/protobuf/go/agent"
 	"github.com/dyrector-io/dyrectorio/protobuf/go/common"
-
-	v1 "github.com/dyrector-io/dyrectorio/golang/api/v1"
 )
 
 // crux sends both configs crane+dagent
@@ -136,11 +135,10 @@ func testExpectedCommon(req *agent.DeployWorkloadRequest) *v1.DeployImageRequest
 				Service:    map[string]string{"label2": "value2"},
 				Ingress:    map[string]string{"label3": "value3"},
 			},
-			HealthCheckConfig: v1.HealthCheckConfig{
-				Port:           uint16(*req.Crane.HealthCheckConfig.Port),
-				LivenessProbe:  &v1.Probe{Path: "test-liveness"},
-				ReadinessProbe: &v1.Probe{Path: "test-readiness"},
-				StartupProbe:   &v1.Probe{Path: "test-startup"},
+			HealthCheck: v1.HealthCheckConfig{
+				LivenessProbe:  &v1.Probe{Path: "/test-liveness", Port: 1234, Type: "http"},
+				ReadinessProbe: &v1.Probe{Path: "/test-readiness", Port: 1234, Type: "http"},
+				StartupProbe:   &v1.Probe{Path: "/test-startup", Port: 1234, Type: "http"},
 			},
 			ResourceConfig: v1.ResourceConfig{
 				Limits:   v1.Resources{CPU: "250m", Memory: "512Mi"},
@@ -333,9 +331,9 @@ func testCraneConfig() *agent.CraneContainerConfig {
 	cpuLim := "250m"
 	memLim := "512Mi"
 
-	lProbe := "test-liveness"
-	rProbe := "test-readiness"
-	sProbe := "test-startup"
+	lProbe := "/test-liveness"
+	rProbe := "/test-readiness"
+	sProbe := "/test-startup"
 	port := int32(1234)
 	return &agent.CraneContainerConfig{
 		CustomHeaders:      []string{"header1", "value1", "header2", "value2"},
@@ -363,10 +361,18 @@ func testCraneConfig() *agent.CraneContainerConfig {
 			},
 		},
 		HealthCheckConfig: &common.HealthCheckConfig{
-			Port:           &port,
-			LivenessProbe:  &lProbe,
-			ReadinessProbe: &rProbe,
-			StartupProbe:   &sProbe,
+			LivenessProbe: &common.Probe{
+				Port: port,
+				Path: lProbe,
+			},
+			ReadinessProbe: &common.Probe{
+				Port: port,
+				Path: rProbe,
+			},
+			StartupProbe: &common.Probe{
+				Port: port,
+				Path: sProbe,
+			},
 		},
 		DeploymentStrategy: common.DeploymentStrategy_RECREATE.Enum(),
 	}
