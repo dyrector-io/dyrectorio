@@ -12,12 +12,11 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	applymetav1 "k8s.io/client-go/applyconfigurations/meta/v1"
 	netv1 "k8s.io/client-go/applyconfigurations/networking/v1"
+	networking "k8s.io/client-go/kubernetes/typed/networking/v1"
 
 	"github.com/dyrector-io/dyrectorio/golang/internal/domain"
 	"github.com/dyrector-io/dyrectorio/golang/internal/util"
 	"github.com/dyrector-io/dyrectorio/golang/pkg/crane/config"
-
-	networking "k8s.io/client-go/kubernetes/typed/networking/v1"
 )
 
 // facade object for ingress management
@@ -37,11 +36,12 @@ type DeployIngressOptions struct {
 	ingressPath   string
 	uploadLimit   string
 	namespace     string
-	customHeaders []string
+	proxyHeaders  []string
+	corsHeaders   []string
 	portList      []int32
 	port          uint16
+	buffering     bool
 	stripPrefix   bool
-	proxyHeaders  bool
 	tls           bool
 }
 
@@ -154,8 +154,6 @@ func getTLSConfig(ingressPath, containerName string, enabled bool) *netv1.Ingres
 }
 
 func getIngressAnnotations(opts *DeployIngressOptions) map[string]string {
-	corsHeaders := []string{}
-
 	annotations := map[string]string{
 		"kubernetes.io/ingress.class": "nginx",
 	}
@@ -165,23 +163,18 @@ func getIngressAnnotations(opts *DeployIngressOptions) map[string]string {
 		annotations["cert-manager.io/cluster-issuer"] = "letsencrypt-prod"
 	}
 
-	// Add Custom Headers to the CORS Allow Header annotation if presents
-	if len(opts.customHeaders) > 0 {
-		corsHeaders = opts.customHeaders
+	if len(opts.corsHeaders) > 0 {
+		annotations["nginx.ingress.kubernetes.io/enable-cors"] = "true"
+		annotations["nginx.ingress.kubernetes.io/cors-allow-headers"] = strings.Join(opts.proxyHeaders, ", ")
 	}
 
-	if opts.proxyHeaders {
-		extraHeaders := []string{"X-Forwarded-For", "X-Forwarded-Host", "X-Forwarded-Server", "X-Real-IP", "X-Requested-With"}
-		corsHeaders = append(corsHeaders, extraHeaders...)
-
-		annotations["nginx.ingress.kubernetes.io/enable-cors"] = "true"
+	if opts.buffering {
 		annotations["nginx.ingress.kubernetes.io/proxy-buffering"] = "on"
 		annotations["nginx.ingress.kubernetes.io/proxy-buffer-size"] = "256k"
 	}
 
-	// Add header string to cors-allow-headers if presents any value
-	if len(corsHeaders) > 0 {
-		annotations["nginx.ingress.kubernetes.io/cors-allow-headers"] = strings.Join(corsHeaders, ", ")
+	if len(opts.proxyHeaders) > 0 {
+		annotations["nginx.ingress.kubernetes.io/proxy-set-headers"] = util.JoinV("/", opts.namespace, opts.containerName)
 	}
 
 	if opts.uploadLimit != "" {

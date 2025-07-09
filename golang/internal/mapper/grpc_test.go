@@ -123,7 +123,6 @@ func testExpectedCommon(req *agent.DeployWorkloadRequest) *v1.DeployImageRequest
 			RestartPolicy: container.RestartPolicyAlways,
 			Networks:      []string{"n1", "n2"},
 			NetworkMode:   "BRIDGE",
-			CustomHeaders: []string(nil),
 			Annotations: v1.Markers{
 				Deployment: map[string]string{"annot1": "value1"},
 				Service:    map[string]string{"annot2": "value2"},
@@ -144,7 +143,7 @@ func testExpectedCommon(req *agent.DeployWorkloadRequest) *v1.DeployImageRequest
 				Limits:   v1.Resources{CPU: "250m", Memory: "512Mi"},
 				Requests: v1.Resources{CPU: "100m", Memory: "64Mi"},
 			},
-			ProxyHeaders:       true,
+			ProxyHeaders:       []string{"ProxyHeader"},
 			UseLoadBalancer:    true,
 			ExtraLBAnnotations: map[string]string{"annotation1": "value1"},
 		},
@@ -336,9 +335,8 @@ func testCraneConfig() *agent.CraneContainerConfig {
 	sProbe := "/test-startup"
 	port := int32(1234)
 	return &agent.CraneContainerConfig{
-		CustomHeaders:      []string{"header1", "value1", "header2", "value2"},
 		ExtraLBAnnotations: map[string]string{"annotation1": "value1"},
-		ProxyHeaders:       &b,
+		ProxyHeaders:       []string{"ProxyHeader"},
 		UseLoadBalancer:    &b,
 		Labels: &agent.Marker{
 			Deployment: map[string]string{"label1": "value1"},

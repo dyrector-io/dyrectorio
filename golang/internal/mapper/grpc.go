@@ -174,7 +174,15 @@ func mapCraneConfig(crane *agent.CraneContainerConfig, containerConfig *v1.Conta
 	containerConfig.DeploymentStrategy = strcase.ToCamel(crane.DeploymentStrategy.String())
 
 	if crane.ProxyHeaders != nil {
-		containerConfig.ProxyHeaders = *crane.ProxyHeaders
+		containerConfig.ProxyHeaders = crane.ProxyHeaders
+	}
+
+	if crane.CorsHeaders != nil {
+		containerConfig.CorsHeaders = crane.CorsHeaders
+	}
+
+	if crane.ProxyBuffering != nil {
+		containerConfig.ProxyBuffering = *crane.ProxyBuffering
 	}
 
 	if crane.UseLoadBalancer != nil {
