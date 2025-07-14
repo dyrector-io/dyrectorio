@@ -8,11 +8,10 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/docker/docker/api/types/container"
 	validator "github.com/go-playground/validator/v10"
 	"github.com/rs/zerolog/log"
 	"k8s.io/apimachinery/pkg/api/resource"
-
-	"github.com/docker/docker/api/types/container"
 
 	"github.com/dyrector-io/dyrectorio/golang/internal/config"
 	imageHelper "github.com/dyrector-io/dyrectorio/golang/internal/helper/image"

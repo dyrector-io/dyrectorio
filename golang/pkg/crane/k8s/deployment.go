@@ -10,26 +10,21 @@ import (
 
 	"github.com/rs/zerolog/log"
 	"golang.org/x/exp/maps"
+	kappsv1 "k8s.io/api/apps/v1"
 	coreV1 "k8s.io/api/core/v1"
 	resource "k8s.io/apimachinery/pkg/api/resource"
 	metaV1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/intstr"
-
-	"github.com/dyrector-io/dyrectorio/golang/internal/util"
-	builder "github.com/dyrector-io/dyrectorio/golang/pkg/builder/container"
-	"github.com/dyrector-io/dyrectorio/golang/pkg/crane/config"
-
+	appsv1 "k8s.io/client-go/applyconfigurations/apps/v1"
+	corev1 "k8s.io/client-go/applyconfigurations/core/v1"
+	metav1 "k8s.io/client-go/applyconfigurations/meta/v1"
 	typedv1 "k8s.io/client-go/kubernetes/typed/apps/v1"
 
 	v1 "github.com/dyrector-io/dyrectorio/golang/api/v1"
-
-	appsv1 "k8s.io/client-go/applyconfigurations/apps/v1"
-
-	kappsv1 "k8s.io/api/apps/v1"
-
-	corev1 "k8s.io/client-go/applyconfigurations/core/v1"
-	metav1 "k8s.io/client-go/applyconfigurations/meta/v1"
+	"github.com/dyrector-io/dyrectorio/golang/internal/util"
+	builder "github.com/dyrector-io/dyrectorio/golang/pkg/builder/container"
+	"github.com/dyrector-io/dyrectorio/golang/pkg/crane/config"
 )
 
 const CraneUpdatedAnnotation = "crane.dyrector.io/restartedAt"
@@ -555,7 +550,7 @@ func getProbe(probe *v1.Probe) *corev1.ProbeApplyConfiguration {
 	case v1.HTTPProbe:
 		probeApplyConfig = probeApplyConfig.WithHTTPGet(getHTTPProbe(probe.Path, probe.Port))
 	case v1.GRPCProbe:
-		probeApplyConfig = probeApplyConfig.WithGRPC(getGRPCProbe(probe.Port))
+		probeApplyConfig = probeApplyConfig.WithGRPC(getGRPCProbe(probe.Port, probe.Path))
 	case v1.ExecProbe:
 		probeApplyConfig = probeApplyConfig.WithExec(getExecProbe(probe.Command...))
 	}
@@ -567,8 +562,8 @@ func getExecProbe(command ...string) *corev1.ExecActionApplyConfiguration {
 	return corev1.ExecAction().WithCommand(command...)
 }
 
-func getGRPCProbe(port uint16) *corev1.GRPCActionApplyConfiguration {
-	return corev1.GRPCAction().WithPort(int32(port))
+func getGRPCProbe(port uint16, service string) *corev1.GRPCActionApplyConfiguration {
+	return corev1.GRPCAction().WithPort(int32(port)).WithService(service)
 }
 
 func getHTTPProbe(path string, port uint16) *corev1.HTTPGetActionApplyConfiguration {
