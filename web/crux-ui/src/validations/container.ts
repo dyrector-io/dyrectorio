@@ -159,17 +159,29 @@ const configContainerRule = yup
   .optional()
   .label('container:common.configContainer')
 
+const healthCheckProbeRule = (probeName: string) =>
+  yup.mixed().when('type', {
+    is: type => type === 'exec',
+    then: () =>
+      yup.object({
+        command: yup.array(yup.string().required()).required().label('common:common.commands'),
+      }),
+    otherwise: () =>
+      yup.object({
+        port: yup.number().required().label('container:common.port'),
+        path: yup.string().required().label(probeName),
+      }),
+  })
 const healthCheckConfigRule = yup
   .object()
   .shape({
-    port: portNumberRule.nullable().optional().label('container:crane.port'),
-    livenessProbe: yup.string().nullable().optional().label('container:crane.livenessProbe'),
-    readinessProbe: yup.string().nullable().optional().label('container:crane.readinessProbe'),
-    startupProbe: yup.string().nullable().optional().label('container:crane.startupProbe'),
+    liveness: healthCheckProbeRule('container:crane.livenessProbe').nullable().optional(),
+    readiness: healthCheckProbeRule('container:crane.readinessProbe').nullable().optional(),
+    startup: healthCheckProbeRule('container:crane.startupProbe').nullable().optional(),
   })
   .default(null)
-  .optional()
   .nullable()
+  .optional()
   .label('container:crane.healthCheckConfig')
 
 const resourceConfigRule = yup
@@ -599,6 +611,7 @@ const createContainerConfigBaseSchema = (imageLabels: Record<string, string>) =>
     labels: markerRule.label('container:crane.labels'),
     annotations: markerRule.label('container:crane.annotations'),
     metrics: metricsRule,
+    replicas: yup.number().optional().nullable().min(1),
   })
 
 export const createContainerConfigSchema = (imageLabels: Record<string, string>) =>

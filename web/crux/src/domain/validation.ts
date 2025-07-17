@@ -92,11 +92,23 @@ const configContainerRule = yup.object().shape({
   keepFiles: yup.boolean().default(false).required(),
 })
 
+const healthCheckProbeRule = yup.mixed().when('type', {
+  is: type => type === 'exec',
+  then: () =>
+    yup.object({
+      command: yup.array(yup.string().required()).required(),
+    }),
+  otherwise: () =>
+    yup.object({
+      port: yup.number().required(),
+      path: yup.string().required(),
+    }),
+})
+
 const healthCheckConfigRule = yup.object().shape({
-  port: portNumberRule.nullable().optional(),
-  livenessProbe: yup.string().nullable().optional(),
-  readinessProbe: yup.string().nullable().optional(),
-  startupProbe: yup.string().nullable().optional(),
+  liveness: healthCheckProbeRule.nullable().optional(),
+  readiness: healthCheckProbeRule.nullable().optional(),
+  startup: healthCheckProbeRule.nullable().optional(),
 })
 
 const resourceConfigRule = yup.object().shape({
@@ -312,6 +324,7 @@ export const concreteContainerConfigSchema = yup.object().shape({
   annotations: markerRule.optional().nullable(),
   labels: markerRule.optional().nullable(),
   metrics: metricsRule.optional().nullable(),
+  replicas: yup.number().optional().nullable().min(1),
 })
 
 // TODO(@robot9706): Fix labels & config bundles conflicting

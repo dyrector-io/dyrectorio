@@ -60,6 +60,9 @@ export type ContainerExposeStrategy = (typeof CONTAINER_EXPOSE_STRATEGY_VALUES)[
 export const CONTAINER_VOLUME_TYPE_VALUES = ['ro', 'rwo', 'rwx', 'mem', 'tmp'] as const
 export type ContainerVolumeType = (typeof CONTAINER_VOLUME_TYPE_VALUES)[number]
 
+export const CONTAINER_PROBE_TYPE_VALUES = ['none', 'http', 'grpc', 'exec'] as const
+export type ContainerProbeType = (typeof CONTAINER_PROBE_TYPE_VALUES)[number]
+
 export type Routing = {
   domain?: string
   path?: string
@@ -99,11 +102,23 @@ export type Log = {
   options: UniqueKeyValue[]
 }
 
+export type HealthCheckCommandProbe = {
+  type: 'exec'
+  command: UniqueKey[]
+}
+
+export type NetworkHealthCheckProbe = {
+  type: 'http' | 'grpc'
+  port: number
+  path: string
+}
+
+export type HealthCheckProbe = NetworkHealthCheckProbe | HealthCheckCommandProbe
+
 export type HealthCheck = {
-  port?: number
-  livenessProbe?: string
-  readinessProbe?: string
-  startupProbe?: string
+  liveness?: HealthCheckProbe
+  readiness?: HealthCheckProbe
+  startup?: HealthCheckProbe
 }
 
 export type Resource = {
@@ -204,6 +219,7 @@ export type ContainerConfigData = {
   annotations?: Marker
   labels?: Marker
   metrics?: Metrics
+  replicas?: number
 }
 
 export type ContainerConfigDataWithId = ContainerConfigData & {

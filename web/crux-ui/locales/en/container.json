@@ -140,6 +140,14 @@
     "metrics": "Metrics",
     "metricsPath": "Metrics path",
     "metricsPort": "Metrics port",
+    "serviceName": "Service name",
+    "replicas": "Replicas",
+    "probeTypes": {
+      "none": "None",
+      "http": "HTTP",
+      "grpc": "gRPC",
+      "exec": "Exec"
+    },
     "placeholders": {
       "headerName": "Header name",
       "cpuUsageExample": "10m",

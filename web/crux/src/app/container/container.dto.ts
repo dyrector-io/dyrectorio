@@ -1,4 +1,4 @@
-import { ApiProperty, OmitType } from '@nestjs/swagger'
+import { ApiProperty, getSchemaPath, OmitType } from '@nestjs/swagger'
 import { Type } from 'class-transformer'
 import {
   IsBoolean,
@@ -18,6 +18,7 @@ import {
   CONTAINER_EXPOSE_STRATEGY_VALUES,
   CONTAINER_LOG_DRIVER_VALUES,
   CONTAINER_NETWORK_MODE_VALUES,
+  CONTAINER_PROBE_TYPE_VALUES,
   CONTAINER_RESTART_POLICY_TYPE_VALUES,
   CONTAINER_STATE_VALUES,
   CONTAINER_VOLUME_TYPE_VALUES,
@@ -25,6 +26,7 @@ import {
   ContainerExposeStrategy,
   ContainerLogDriverType,
   ContainerNetworkMode,
+  ContainerProbeType,
   ContainerRestartPolicyType,
   ContainerState,
   ContainerVolumeType,
@@ -233,24 +235,46 @@ export class LogDto {
   options: UniqueKeyValueDto[]
 }
 
-export class HealthCheckDto {
+export class HealthCheckCommandProbeDto {
+  @ApiProperty({ enum: CONTAINER_PROBE_TYPE_VALUES })
+  @IsIn(['exec'])
+  type: ContainerProbeType
+
+  @ValidateNested({ each: true })
+  command: UniqueKeyDto[]
+}
+
+export class HealthCheckProbeDto {
+  @ApiProperty({ enum: CONTAINER_PROBE_TYPE_VALUES })
+  @IsIn(['http', 'grpc'])
+  type: ContainerProbeType
+
+  @IsInt()
   @Min(PORT_MIN)
   @Max(PORT_MAX)
-  @IsInt()
-  @IsOptional()
-  port?: number
+  port: number
 
   @IsString()
-  @IsOptional()
-  livenessProbe?: string
+  path: string
+}
 
-  @IsString()
-  @IsOptional()
-  readinessProbe?: string
+const HealthCheckProbeOneOf = () =>
+  ApiProperty({
+    oneOf: [{ $ref: getSchemaPath(HealthCheckCommandProbeDto) }, { $ref: getSchemaPath(HealthCheckProbeOneOf) }],
+  })
 
-  @IsString()
+export class HealthCheckDto {
+  @HealthCheckProbeOneOf()
   @IsOptional()
-  startupProbe?: string
+  liveness?: HealthCheckProbeDto | HealthCheckCommandProbeDto
+
+  @HealthCheckProbeOneOf()
+  @IsOptional()
+  readiness?: HealthCheckProbeDto | HealthCheckCommandProbeDto
+
+  @HealthCheckProbeOneOf()
+  @IsOptional()
+  startup?: HealthCheckProbeDto | HealthCheckCommandProbeDto
 }
 
 class ResourceDto {

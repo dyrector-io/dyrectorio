@@ -19,6 +19,7 @@ import {
   booleanResettable,
   filterContains,
   filterEmpty,
+  numberResettable,
   stringResettable,
 } from '@app/models'
 import { nullify, toNumber } from '@app/utils'
@@ -26,6 +27,7 @@ import { ContainerConfigValidationErrors, findErrorFor } from '@app/validations'
 import useTranslation from 'next-translate/useTranslation'
 import { useEffect } from 'react'
 import ConfigSectionLabel from './config-section-label'
+import HealthCheckProbeConfig from './health-check-probe-config'
 
 type CraneConfigSectionProps = {
   config: ContainerConfigData | ConcreteContainerConfigData
@@ -181,79 +183,69 @@ const CraneConfigSection = (props: CraneConfigSectionProps) => {
               {t('crane.healthCheckConfig').toUpperCase()}
             </ConfigSectionLabel>
 
-            <div className="flex flex-col gap-4 ml-2 mt-2">
-              <MultiInput
-                id="crane.port"
-                label={t('common.port')}
-                containerClassName="w-40"
-                labelClassName="my-auto mr-4 w-10"
-                grow
-                inline
-                value={config.healthCheckConfig?.port ?? ''}
-                placeholder={t('common.placeholders.port')}
-                onPatch={it =>
-                  onChange({
-                    healthCheckConfig: { ...config.healthCheckConfig, port: toNumber(it) },
-                  })
-                }
-                editorOptions={editorOptions}
+            <div className="flex flex-col gap-4">
+              <HealthCheckProbeConfig
+                className="mt-2"
                 disabled={disabled}
-                message={findErrorFor(fieldErrors, 'healthCheckConfig.port')}
-              />
-
-              <MultiInput
-                id="crane.livenessProbe"
                 label={t('crane.livenessProbe')}
-                labelClassName="my-auto mr-4 w-40"
-                grow
-                inline
-                value={config.healthCheckConfig?.livenessProbe ?? ''}
-                placeholder={t('common.placeholders.path')}
-                onPatch={it =>
+                name="crane.livenessProbe"
+                probe={config.healthCheckConfig?.liveness}
+                onChange={it =>
                   onChange({
-                    healthCheckConfig: { ...config.healthCheckConfig, livenessProbe: it },
+                    healthCheckConfig: {
+                      ...config.healthCheckConfig,
+                      liveness: it,
+                    },
                   })
                 }
                 editorOptions={editorOptions}
-                disabled={disabled}
-                message={findErrorFor(fieldErrors, 'healthCheckConfig.livenessProbe')}
+                messages={{
+                  port: findErrorFor(fieldErrors, 'healthCheckConfig.liveness.port'),
+                  path: findErrorFor(fieldErrors, 'healthCheckConfig.liveness.path'),
+                  command: findErrorFor(fieldErrors, 'healthCheckConfig.liveness.command'),
+                }}
               />
 
-              <MultiInput
-                id="crane.readinessProbe"
+              <HealthCheckProbeConfig
+                disabled={disabled}
                 label={t('crane.readinessProbe')}
-                labelClassName="my-auto mr-4 w-40"
-                grow
-                inline
-                value={config.healthCheckConfig?.readinessProbe ?? ''}
-                placeholder={t('common.placeholders.path')}
-                onPatch={it =>
+                name="crane.readinessProbe"
+                probe={config.healthCheckConfig?.readiness}
+                onChange={it =>
                   onChange({
-                    healthCheckConfig: { ...config.healthCheckConfig, readinessProbe: it },
+                    healthCheckConfig: {
+                      ...config.healthCheckConfig,
+                      readiness: it,
+                    },
                   })
                 }
                 editorOptions={editorOptions}
-                disabled={disabled}
-                message={findErrorFor(fieldErrors, 'healthCheckConfig.readinessProbe')}
+                messages={{
+                  port: findErrorFor(fieldErrors, 'healthCheckConfig.readiness.port'),
+                  path: findErrorFor(fieldErrors, 'healthCheckConfig.readiness.path'),
+                  command: findErrorFor(fieldErrors, 'healthCheckConfig.readiness.command'),
+                }}
               />
 
-              <MultiInput
-                id="crane.startupProbe"
+              <HealthCheckProbeConfig
+                disabled={disabled}
                 label={t('crane.startupProbe')}
-                labelClassName="my-auto mr-4 w-40"
-                className="w-full"
-                inline
-                grow
-                value={config.healthCheckConfig?.startupProbe ?? ''}
-                placeholder={t('common.placeholders.path')}
-                onPatch={it =>
+                name="crane.startupProbe"
+                probe={config.healthCheckConfig?.startup}
+                onChange={it =>
                   onChange({
-                    healthCheckConfig: { ...config.healthCheckConfig, startupProbe: it },
+                    healthCheckConfig: {
+                      ...config.healthCheckConfig,
+                      startup: it,
+                    },
                   })
                 }
                 editorOptions={editorOptions}
-                disabled={disabled}
-                message={findErrorFor(fieldErrors, 'healthCheckConfig.startupProbe')}
+                messages={{
+                  port: findErrorFor(fieldErrors, 'healthCheckConfig.startup.port'),
+                  path: findErrorFor(fieldErrors, 'healthCheckConfig.startup.path'),
+                  command: findErrorFor(fieldErrors, 'healthCheckConfig.startup.command'),
+                }}
               />
             </div>
           </div>
@@ -557,6 +549,32 @@ const CraneConfigSection = (props: CraneConfigSectionProps) => {
                 disabled={disabled}
               />
             )}
+          </div>
+        )}
+
+        {/* user */}
+        {filterContains('replicas', selectedFilters) && (
+          <div className="flex flex-row gap-4 items-start">
+            <ConfigSectionLabel
+              className="mt-2.5"
+              disabled={disabled || !numberResettable(baseConfig?.replicas, resettableConfig.replicas)}
+              onResetSection={() => onResetSection('replicas')}
+            >
+              {t('crane.replicas').toUpperCase()}
+            </ConfigSectionLabel>
+
+            <MultiInput
+              id="crane.replicas"
+              labelClassName="text-bright font-semibold tracking-wide mr-4"
+              value={config.replicas !== -1 ? config.replicas : ''}
+              onPatch={it => {
+                const val = toNumber(it)
+                onChange({ replicas: typeof val !== 'number' ? -1 : val })
+              }}
+              editorOptions={editorOptions}
+              message={findErrorFor(fieldErrors, 'user') ?? conflictErrors?.user}
+              disabled={disabled}
+            />
           </div>
         )}
       </div>

@@ -17,8 +17,11 @@ import {
   ContainerLogDriverType,
   ContainerState,
   ContainerVolumeType,
+  HealthCheck,
+  HealthCheckProbe,
   InitContainer,
   UniqueKey,
+  UniqueKeyValue,
   Volume,
 } from 'src/domain/container'
 import { mergeMarkers, mergeSecrets } from 'src/domain/container-merge'
@@ -46,19 +49,21 @@ import {
   Volume as ProtoVolume,
 } from 'src/grpc/protobuf/proto/agent'
 import {
-  DeploymentStatusMessage,
-  DriverType,
-  KeyValue,
-  ListSecretsResponse,
   ContainerState as ProtoContainerState,
+  DeploymentStatusMessage as ProtoDeploymentStatusMessage,
   DeploymentStrategy as ProtoDeploymentStrategy,
+  DriverType as ProtoDriverType,
   ExposeStrategy as ProtoExposeStrategy,
+  HealthCheckConfig as ProtoHealthCheckConfig,
+  ListSecretsResponse as ProtoListSecretsResponse,
   NetworkMode as ProtoNetworkMode,
+  Probe as ProtoProbe,
   RestartPolicy as ProtoRestartPolicy,
   VolumeType as ProtoVolumeType,
   containerStateToJSON,
   driverTypeFromJSON,
   networkModeFromJSON,
+  probeTypeFromJSON,
   volumeTypeFromJSON,
 } from 'src/grpc/protobuf/proto/common'
 import EncryptionService from 'src/services/encryption.service'
@@ -194,14 +199,14 @@ export default class DeployMapper {
     }
   }
 
-  secretsResponseToDeploymentSecretsDto(it: ListSecretsResponse): DeploymentSecretsDto {
+  secretsResponseToDeploymentSecretsDto(it: ProtoListSecretsResponse): DeploymentSecretsDto {
     return {
       publicKey: it.publicKey,
       keys: it.keys,
     }
   }
 
-  secretsResponseToInstanceSecretsDto(it: ListSecretsResponse): InstanceSecretsDto {
+  secretsResponseToInstanceSecretsDto(it: ProtoListSecretsResponse): InstanceSecretsDto {
     return {
       ...this.secretsResponseToDeploymentSecretsDto(it),
       container: it.target.container,
@@ -302,7 +307,7 @@ export default class DeployMapper {
     return result
   }
 
-  progressEventToEventDto(message: DeploymentStatusMessage): DeploymentEventMessage[] {
+  progressEventToEventDto(message: ProtoDeploymentStatusMessage): DeploymentEventMessage[] {
     const events: DeploymentEventMessage[] = []
     if (message.log) {
       events.push({
@@ -405,7 +410,7 @@ export default class DeployMapper {
       extraLBAnnotations: this.mapKeyValueToMap(config.extraLBAnnotations),
       deploymentStrategy:
         this.deploymentStrategyToProto(config.deploymentStrategy) ?? ProtoDeploymentStrategy.ROLLING_UPDATE,
-      healthCheckConfig: config.healthCheckConfig,
+      healthCheckConfig: this.healthCheckToProto(config.healthCheckConfig),
       proxyHeaders: config.proxyHeaders,
       useLoadBalancer: config.useLoadBalancer,
       resourceConfig: {
@@ -432,6 +437,7 @@ export default class DeployMapper {
             port: config.metrics.port ?? null,
           }
         : null,
+      replicaCount: config.replicas,
     }
   }
 
@@ -466,7 +472,7 @@ export default class DeployMapper {
     list.forEach(it => {
       result.push({
         ...it,
-        environment: this.mapKeyValueToMap(it.environment as KeyValue[]),
+        environment: this.mapKeyValueToMap(it.environment),
         command: it.command?.map(cit => cit.key) ?? [],
         args: it.args?.map(ait => ait.key) ?? [],
       })
@@ -475,7 +481,7 @@ export default class DeployMapper {
     return result
   }
 
-  private mapKeyValueToMap(list: KeyValue[]): { [key: string]: string } {
+  private mapKeyValueToMap(list: UniqueKeyValue[]): { [key: string]: string } {
     if (!list) {
       return {}
     }
@@ -519,14 +525,44 @@ export default class DeployMapper {
     }
   }
 
-  private logDriverToProto(it: ContainerLogDriverType): DriverType {
+  private healthCheckProbeToProto(it: HealthCheckProbe | null): ProtoProbe | null {
+    if (!it) {
+      return null
+    }
+
+    if (it.type === 'exec') {
+      return {
+        type: probeTypeFromJSON(it.type.toUpperCase()),
+        port: 0,
+        path: '',
+        command: this.mapUniqueKeyToStringArray(it.command),
+      }
+    }
+
+    return {
+      type: probeTypeFromJSON(it.type.toUpperCase()),
+      path: it.path,
+      port: it.port,
+      command: [],
+    }
+  }
+
+  private healthCheckToProto(it: HealthCheck): ProtoHealthCheckConfig {
+    return {
+      livenessProbe: this.healthCheckProbeToProto(it.liveness),
+      readinessProbe: this.healthCheckProbeToProto(it.readiness),
+      startupProbe: this.healthCheckProbeToProto(it.startup),
+    }
+  }
+
+  private logDriverToProto(it: ContainerLogDriverType): ProtoDriverType {
     switch (it) {
       case undefined:
       case null:
       case 'none':
-        return DriverType.DRIVER_TYPE_NONE
+        return ProtoDriverType.DRIVER_TYPE_NONE
       case 'json-file':
-        return DriverType.JSON_FILE
+        return ProtoDriverType.JSON_FILE
       default:
         return driverTypeFromJSON(it.toUpperCase())
     }

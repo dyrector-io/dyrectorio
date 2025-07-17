@@ -303,6 +303,7 @@ model ContainerConfig {
   annotations        Json?
   labels             Json?
   metrics            Json?
+  replicas       Int?
 
   image        Image?
   instance     Instance?
