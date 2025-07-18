@@ -548,6 +548,10 @@ export default class DeployMapper {
   }
 
   private healthCheckToProto(it: HealthCheck): ProtoHealthCheckConfig {
+    if (!it) {
+      return null
+    }
+
     return {
       livenessProbe: this.healthCheckProbeToProto(it.liveness),
       readinessProbe: this.healthCheckProbeToProto(it.readiness),
