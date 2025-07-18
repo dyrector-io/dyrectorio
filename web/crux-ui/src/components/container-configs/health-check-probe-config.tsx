@@ -93,6 +93,7 @@ const HealthCheckProbeConfig = (props: HealthCheckProbeProps) => {
           <>
             <MultiInput
               id={`healthCheckConfig.${name}.port`}
+              name={`healthCheckConfig.${name}.port`}
               label={t('common.port')}
               containerClassName="w-40"
               labelClassName="my-auto mr-4 w-10 ml-1"
@@ -112,6 +113,7 @@ const HealthCheckProbeConfig = (props: HealthCheckProbeProps) => {
 
             <MultiInput
               id={`healthCheckConfig.${name}.path`}
+              name={`healthCheckConfig.${name}.path`}
               label={t(probe?.type === 'http' ? 'common.path' : 'crane.serviceName')}
               grow
               inline

@@ -18,7 +18,7 @@ import {
 } from 'e2e/utils/websocket-match'
 import { createImage, createProject, createVersion } from '../../utils/projects'
 import { waitSocketRef, wsPatchSent } from '../../utils/websocket'
-import { WS_TYPE_PATCH_CONFIG } from '@app/models'
+import { HealthCheckProbe, WS_TYPE_PATCH_CONFIG } from '@app/models'
 
 const setup = async (
   page: Page,
@@ -145,31 +145,58 @@ test.describe('Image kubernetes config from editor', () => {
 
     await page.locator('button:has-text("Health check config")').click()
 
-    const port = 12560
-    const liveness = 'test/liveness/'
-    const readiness = 'test/readiness/'
-    const startup = 'test/startup/'
+    const liveness: HealthCheckProbe = {
+      type: 'http',
+      path: 'test/liveness/',
+      port: 8080,
+    }
+    const readiness: HealthCheckProbe = {
+      type: 'grpc',
+      path: 'test/readiness/',
+      port: 5000,
+    }
+    const startup: HealthCheckProbe = {
+      type: 'exec',
+      command: [
+        { id: 'test-startup-command-first-id', key: 'test/startup/command/first' },
+        { id: 'test-startup-command-second-id', key: 'test/startup/command/second' },
+      ],
+    }
 
     const hcConf = page.locator('div:has(label:has-text("HEALTH CHECK CONFIG"))')
 
-    const wsSent = wsPatchSent(
-      ws,
-      wsRoute,
-      WS_TYPE_PATCH_CONFIG,
-      wsPatchMatchHealthCheck(port, liveness, readiness, startup),
-    )
-    await hcConf.locator('input[placeholder="Port"]').fill(port.toString())
-    await hcConf.getByLabel('Liveness probe').fill(liveness)
-    await hcConf.getByLabel('Readiness probe').fill(readiness)
-    await hcConf.getByLabel('Startup probe').fill(startup)
+    const wsSent = wsPatchSent(ws, wsRoute, WS_TYPE_PATCH_CONFIG, wsPatchMatchHealthCheck(liveness, readiness, startup))
+
+    await hcConf.locator('button:text("HTTP"):near(:text("Liveness probe"))').click()
+    await hcConf.locator('[name="healthCheckConfig.crane.livenessProbe.port"]').fill(liveness.port.toString())
+    await hcConf.locator('[name="healthCheckConfig.crane.livenessProbe.path"]').fill(liveness.path)
+
+    await hcConf.locator('button:text("gRPC"):near(:text("Readiness probe"))').click()
+    await hcConf.locator('[name="healthCheckConfig.crane.readinessProbe.port"]').fill(readiness.port.toString())
+    await hcConf.locator('[name="healthCheckConfig.crane.readinessProbe.path"]').fill(readiness.path)
+
+    await hcConf.locator('button:text("Exec"):below(:text("Startup probe"))').click()
+    await hcConf.locator('input[placeholder="Command"] >> visible=true').nth(0).fill(startup.command[0].key)
+    await hcConf.locator('input[placeholder="Command"] >> visible=true').nth(1).fill(startup.command[1].key)
+
     await wsSent
 
     await page.reload()
 
-    await expect(hcConf.locator('input[placeholder="Port"]')).toHaveValue(port.toString())
-    await expect(hcConf.getByLabel('Liveness probe')).toHaveValue(liveness)
-    await expect(hcConf.getByLabel('Readiness probe')).toHaveValue(readiness)
-    await expect(hcConf.getByLabel('Startup probe')).toHaveValue(startup)
+    await expect(hcConf.locator('[name="healthCheckConfig.crane.livenessProbe.port"]')).toHaveValue(
+      liveness.port.toString(),
+    )
+    await expect(hcConf.locator('[name="healthCheckConfig.crane.livenessProbe.path"]')).toHaveValue(liveness.path)
+    await expect(hcConf.locator('[name="healthCheckConfig.crane.readinessProbe.port"]')).toHaveValue(
+      readiness.port.toString(),
+    )
+    await expect(hcConf.locator('[name="healthCheckConfig.crane.readinessProbe.path"]')).toHaveValue(readiness.path)
+    await expect(hcConf.locator('input[placeholder="Command"] >> visible=true').nth(0)).toHaveValue(
+      startup.command[0].key,
+    )
+    await expect(hcConf.locator('input[placeholder="Command"] >> visible=true').nth(1)).toHaveValue(
+      startup.command[1].key,
+    )
   })
 
   test('Resource config should be saved', async ({ page }) => {

@@ -139,13 +139,13 @@ export type HealthCheckCommandProbe = {
   command: UniqueKey[]
 }
 
-export type NetworkHealthCheckProbe = {
+export type HealthCheckNetworkProbe = {
   type: 'http' | 'grpc'
   port: number
   path: string
 }
 
-export type HealthCheckProbe = NetworkHealthCheckProbe | HealthCheckCommandProbe
+export type HealthCheckProbe = HealthCheckNetworkProbe | HealthCheckCommandProbe
 
 export type ContainerConfigHealthCheck = {
   liveness?: HealthCheckProbe
