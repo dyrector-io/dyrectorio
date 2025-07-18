@@ -152,10 +152,23 @@ describe('DeployMapper', () => {
       },
     ],
     healthCheckConfig: {
-      livenessProbe: 'healthCheckConf',
-      port: 1,
-      readinessProbe: 'healthCheckConf',
-      startupProbe: 'healthCheckConf',
+      liveness: {
+        type: 'http',
+        port: 1,
+        path: 'concrete.healthCheckConf.liveness',
+      },
+      readiness: {
+        type: 'grpc',
+        port: 1,
+        path: 'concrete.healthCheckConf.readiness',
+      },
+      startup: {
+        type: 'exec',
+        command: [
+          { id: 'concrete.healthCheckConf.command.first.id', key: 'concrete.healthCheckConf.command.first.key' },
+          { id: 'concrete.healthCheckConf.command.second.id', key: 'concrete.healthCheckConf.command.second.key' },
+        ],
+      },
     },
     storageSet: true,
     storageId: 'storageId',
@@ -373,10 +386,23 @@ describe('DeployMapper', () => {
       },
     ],
     healthCheckConfig: {
-      livenessProbe: 'instance.healthCheckConf',
-      port: 1,
-      readinessProbe: 'instance.healthCheckConf',
-      startupProbe: 'instance.healthCheckConf',
+      liveness: {
+        type: 'http',
+        port: 1,
+        path: 'concrete.healthCheckConf.liveness',
+      },
+      readiness: {
+        type: 'grpc',
+        port: 1,
+        path: 'concrete.healthCheckConf.readiness',
+      },
+      startup: {
+        type: 'exec',
+        command: [
+          { id: 'concrete.healthCheckConf.command.first.id', key: 'concrete.healthCheckConf.command.first.key' },
+          { id: 'concrete.healthCheckConf.command.second.id', key: 'concrete.healthCheckConf.command.second.key' },
+        ],
+      },
     },
     storageSet: true,
     storageId: 'instance.storageId',
