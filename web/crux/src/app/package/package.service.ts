@@ -3,7 +3,6 @@ import { Identity } from '@ory/kratos-client'
 import { ContainerConfig, DeploymentStatusEnum } from '@prisma/client'
 import { containerNameOfImage } from 'src/domain/container'
 import { ImageWithConfig, copyDeployment } from 'src/domain/version-increase'
-import { CruxBadRequestException } from 'src/exception/crux-exception'
 import PrismaService from 'src/services/prisma.service'
 import ContainerMapper from '../container/container.mapper'
 import { DeploymentDto } from '../deploy/deploy.dto'
@@ -337,6 +336,7 @@ class PackageService {
       return versionsById.get(parentId) ?? null
     }
 
+    // find the latest version with deployments for the prefix
     sourceVersion = findSourceParent()
     while (sourceVersion && sourceVersion.deployments.length < 1) {
       sourceVersion = findSourceParent()
@@ -380,12 +380,18 @@ class PackageService {
                 config: true,
               },
             },
+            configBundles: {
+              select: {
+                configBundleId: true,
+              },
+            },
           },
         },
       },
     })
 
     if (source.deployments.length < 1) {
+      // no existing deployment
       return this.deployService.createDeployment(
         {
           nodeId: env.nodeId,
@@ -398,7 +404,7 @@ class PackageService {
     }
 
     // copy deployment from source
-
+    // find the most suitable deployment
     const sourceDeployment =
       source.deployments.find(it => it.status === 'successful') ??
       source.deployments.find(it => it.status === 'preparing') ??
@@ -455,6 +461,11 @@ class PackageService {
             : {
                 create: this.containerMapper.dbConfigToCreateConfigStatement(copiedDeployment.config),
               },
+          configBundles: {
+            createMany: {
+              data: sourceDeployment.configBundles.map(it => ({ configBundleId: it.configBundleId })),
+            },
+          },
           instances: undefined,
         },
         include: {
@@ -470,8 +481,6 @@ class PackageService {
       await Promise.all(
         instanceConfigs.map(async entry => {
           const [targetImageId, instanceConf] = entry
-
-          throw new CruxBadRequestException({ message: 'debug' })
 
           return await prisma.instance.create({
             data: {

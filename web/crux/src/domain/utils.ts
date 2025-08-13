@@ -92,7 +92,7 @@ export const toPrismaJson = <T>(val: T): T | JsonNull => {
 }
 
 export const toPrismaJsonArray = <T>(val: T): T | JsonNull => {
-  if (!Array.isArray(val) || val.length < 1) {
+  if (!Array.isArray(val)) {
     return Prisma.JsonNull
   }
 

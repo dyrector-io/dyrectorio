@@ -762,45 +762,6 @@ export default class DeployService {
           prefix: deployment.prefix,
         },
       })
-
-      if (finishedDeployment.deploymentConfig) {
-        // save the deployment config
-        await prisma.deployment.update({
-          where: {
-            id: finishedDeployment.id,
-          },
-          data: {
-            config: {
-              update: this.containerMapper.configDataToDbPatch(finishedDeployment.deploymentConfig),
-            },
-          },
-        })
-
-        await prisma.configBundleOnDeployments.deleteMany({
-          where: {
-            deploymentId: finishedDeployment.id,
-          },
-        })
-      }
-
-      // save the instance config
-      const configUpserts = Array.from(finishedDeployment.instanceConfigs).map(it => {
-        const [key, config] = it
-        const data = this.containerMapper.configDataToDbPatch(config)
-
-        return prisma.instance.update({
-          where: {
-            id: key,
-          },
-          data: {
-            config: {
-              update: data,
-            },
-          },
-        })
-      })
-
-      await Promise.all(configUpserts)
     })
   }
 
