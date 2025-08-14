@@ -302,7 +302,7 @@ export default class DeployService {
         previousDeployment?.instances
           ?.filter(it => {
             const secrets = it.config.secrets as UniqueSecretKeyValue[]
-            return !!it.config.secrets || secrets.length > 0
+            return Array.isArray(secrets) && secrets.length > 0
           })
           ?.map(it => [it.imageId, it.config.secrets as UniqueSecretKeyValue[]]) ?? [],
       )

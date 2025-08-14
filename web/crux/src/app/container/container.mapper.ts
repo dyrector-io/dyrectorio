@@ -277,8 +277,8 @@ export default class ContainerMapper {
       customHeaders: toPrismaJsonArray(config.customHeaders),
       extraLBAnnotations: toPrismaJsonArray(config.extraLBAnnotations),
       capabilities: toPrismaJsonArray(config.capabilities),
-      annotations: toPrismaJsonArray(config.annotations),
-      labels: toPrismaJsonArray(config.labels),
+      annotations: toPrismaJson(config.annotations),
+      labels: toPrismaJson(config.labels),
       metrics: toPrismaJson(config.metrics),
     }
   }
@@ -321,8 +321,8 @@ export default class ContainerMapper {
       customHeaders: 'customHeaders' in config ? toPrismaJsonArray(config.customHeaders) : undefined,
       extraLBAnnotations: 'extraLBAnnotations' in config ? toPrismaJsonArray(config.extraLBAnnotations) : undefined,
       capabilities: 'capabilities' in config ? toPrismaJsonArray(config.capabilities) : undefined,
-      annotations: 'annotations' in config ? toPrismaJsonArray(config.annotations) : undefined,
-      labels: 'labels' in config ? toPrismaJsonArray(config.labels) : undefined,
+      annotations: 'annotations' in config ? toPrismaJson(config.annotations) : undefined,
+      labels: 'labels' in config ? toPrismaJson(config.labels) : undefined,
       metrics: 'metrics' in config ? toPrismaJson(config.metrics) : undefined,
     }
   }

@@ -12,7 +12,7 @@ import {
 } from './container'
 import { rangesOverlap } from './container-conflict'
 
-const mergeNumber = (strong: number, weak: number): number => {
+export const mergeNumber = (strong: number, weak: number): number => {
   if (typeof strong === 'number') {
     return strong
   }
@@ -24,7 +24,7 @@ const mergeNumber = (strong: number, weak: number): number => {
   return null
 }
 
-const mergeBoolean = (strong: boolean, weak: boolean): boolean => {
+export const mergeBoolean = (strong: boolean, weak: boolean): boolean => {
   if (typeof strong === 'boolean') {
     return strong
   }
