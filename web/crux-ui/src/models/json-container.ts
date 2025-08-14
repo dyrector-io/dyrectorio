@@ -95,6 +95,7 @@ export type JsonContainerConfig = {
   annotations?: JsonMarker
   labels?: JsonMarker
   metrics?: Metrics
+  replicas?: number
 }
 
 export type ConcreteJsonContainerConfig = Omit<JsonContainerConfig, 'secrets'>
@@ -193,6 +194,7 @@ export const containerConfigToJsonConfig = (config: ContainerConfigData): JsonCo
         ingress: keyValueArrayToJson(config.labels.ingress),
       },
   metrics: config.metrics ?? null,
+  replicas: config.replicas ?? null,
   secrets: config.secrets ?? null,
 })
 
@@ -385,6 +387,7 @@ export const mergeJsonConfigToConcreteContainerConfig = (
     expose: json.expose ?? config.expose,
     healthCheckConfig: json.healthCheckConfig ?? config.healthCheckConfig,
     metrics: json.metrics ?? config.metrics,
+    replicas: json.replicas ?? config.replicas,
     name: json.name ?? config.name,
     networkMode: json.networkMode ?? config.networkMode,
     proxyHeaders: json.proxyHeaders ?? config.proxyHeaders,

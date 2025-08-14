@@ -232,6 +232,7 @@ export default class ContainerMapper {
       annotations: config.annotations ?? null,
       labels: config.labels ?? null,
       metrics: config.metrics ?? null,
+      replicas: toNullableNumber(config.replicas),
     } as any as ConfigData
   }
 
@@ -285,6 +286,7 @@ export default class ContainerMapper {
   }
 
   configDataToDbPatch(config: ContainerConfigData): ContainerConfigDbPatch {
+    console.log('replc', toNullableNumber(config.replicas))
     return {
       name: 'name' in config ? (config.name ?? null) : undefined,
       expose: 'expose' in config ? (config.expose ?? null) : undefined,

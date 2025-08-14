@@ -12,6 +12,7 @@ import {
   wsPatchMatchLBAnnotations,
   wsPatchMatchLoadBalancer,
   wsPatchMatchProxyHeader,
+  wsPatchMatchReplicas,
   wsPatchMatchResourceConfig,
   wsPatchMatchServiceAnnotations,
   wsPatchMatchServiceLabel,
@@ -342,5 +343,32 @@ test.describe('Image kubernetes config from JSON', () => {
     await expect(serviceDiv.locator('input[placeholder="Value"]').first()).toHaveValue(value)
     await expect(ingressDiv.locator('input[placeholder="Key"]').first()).toHaveValue(key)
     await expect(ingressDiv.locator('input[placeholder="Value"]').first()).toHaveValue(value)
+  })
+
+  test('Replicas should be saved', async ({ page }) => {
+    const { imageConfigId } = await setup(page, 'replicas-json', '1.0.0', NGINX_TEST_IMAGE_WITH_TAG)
+
+    const sock = waitSocketRef(page)
+    await page.goto(TEAM_ROUTES.containerConfig.details(imageConfigId))
+    await page.waitForSelector('h2:text-is("Image config")')
+    const ws = await sock
+    const wsRoute = TEAM_ROUTES.containerConfig.detailsSocket(imageConfigId)
+
+    const replicas = 3
+
+    const jsonEditorButton = await page.waitForSelector('button:has-text("JSON")')
+    await jsonEditorButton.click()
+
+    const jsonEditor = await page.locator('textarea')
+    const json = JSON.parse(await jsonEditor.inputValue())
+    json.replicas = replicas
+
+    const wsSent = wsPatchSent(ws, wsRoute, WS_TYPE_PATCH_CONFIG, wsPatchMatchReplicas(replicas))
+    await jsonEditor.fill(JSON.stringify(json))
+    await wsSent
+
+    await page.reload()
+
+    await expect(page.locator('input:right-of(label:has-text("REPLICAS"))')).toHaveValue(replicas.toString())
   })
 })

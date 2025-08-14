@@ -67,6 +67,8 @@ export const wsPatchMatchContainerName = (name: string) => (payload: any) => pay
 
 export const wsPatchMatchUser = (user: number) => (payload: any) => payload.config?.user === user
 
+export const wsPatchMatchReplicas = (replicas: number) => (payload: any) => payload.config?.replicas === replicas
+
 export const wsPatchMatchExpose = (expose: string) => (payload: any) => payload.config?.expose === expose
 
 export const wsPatchMatchTTY = (tty: boolean) => (payload: any) => payload.config?.tty === tty
