@@ -535,7 +535,7 @@ const collectConflicts = (
   }
 
   const checkStorageConflict = () => {
-    if (objectsConflict(one, other)) {
+    if (objectsConflict(one.storage, other.storage)) {
       conflicts.storage = appendConflict(conflicts.storage, one.id, other.id)
     }
   }

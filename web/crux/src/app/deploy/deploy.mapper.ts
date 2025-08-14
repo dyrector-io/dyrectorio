@@ -10,6 +10,7 @@ import {
   NetworkMode,
   RestartPolicy,
   Storage,
+  VersionTypeEnum,
 } from '@prisma/client'
 import {
   ConcreteContainerConfigData,
@@ -39,6 +40,8 @@ import {
   InstanceDeletedEvent,
   InstancesCreatedEvent,
 } from 'src/domain/domain-events'
+import { ImageDetails } from 'src/domain/image'
+import { DeployableDeployment } from 'src/domain/start-deployment'
 import { CruxInternalServerErrorException } from 'src/exception/crux-exception'
 import {
   InitContainer as AgentInitContainer,
@@ -213,13 +216,8 @@ export default class DeployMapper {
     }
   }
 
-  concreteConfigToDto(it: ContainerConfig): ConcreteContainerConfigDto {
-    const concreteConf = it as any as ConcreteContainerConfigData
-
-    return {
-      ...this.containerMapper.configDataToDto(it.id, it.type, it as any as ContainerConfigData),
-      secrets: concreteConf.secrets,
-    }
+  concreteConfigToDto(config: ContainerConfig): ConcreteContainerConfigDto {
+    return this.containerMapper.configDataToDto(config) as ConcreteContainerConfigDto
   }
 
   dbDeploymentToCreateDeploymentStatement(
@@ -235,6 +233,42 @@ export default class DeployMapper {
     delete result.configId
 
     return result
+  }
+
+  dbDeploymentToDeployableDeployment(deployment: DbDeployableDeployment): DeployableDeployment {
+    return {
+      ...deployment,
+      config: this.containerMapper.dbConfigToContainerConfigData(deployment.config),
+      configBundles: deployment.configBundles.map(bundleConnection => {
+        const bundleConfig: ContainerConfigData = this.containerMapper.dbConfigToContainerConfigData(
+          bundleConnection.configBundle.config,
+        )
+        return {
+          ...bundleConnection,
+          configBundle: {
+            config: {
+              ...bundleConfig,
+              id: bundleConnection.configBundle.config.id,
+            },
+          },
+        }
+      }),
+      instances: deployment.instances.map(instance => {
+        const imageConf: ContainerConfigData = this.containerMapper.dbConfigToContainerConfigData(instance.image.config)
+        const instanceConf: ConcreteContainerConfigData = this.containerMapper.dbConfigToContainerConfigData(
+          instance.config,
+        )
+        return {
+          id: instance.id,
+          config: instanceConf,
+          configId: instance.configId,
+          image: {
+            ...instance.image,
+            config: imageConf,
+          },
+        }
+      }),
+    }
   }
 
   concreteConfigDtoToConcreteContainerConfigData(
@@ -661,4 +695,24 @@ export default class DeployMapper {
 
     return networkModeFromJSON(it?.toUpperCase())
   }
+}
+
+type DbDeployableDeployment = Deployment & {
+  version: {
+    name: string
+    type: VersionTypeEnum
+  }
+  nodeId: string
+  config: ContainerConfig
+  configBundles: {
+    configBundle: {
+      config: ContainerConfig
+    }
+  }[]
+  instances: {
+    id: string
+    image: ImageDetails
+    configId: string
+    config: ContainerConfig
+  }[]
 }

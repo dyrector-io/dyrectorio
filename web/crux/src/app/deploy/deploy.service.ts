@@ -30,7 +30,7 @@ import {
 } from 'src/domain/start-deployment'
 import { applyStringTemplate, applyUniqueKeyValueTemplate } from 'src/domain/template'
 import { DeploymentTokenPayload, tokenSignOptionsFor } from 'src/domain/token'
-import { collectChildVersionIds, collectParentVersionIds, toPrismaJson } from 'src/domain/utils'
+import { collectChildVersionIds, collectParentVersionIds, toPrismaJsonArray } from 'src/domain/utils'
 import { copyDeployment } from 'src/domain/version-increase'
 import { CruxPreconditionFailedException } from 'src/exception/crux-exception'
 import { DeployWorkloadRequest } from 'src/grpc/protobuf/proto/agent'
@@ -302,7 +302,7 @@ export default class DeployService {
         previousDeployment?.instances
           ?.filter(it => {
             const secrets = it.config.secrets as UniqueSecretKeyValue[]
-            return !!it.config.secrets || secrets.length > 0
+            return Array.isArray(secrets) && secrets.length > 0
           })
           ?.map(it => [it.imageId, it.config.secrets as UniqueSecretKeyValue[]]) ?? [],
       )
@@ -456,7 +456,7 @@ export default class DeployService {
         }
       : null
 
-    const deployment = await this.prisma.deployment.findUniqueOrThrow({
+    const dbDeployment = await this.prisma.deployment.findUniqueOrThrow({
       where: {
         id: deploymentId,
       },
@@ -511,6 +511,8 @@ export default class DeployService {
       },
     })
 
+    const deployment = this.mapper.dbDeploymentToDeployableDeployment(dbDeployment)
+
     const agent = this.agentService.getById(deployment.nodeId)
     const publicKey = agent?.publicKey
 
@@ -543,7 +545,7 @@ export default class DeployService {
     // instanceId to instanceConfig
     const instanceConfigs: Map<string, ConcreteContainerConfigData> = new Map(
       deployment.instances.map(instance => {
-        const instanceConfig = instanceConfigOf(deployment, deploymentConfig, instance)
+        const instanceConfig = instanceConfigOf(deployment, instance)
 
         this.applyInstanceConfigTemplate(instanceConfig, templateParams)
 
@@ -582,8 +584,8 @@ export default class DeployService {
     const deploy = new Deployment({
       request: {
         id: deployment.id,
-        releaseNotes: deployment.version.changelog,
-        versionName: deployment.version.name,
+        releaseNotes: dbDeployment.version.changelog,
+        versionName: dbDeployment.version.name,
         prefix: deployment.prefix,
         secrets: sharedSecrets,
         requests: await Promise.all(
@@ -622,11 +624,11 @@ export default class DeployService {
       },
       instanceConfigs,
       notification: {
-        teamId: deployment.version.project.teamId,
-        actor: identity ?? deployment.token?.name ?? null,
-        projectName: deployment.version.project.name,
-        versionName: deployment.version.name,
-        nodeName: deployment.node.name,
+        teamId: dbDeployment.version.project.teamId,
+        actor: identity ?? dbDeployment.token?.name ?? null,
+        projectName: dbDeployment.version.project.name,
+        versionName: dbDeployment.version.name,
+        nodeName: dbDeployment.node.name,
       },
       deploymentConfig: !configIsEmpty(deploymentConfig) ? deploymentConfig : null,
       tries,
@@ -760,45 +762,6 @@ export default class DeployService {
           prefix: deployment.prefix,
         },
       })
-
-      if (finishedDeployment.deploymentConfig) {
-        // save the deployment config
-        await prisma.deployment.update({
-          where: {
-            id: finishedDeployment.id,
-          },
-          data: {
-            config: {
-              update: this.containerMapper.configDataToDbPatch(finishedDeployment.deploymentConfig),
-            },
-          },
-        })
-
-        await prisma.configBundleOnDeployments.deleteMany({
-          where: {
-            deploymentId: finishedDeployment.id,
-          },
-        })
-      }
-
-      // save the instance config
-      const configUpserts = Array.from(finishedDeployment.instanceConfigs).map(it => {
-        const [key, config] = it
-        const data = this.containerMapper.configDataToDbPatch(config)
-
-        return prisma.instance.update({
-          where: {
-            id: key,
-          },
-          data: {
-            config: {
-              update: data,
-            },
-          },
-        })
-      })
-
-      await Promise.all(configUpserts)
     })
   }
 
@@ -1076,7 +1039,7 @@ export default class DeployService {
               : {
                   create: {
                     ...this.containerMapper.dbConfigToCreateConfigStatement(it.config),
-                    secrets: differentNode ? null : toPrismaJson(it.config.secrets),
+                    secrets: differentNode ? null : toPrismaJsonArray(it.config.secrets),
                   },
                 },
           },

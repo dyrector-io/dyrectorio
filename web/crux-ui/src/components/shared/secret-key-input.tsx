@@ -168,13 +168,11 @@ const SecretKeyInput = (props: SecretKeyInputProps) => {
     )
   }
 
-  const hasValue = items && items.length > 0
-
   return (
     <div className={clsx(className, 'flex flex-col gap-4')}>
       {!label ? null : (
         <ConfigSectionLabel
-          disabled={disabled || !propsOnResetSection || !hasValue}
+          disabled={disabled || !propsOnResetSection}
           onResetSection={onResetSection}
           labelClassName={labelClassName}
         >

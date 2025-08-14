@@ -1,6 +1,5 @@
 import { forwardRef, Inject, Injectable } from '@nestjs/common'
 import { ConfigBundle, ContainerConfig } from '@prisma/client'
-import { ContainerConfigData } from 'src/domain/container'
 import ContainerMapper from '../container/container.mapper'
 import { ConfigBundleDetailsDto, ConfigBundleDto } from './config.bundle.dto'
 
@@ -23,11 +22,7 @@ export default class ConfigBundleMapper {
   detailsToDto(configBundle: ConfigBundleDetails): ConfigBundleDetailsDto {
     return {
       ...this.toDto(configBundle),
-      config: this.containerMapper.configDataToDto(
-        configBundle.configId,
-        'configBundle',
-        configBundle.config as any as ContainerConfigData,
-      ),
+      config: this.containerMapper.configDataToDto(configBundle.config),
     }
   }
 }

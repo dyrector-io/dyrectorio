@@ -91,6 +91,14 @@ export const toPrismaJson = <T>(val: T): T | JsonNull => {
   return val
 }
 
+export const toPrismaJsonArray = <T>(val: T): T | JsonNull => {
+  if (!Array.isArray(val)) {
+    return Prisma.JsonNull
+  }
+
+  return val
+}
+
 export const toNullableNumber = (val: number): number | null => {
   if (typeof val === 'number') {
     return val

@@ -153,7 +153,7 @@ export default class ImageService {
           const labels = labelLookup[it.registryId][labelKey]
           const envRules = parseDyrectorioEnvRules(labels)
 
-          const defaultEnvs = Object.entries(envRules)
+          let defaultEnvs = Object.entries(envRules)
             .filter(([, rule]) => (rule.required || !!rule.default) && !rule.secret)
             .map(([key, rule]) => ({
               id: uuid(),
@@ -161,7 +161,11 @@ export default class ImageService {
               value: rule.default ?? '',
             }))
 
-          const defaultSecrets = Object.entries(envRules)
+          if (defaultEnvs.length < 1) {
+            defaultEnvs = null
+          }
+
+          let defaultSecrets = Object.entries(envRules)
             .filter(([, rule]) => rule.secret)
             .map(
               ([key, rule]) =>
@@ -171,6 +175,10 @@ export default class ImageService {
                   required: rule.required,
                 }) as UniqueSecretKey,
             )
+
+          if (defaultSecrets.length < 1) {
+            defaultSecrets = null
+          }
 
           return prisma.image.update({
             where: {

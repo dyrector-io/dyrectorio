@@ -1,11 +1,18 @@
-import { ContainerConfig, DeploymentStatusEnum, VersionTypeEnum } from '@prisma/client'
-import { ConcreteContainerConfigData, ContainerConfigData, UniqueSecretKeyValue, nameOfInstance } from './container'
+import { Deployment, DeploymentStatusEnum, VersionTypeEnum } from '@prisma/client'
+import {
+  ConcreteContainerConfigData,
+  ContainerConfigData,
+  ContainerConfigDataWithId,
+  UniqueSecretKeyValue,
+  containerNameOfInstance,
+} from './container'
 import {
   mergeConfigsWithConcreteConfig,
   mergeDeploymentConfigWithImageConfig,
   mergeInstanceConfigWithDeploymentConfig,
 } from './container-merge'
 import { DeploymentWithConfig } from './deployment'
+import { ImageWithRegistry } from './image'
 
 export type InvalidSecrets = {
   configId: string
@@ -70,17 +77,33 @@ export const collectInvalidSecrets = (
   }
 }
 
-type DeployableDeployment = {
+export type DeployableConfigBundle = {
+  config: ContainerConfigDataWithId
+}
+
+export type DeployableImage = ImageWithRegistry & {
+  config: ContainerConfigData
+}
+
+export type DeployableInstance = {
+  id: string
+  image: DeployableImage
+  configId: string
+  config: ConcreteContainerConfigData
+}
+
+export type DeployableDeployment = Deployment & {
   version: {
+    name: string
     type: VersionTypeEnum
   }
+  nodeId: string
   status: DeploymentStatusEnum
-  config: ContainerConfig
+  config: ConcreteContainerConfigData
   configBundles: {
-    configBundle: {
-      config: ContainerConfig
-    }
+    configBundle: DeployableConfigBundle
   }[]
+  instances: DeployableInstance[]
 }
 export const deploymentConfigOf = (deployment: DeployableDeployment): ConcreteContainerConfigData => {
   if (
@@ -90,25 +113,16 @@ export const deploymentConfigOf = (deployment: DeployableDeployment): ConcreteCo
     // this is a redeployment of a successful or an obsolete deployment of an incremental version
     // we should not merge and use only the concrete configs
 
-    return deployment.config as any as ConcreteContainerConfigData
+    return deployment.config
   }
 
-  const configBundles = deployment.configBundles.map(it => it.configBundle.config as any as ContainerConfigData)
-  const deploymentConfig = deployment.config as any as ConcreteContainerConfigData
+  const configBundles = deployment.configBundles.map(it => it.configBundle.config)
+  const deploymentConfig = deployment.config
   return mergeConfigsWithConcreteConfig(configBundles, deploymentConfig)
-}
-
-type DeployableInstance = {
-  image: {
-    config: ContainerConfig
-    name: string
-  }
-  config: ContainerConfig
 }
 
 export const instanceConfigOf = (
   deployment: DeployableDeployment,
-  deploymentConfig: ConcreteContainerConfigData,
   instance: DeployableInstance,
 ): ConcreteContainerConfigData => {
   if (
@@ -119,20 +133,18 @@ export const instanceConfigOf = (
     // we should not merge and use only the concrete configs
     // TODO (@m8vago): we might not need to save the configs on success, but when incrementing
 
-    return instance.config as any as ConcreteContainerConfigData
+    return instance.config
   }
 
   // first we merge the deployment config with the image config to resolve secrets globally
-  const imageConfig = instance.image.config as any as ContainerConfigData
-  const mergedDeploymentConfig = mergeDeploymentConfigWithImageConfig(deploymentConfig, imageConfig)
+  const mergedDeploymentConfig = mergeDeploymentConfigWithImageConfig(deployment.config, instance.image.config)
 
   // then we merge and override the rest with the instance config
-  const instanceConfig = instance.config as any as ConcreteContainerConfigData
-  const result = mergeInstanceConfigWithDeploymentConfig(instanceConfig, mergedDeploymentConfig)
+  const result = mergeInstanceConfigWithDeploymentConfig(instance.config, mergedDeploymentConfig)
 
   // set defaults
   if (!result.name) {
-    result.name = nameOfInstance(instance)
+    result.name = containerNameOfInstance(instance)
   }
 
   return result

@@ -1,12 +1,13 @@
 import { Injectable } from '@nestjs/common'
 import { Identity } from '@ory/kratos-client'
-import { DeploymentStatusEnum } from '@prisma/client'
-import { VersionWithDeployments } from 'src/domain/version'
+import { ContainerConfig, DeploymentStatusEnum } from '@prisma/client'
+import { containerNameOfImage } from 'src/domain/container'
 import { ImageWithConfig, copyDeployment } from 'src/domain/version-increase'
 import PrismaService from 'src/services/prisma.service'
 import ContainerMapper from '../container/container.mapper'
 import { DeploymentDto } from '../deploy/deploy.dto'
 import DeployMapper from '../deploy/deploy.mapper'
+import DeployService from '../deploy/deploy.service'
 import TeamRepository from '../team/team.repository'
 import {
   CreatePackageDeploymentDto,
@@ -28,6 +29,7 @@ class PackageService {
     private readonly deployMapper: DeployMapper,
     private readonly containerMapper: ContainerMapper,
     private readonly teamRepository: TeamRepository,
+    private readonly deployService: DeployService,
     private readonly prisma: PrismaService,
   ) {}
 
@@ -268,14 +270,14 @@ class PackageService {
     req: CreatePackageDeploymentDto,
     identity: Identity,
   ): Promise<DeploymentDto> {
-    const target = await this.prisma.version.findUniqueOrThrow({
+    const targetVersion = await this.prisma.version.findUniqueOrThrow({
       where: {
         id: req.versionId,
       },
       include: {
         images: {
-          select: {
-            id: true,
+          include: {
+            config: true,
           },
         },
       },
@@ -303,6 +305,11 @@ class PackageService {
           select: {
             members: {
               include: {
+                parent: {
+                  select: {
+                    parentVersionId: true,
+                  },
+                },
                 deployments: {
                   where: {
                     nodeId: env.nodeId,
@@ -316,26 +323,30 @@ class PackageService {
       },
     })
 
-    const versions: VersionWithDeployments[] = packageChain.chain.members
+    const versions = packageChain.chain.members
+    const versionsById = new Map(versions.map(it => [it.id, it]))
 
-    const sourceIndex = versions.findIndex(it => it.id === req.versionId)
-    let source = versions[sourceIndex]
-
-    if (source.deployments.length < 1) {
-      // look for the nearest parent within deployments
-
-      for (let i = sourceIndex - 1; i > -1; i--) {
-        const current = versions[i]
-        if (current.deployments.length > 0) {
-          source = current
-          break
-        }
+    let sourceVersion = versionsById.get(req.versionId)
+    const findSourceParent = () => {
+      const parentId = sourceVersion.parent?.parentVersionId
+      if (!parentId) {
+        return null
       }
+
+      return versionsById.get(parentId) ?? null
     }
 
-    const sourceVersion = await this.prisma.version.findUniqueOrThrow({
+    // find the latest version with deployments for the prefix
+    sourceVersion = findSourceParent()
+    while (sourceVersion && sourceVersion.deployments.length < 1) {
+      sourceVersion = findSourceParent()
+    }
+
+    const sourceVersionId = sourceVersion?.id ?? targetVersion.id
+
+    const source = await this.prisma.version.findUniqueOrThrow({
       where: {
-        id: source.id,
+        id: sourceVersionId,
       },
       include: {
         images: {
@@ -369,171 +380,127 @@ class PackageService {
                 config: true,
               },
             },
+            configBundles: {
+              select: {
+                configBundleId: true,
+              },
+            },
           },
         },
       },
     })
 
-    if (sourceVersion.deployments.length < 1) {
-      // create a new empty deployment
-
-      const deploy = await this.prisma.$transaction(async prisma => {
-        const deployment = await prisma.deployment.create({
-          data: {
-            version: { connect: { id: target.id } },
-            node: { connect: { id: env.nodeId } },
-            config: { create: { type: 'deployment' } },
-            prefix: env.prefix,
-            status: DeploymentStatusEnum.preparing,
-            createdBy: identity.id,
-          },
-          include: {
-            node: true,
-            version: {
-              include: {
-                project: true,
-              },
-            },
-          },
-        })
-
-        await Promise.all(
-          sourceVersion.images.map(async image => {
-            await prisma.instance.create({
-              data: {
-                deployment: { connect: { id: deployment.id } },
-                image: { connect: { id: image.id } },
-                config: { create: { type: 'instance' } },
-              },
-            })
-          }),
-        )
-
-        return deployment
-      })
-
-      return this.deployMapper.toDto(deploy)
+    if (source.deployments.length < 1) {
+      // no existing deployment
+      return this.deployService.createDeployment(
+        {
+          nodeId: env.nodeId,
+          prefix: env.prefix,
+          protected: false,
+          versionId: targetVersion.id,
+        },
+        identity,
+      )
     }
 
-    // copy deployment from target
-
+    // copy deployment from source
+    // find the most suitable deployment
     const sourceDeployment =
-      sourceVersion.deployments.find(it => it.status === 'successful') ??
-      sourceVersion.deployments.find(it => it.status === 'preparing') ??
-      sourceVersion.deployments.find(it => it.status === 'failed') ??
-      sourceVersion.deployments.at(0)
+      source.deployments.find(it => it.status === 'successful') ??
+      source.deployments.find(it => it.status === 'preparing') ??
+      source.deployments.find(it => it.status === 'failed') ??
+      source.deployments.at(0)
 
     const copiedDeployment = copyDeployment(sourceDeployment)
-    const data = this.deployMapper.dbDeploymentToCreateDeploymentStatement(copiedDeployment)
+    const deploymentData = this.deployMapper.dbDeploymentToCreateDeploymentStatement(copiedDeployment)
 
-    const newDeployment = await this.prisma.deployment.create({
-      data: {
-        ...data,
-        createdBy: identity.id,
-        version: {
-          connect: {
-            id: target.id,
-          },
-        },
-        node: {
-          connect: {
-            id: copiedDeployment.nodeId,
-          },
-        },
-        config: !copiedDeployment.config
-          ? undefined
-          : {
-              create: this.containerMapper.dbConfigToCreateConfigStatement(copiedDeployment.config),
-            },
-        instances: undefined,
-      },
-      include: {
-        node: true,
-        version: {
-          include: {
-            project: true,
-          },
-        },
-      },
-    })
+    const findSourceImageFor = (image: ImageWithConfig): ImageWithConfig | null => {
+      const targetName = containerNameOfImage(image)
 
-    const originalImageIds = copiedDeployment.instances.map(it => it.originalImageId)
-    const originalImages = sourceVersion.images.filter(it => originalImageIds.includes(it.id))
-    const originalImagesById = new Map(originalImages.map(it => [it.id, it]))
-
-    const findCopiedInstance = (newImage: ImageWithConfig) => {
-      const matchingInstances = copiedDeployment.instances.filter(instance => {
-        const original = originalImagesById.get(instance.originalImageId)
-        if (!original) {
-          return false
-        }
-
-        return newImage.registryId === original.registryId && newImage.name === original.name
-      })
-
-      if (matchingInstances.length < 1) {
-        return null
-      }
-
-      if (matchingInstances.length === 1) {
-        return matchingInstances[0]
-      }
-
-      // multiple candidates
-
-      const matchingByContainerName = matchingInstances.find(instance => {
-        const original = originalImagesById.get(instance.originalImageId)
-
-        return original.config.name === newImage.config.name || instance.config?.name === newImage.config.name
-      })
-
-      if (!matchingByContainerName) {
-        // no distinct instance found
-        return null
-      }
-
-      return matchingByContainerName
+      return (
+        source.images.find(sourceImage => {
+          const sourceName = containerNameOfImage(sourceImage)
+          return sourceName === targetName
+        }) ?? null
+      )
     }
 
-    await Promise.all(
-      sourceVersion.images.map(async image => {
-        const instance = findCopiedInstance(image)
-        if (!instance) {
-          await this.prisma.instance.create({
+    const instanceConfigBySourceImageId = new Map(copiedDeployment.instances.map(it => [it.originalImageId, it.config]))
+
+    const instanceConfigs: [string, Omit<ContainerConfig, 'id'>][] = targetVersion.images.map(image => {
+      const sourceImage = findSourceImageFor(image)
+      if (!sourceImage) {
+        return [image.id, null]
+      }
+
+      const config = instanceConfigBySourceImageId.get(sourceImage.id)
+      if (!config) {
+        return [image.id, null]
+      }
+
+      return [image.id, config]
+    })
+
+    const newDeployment = await this.prisma.$transaction(async prisma => {
+      const deployment = await prisma.deployment.create({
+        data: {
+          ...deploymentData,
+          createdBy: identity.id,
+          version: {
+            connect: {
+              id: targetVersion.id,
+            },
+          },
+          node: {
+            connect: {
+              id: copiedDeployment.nodeId,
+            },
+          },
+          config: !copiedDeployment.config
+            ? undefined
+            : {
+                create: this.containerMapper.dbConfigToCreateConfigStatement(copiedDeployment.config),
+              },
+          configBundles: {
+            createMany: {
+              data: sourceDeployment.configBundles.map(it => ({ configBundleId: it.configBundleId })),
+            },
+          },
+          instances: undefined,
+        },
+        include: {
+          node: true,
+          version: {
+            include: {
+              project: true,
+            },
+          },
+        },
+      })
+
+      await Promise.all(
+        instanceConfigs.map(async entry => {
+          const [targetImageId, instanceConf] = entry
+
+          return await prisma.instance.create({
             data: {
-              deployment: { connect: { id: newDeployment.id } },
-              image: { connect: { id: image.id } },
-              config: { create: { type: 'instance' } },
+              deployment: { connect: { id: deployment.id } },
+              image: { connect: { id: targetImageId } },
+              config: {
+                create: !instanceConf
+                  ? { type: 'instance' }
+                  : {
+                      ...this.containerMapper.dbConfigToCreateConfigStatement(instanceConf),
+                      type: 'instance',
+                    },
+              },
             },
           })
-        }
+        }),
+      )
 
-        delete instance.originalImageId
-
-        await this.prisma.instance.create({
-          data: {
-            ...instance,
-            deployment: {
-              connect: {
-                id: newDeployment.id,
-              },
-            },
-            image: {
-              connect: {
-                id: image.id,
-              },
-            },
-            config: !instance.config
-              ? undefined
-              : {
-                  create: this.containerMapper.dbConfigToCreateConfigStatement({
-                    ...instance.config,
-                  }),
-                },
-          },
-        })
-      }),
-    )
+      return deployment
+    })
 
     return this.deployMapper.toDto(newDeployment)
   }
