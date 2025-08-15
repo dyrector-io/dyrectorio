@@ -31,8 +31,8 @@ func MapDeployImage(prefix string, req *agent.DeployWorkloadRequest, appConfig *
 		RequestID: req.Id,
 		InstanceConfig: v1.InstanceConfig{
 			UseSharedEnvs:     false,
-			Environment:       map[string]string{},
-			SharedEnvironment: map[string]string{},
+			Environment:       nil,
+			SharedEnvironment: nil,
 			ContainerPreName:  prefix,
 		},
 		ContainerConfig: mapContainerConfig(prefix, req),
