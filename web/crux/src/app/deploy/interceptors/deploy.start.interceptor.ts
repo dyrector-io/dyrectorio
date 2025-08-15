@@ -113,6 +113,7 @@ export default class DeployStartValidationInterceptor implements NestInterceptor
 
     const deploymentConfig = deploymentConfigOf(deployment)
     nullifyUndefinedProperties(deploymentConfig)
+    deployment.config = deploymentConfig
 
     const instances = deployment.instances.map(instance => {
       const conf = instanceConfigOf(deployment, instance)

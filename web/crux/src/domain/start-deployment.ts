@@ -106,16 +106,6 @@ export type DeployableDeployment = Deployment & {
   instances: DeployableInstance[]
 }
 export const deploymentConfigOf = (deployment: DeployableDeployment): ConcreteContainerConfigData => {
-  if (
-    deployment.version.type !== 'rolling' &&
-    (deployment.status === 'successful' || deployment.status === 'obsolete')
-  ) {
-    // this is a redeployment of a successful or an obsolete deployment of an incremental version
-    // we should not merge and use only the concrete configs
-
-    return deployment.config
-  }
-
   const configBundles = deployment.configBundles.map(it => it.configBundle.config)
   const deploymentConfig = deployment.config
   return mergeConfigsWithConcreteConfig(configBundles, deploymentConfig)
@@ -125,17 +115,6 @@ export const instanceConfigOf = (
   deployment: DeployableDeployment,
   instance: DeployableInstance,
 ): ConcreteContainerConfigData => {
-  if (
-    deployment.version.type !== 'rolling' &&
-    (deployment.status === 'successful' || deployment.status === 'obsolete')
-  ) {
-    // this is a redeployment of a successful or an obsolete deployment of an incremental version
-    // we should not merge and use only the concrete configs
-    // TODO (@m8vago): we might not need to save the configs on success, but when incrementing
-
-    return instance.config
-  }
-
   // first we merge the deployment config with the image config to resolve secrets globally
   const mergedDeploymentConfig = mergeDeploymentConfigWithImageConfig(deployment.config, instance.image.config)
 
