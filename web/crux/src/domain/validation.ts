@@ -18,8 +18,10 @@ import {
   ContainerNetworkMode,
   ContainerRestartPolicyType,
   ContainerVolumeType,
+  HealthCheckProbe,
   Metrics,
   PORT_MAX,
+  PORT_MIN,
   UniqueKeyValue,
 } from './container'
 import { EnvironmentRule } from './image'
@@ -60,10 +62,7 @@ export const uniqueKeysOnlySchema = yup
   .ensure()
   .test('keysAreUnique', 'Keys must be unique', arr => new Set(arr.map(it => it.key)).size === arr.length)
 
-const portNumberBaseRule = yup
-  .number()
-  .positive()
-  .lessThan(PORT_MAX + 1)
+const portNumberBaseRule = yup.number().min(PORT_MIN).max(PORT_MAX)
 const portNumberOptionalRule = portNumberBaseRule.nullable()
 const portNumberRule = portNumberBaseRule.required()
 
@@ -92,15 +91,15 @@ const configContainerRule = yup.object().shape({
   keepFiles: yup.boolean().default(false).required(),
 })
 
-const healthCheckProbeRule = yup.mixed().when('type', {
-  is: type => type === 'exec',
-  then: () =>
-    yup.object({
-      command: yup.array(yup.string().required()).required(),
+const healthCheckProbeRule = yup.object().when({
+  is: (healthCheck: HealthCheckProbe) => healthCheck?.type === 'exec',
+  then: schema =>
+    schema.shape({
+      command: uniqueKeysOnlySchema.required(),
     }),
-  otherwise: () =>
-    yup.object({
-      port: yup.number().required(),
+  otherwise: schema =>
+    schema.shape({
+      port: portNumberRule.default(80),
       path: yup.string().required(),
     }),
 })
@@ -494,7 +493,7 @@ const templateRegistrySchema = yup.object().shape({
           namespace: yup.string().required(),
         }),
     })
-    .when(['type'], {
+    .when('type', {
       is: type => type === 'google',
       then: () =>
         yup.object({

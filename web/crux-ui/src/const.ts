@@ -36,6 +36,8 @@ export const STORAGE_VIEW_MODE = 'view-mode'
 
 export const UID_MIN = -1
 export const UID_MAX = 2147483647
+export const PORT_MIN = 1
+export const PORT_MAX = 65535
 
 export const STORAGE_TEAM_SLUG = 'teamSlug'
 

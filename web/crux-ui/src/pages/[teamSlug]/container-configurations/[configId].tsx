@@ -1,6 +1,10 @@
 import CommonConfigSection from '@app/components/container-configs/common-config-section'
 import configToFilters from '@app/components/container-configs/config-to-filters'
-import ContainerConfigFilters from '@app/components/container-configs/container-config-filters'
+import ContainerConfigFilters, {
+  DEFAULT_FILTERS,
+  DOCKER_FILTERS,
+  K8S_FILTERS,
+} from '@app/components/container-configs/container-config-filters'
 import ContainerConfigJsonEditor from '@app/components/container-configs/container-config-json-editor'
 import CraneConfigSection from '@app/components/container-configs/crane-config-section'
 import DagentConfigSection from '@app/components/container-configs/dagent-config-section'
@@ -435,7 +439,13 @@ const ContainerConfigPage = (props: ContainerConfigPageProps) => {
 
         <DyoMessage className="text-xs mt-2 mb-4" message={t('templateTips')} messageType="info" />
 
-        {viewState === 'editor' && <ContainerConfigFilters onChange={setFilters} filters={filters} />}
+        {viewState === 'editor' && (
+          <ContainerConfigFilters
+            onChange={setFilters}
+            filters={filters}
+            filterSet={sectionType === 'base' ? DEFAULT_FILTERS : showDagentConfig ? DOCKER_FILTERS : K8S_FILTERS}
+          />
+        )}
       </DyoCard>
 
       {viewState === 'editor' && (

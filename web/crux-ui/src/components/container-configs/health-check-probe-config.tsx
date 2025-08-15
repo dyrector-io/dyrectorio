@@ -30,6 +30,7 @@ const HealthCheckProbeConfig = (props: HealthCheckProbeProps) => {
   const { className, disabled, name, label, probe, onChange, editorOptions, messages } = props
 
   const { t } = useTranslation('container')
+  
 
   const onTypeChange = (type: ContainerProbeType) => {
     if (type === 'none') {
@@ -48,7 +49,7 @@ const HealthCheckProbeConfig = (props: HealthCheckProbeProps) => {
     onChange({
       type,
       path: '',
-      port: 0,
+      port: 80,
     })
   }
 

@@ -13,6 +13,9 @@ import {
   ContainerRestartPolicyType,
   ContainerStorage,
   ExpectedContainerState,
+  HealthCheckCommandProbe,
+  HealthCheckNetworkProbe,
+  HealthCheckProbe,
   InitContainer,
   InitContainerVolumeLink,
   Metrics,
@@ -48,6 +51,19 @@ export type JsonMarker = {
   service: JsonKeyValue
   deployment: JsonKeyValue
   ingress: JsonKeyValue
+}
+
+export type JsonHealthCheckCommandProbe = {
+  type: 'exec'
+  command: string[]
+}
+
+export type JsonHealthCheckProbe = HealthCheckNetworkProbe | JsonHealthCheckCommandProbe
+
+export type JsonHealthCheck = {
+  liveness?: JsonHealthCheckProbe
+  readiness?: JsonHealthCheckProbe
+  startup?: JsonHealthCheckProbe
 }
 
 export type JsonInitContainerVolumeLink = Omit<InitContainerVolumeLink, 'id'>
@@ -90,7 +106,7 @@ export type JsonContainerConfig = {
   proxyHeaders?: boolean
   useLoadBalancer?: boolean
   extraLBAnnotations?: JsonKeyValue
-  healthCheckConfig?: ContainerConfigHealthCheck
+  healthCheckConfig?: JsonHealthCheck
   resourceConfig?: ResourceConfig
   annotations?: JsonMarker
   labels?: JsonMarker
@@ -104,6 +120,29 @@ const keyValueArrayToJson = (list: UniqueKeyValue[]): JsonKeyValue | null =>
   list?.reduce((prev, it) => ({ ...prev, [it.key]: it.value }), {}) ?? null
 
 const keyArrayToJson = (list: UniqueKey[]): string[] | null => list?.map(it => it.key) ?? null
+
+const healthCheckProbeToJson = (probe: HealthCheckProbe): JsonHealthCheckProbe => {
+  if (probe?.type !== 'exec') {
+    return probe ?? null
+  }
+
+  return {
+    type: 'exec',
+    command: keyArrayToJson(probe.command),
+  }
+}
+
+const healthCheckConfigToJson = (healthCheck: ContainerConfigHealthCheck): JsonHealthCheck => {
+  if (!healthCheck) {
+    return null
+  }
+
+  return {
+    liveness: healthCheckProbeToJson(healthCheck?.liveness),
+    readiness: healthCheckProbeToJson(healthCheck?.readiness),
+    startup: healthCheckProbeToJson(healthCheck?.startup),
+  }
+}
 
 const booleanToJson = (value: boolean): boolean | null => {
   if (typeof value !== 'boolean') {
@@ -177,7 +216,7 @@ export const containerConfigToJsonConfig = (config: ContainerConfigData): JsonCo
   proxyHeaders: booleanToJson(config.proxyHeaders),
   useLoadBalancer: booleanToJson(config.useLoadBalancer),
   extraLBAnnotations: keyValueArrayToJson(config.extraLBAnnotations),
-  healthCheckConfig: config.healthCheckConfig ?? null,
+  healthCheckConfig: healthCheckConfigToJson(config.healthCheckConfig),
   resourceConfig: config.resourceConfig ?? null,
   annotations: !config.annotations
     ? null
@@ -195,7 +234,6 @@ export const containerConfigToJsonConfig = (config: ContainerConfigData): JsonCo
       },
   metrics: config.metrics ?? null,
   replicas: config.replicas ?? null,
-  secrets: config.secrets ?? null,
 })
 
 export const concreteContainerConfigToJsonConfig = (config: ConcreteContainerConfig): ConcreteJsonContainerConfig => {
@@ -208,7 +246,7 @@ export const concreteContainerConfigToJsonConfig = (config: ConcreteContainerCon
 
 const mergeKeyValuesWithJson = (items: UniqueKeyValue[], json: JsonKeyValue): UniqueKeyValue[] => {
   if (!json) {
-    return items
+    return null
   }
 
   items = items ?? []
@@ -258,7 +296,7 @@ const mergeKeyValuesWithJson = (items: UniqueKeyValue[], json: JsonKeyValue): Un
 
 const mergeKeysWithJson = (items: UniqueKey[], json: string[]): UniqueKey[] => {
   if (!json) {
-    return items
+    return null
   }
 
   items = items ?? []
@@ -328,7 +366,7 @@ const mergeSecretsWithJson = (secrets: UniqueSecretKey[], json: JsonContainerCon
 
 const mergeInitContainersWithJson = (containers: InitContainer[], json: JsonInitContainer[]): InitContainer[] => {
   if (!json) {
-    return containers
+    return null
   }
 
   containers = containers ?? []
@@ -341,17 +379,18 @@ const mergeInitContainersWithJson = (containers: InitContainer[], json: JsonInit
 
       containers[contIndex] = {
         ...current,
-        args: mergeKeysWithJson(current.args, cont.args),
-        command: mergeKeysWithJson(current.command, cont.command),
-        environment: mergeKeyValuesWithJson(current.environment, cont.environment),
-        volumes: cont.volumes?.map(volume => {
-          const currentVol = current.volumes?.find(it => it.name === volume.name)
+        args: mergeKeysWithJson(current.args, cont.args) ?? [],
+        command: mergeKeysWithJson(current.command, cont.command) ?? [],
+        environment: mergeKeyValuesWithJson(current.environment, cont.environment) ?? [],
+        volumes:
+          cont.volumes?.map(volume => {
+            const currentVol = current.volumes?.find(it => it.name === volume.name)
 
-          return {
-            ...volume,
-            id: currentVol?.id ?? uuid(),
-          }
-        }),
+            return {
+              ...volume,
+              id: currentVol?.id ?? uuid(),
+            }
+          }) ?? [],
       }
     } else {
       containers.push({
@@ -374,6 +413,23 @@ const mergeInitContainersWithJson = (containers: InitContainer[], json: JsonInit
   return containers
 }
 
+const mergeHealthCheckProbeWithJson = (probe: HealthCheckProbe, json: JsonHealthCheckProbe): HealthCheckProbe => {
+  if (!json) {
+    return null
+  }
+
+  if (json.type !== 'exec') {
+    return json
+  }
+
+  const commandProbe = probe as HealthCheckCommandProbe
+
+  return {
+    type: 'exec',
+    command: mergeKeysWithJson(commandProbe?.command, json.command) ?? [],
+  }
+}
+
 export const mergeJsonConfigToConcreteContainerConfig = (
   config: ConcreteContainerConfig,
   json: ConcreteJsonContainerConfig,
@@ -385,7 +441,16 @@ export const mergeJsonConfigToConcreteContainerConfig = (
     deploymentStrategy: json.deploymentStrategy ?? config.deploymentStrategy,
     expectedState: json.expectedState ?? config.expectedState,
     expose: json.expose ?? config.expose,
-    healthCheckConfig: json.healthCheckConfig ?? config.healthCheckConfig,
+    healthCheckConfig: !json.healthCheckConfig
+      ? null
+      : {
+          liveness: mergeHealthCheckProbeWithJson(config.healthCheckConfig?.liveness, json.healthCheckConfig?.liveness),
+          readiness: mergeHealthCheckProbeWithJson(
+            config.healthCheckConfig?.readiness,
+            json.healthCheckConfig?.readiness,
+          ),
+          startup: mergeHealthCheckProbeWithJson(config.healthCheckConfig?.startup, json.healthCheckConfig?.startup),
+        },
     metrics: json.metrics ?? config.metrics,
     replicas: json.replicas ?? config.replicas,
     name: json.name ?? config.name,
@@ -410,7 +475,7 @@ export const mergeJsonConfigToConcreteContainerConfig = (
     logConfig: json.logConfig
       ? {
           driver: json.logConfig.driver ?? config.logConfig?.driver ?? null,
-          options: mergeKeyValuesWithJson(config.logConfig?.options, json.logConfig?.options),
+          options: mergeKeyValuesWithJson(config.logConfig?.options, json.logConfig?.options) ?? [],
         }
       : null,
     initContainers: mergeInitContainersWithJson(config.initContainers, json.initContainers),

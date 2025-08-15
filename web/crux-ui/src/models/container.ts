@@ -131,6 +131,9 @@ export type Log = {
   options: UniqueKeyValue[]
 }
 
+export const HEALTH_CHECK_TYPE_VALUES = ['http', 'grpc', 'exec'] as const
+export type HealthCheckType = (typeof HEALTH_CHECK_TYPE_VALUES)[number]
+
 export type HealthCheckCommandProbe = {
   type: 'exec'
   command: UniqueKey[]

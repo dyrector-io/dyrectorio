@@ -1,4 +1,4 @@
-import { UID_MAX, UID_MIN } from '@app/const'
+import { PORT_MAX, PORT_MIN, UID_MAX, UID_MIN } from '@app/const'
 import {
   CONTAINER_DEPLOYMENT_STRATEGY_VALUES,
   CONTAINER_EXPOSE_STRATEGY_VALUES,
@@ -15,6 +15,7 @@ import {
   ContainerPortRange,
   ContainerRestartPolicyType,
   EnvironmentRule,
+  HealthCheckProbe,
   Metrics,
   UniqueKeyValue,
   UniqueSecretKeyValue,
@@ -96,7 +97,7 @@ export const uniqueKeysOnlySchema = yup
     arr ? new Set(arr.map(it => it.key)).size === arr.length : true,
   )
 
-const portNumberBaseRule = yup.number().positive().lessThan(65536)
+const portNumberBaseRule = yup.number().min(PORT_MIN).max(PORT_MAX)
 const portNumberOptionalRule = portNumberBaseRule.nullable()
 const portNumberRule = portNumberBaseRule.nullable().required()
 
@@ -160,18 +161,22 @@ const configContainerRule = yup
   .label('container:common.configContainer')
 
 const healthCheckProbeRule = (probeName: string) =>
-  yup.mixed().when('type', {
-    is: type => type === 'exec',
-    then: () =>
-      yup.object({
-        command: yup.array(yup.string().required()).required().label('common:common.commands'),
-      }),
-    otherwise: () =>
-      yup.object({
-        port: yup.number().required().label('container:common.port'),
-        path: yup.string().required().label(probeName),
-      }),
-  })
+  yup
+    .object()
+    .when({
+      is: (healthCheck: HealthCheckProbe) => healthCheck?.type === 'exec',
+      then: schema =>
+        schema.shape({
+          command: uniqueKeysOnlySchema.required().label('container:common.commands'),
+        }),
+      otherwise: schema =>
+        schema.shape({
+          port: portNumberRule.default(80).label('container:common.port'),
+          path: yup.string().required().label(probeName),
+        }),
+    })
+    .label(probeName)
+
 const healthCheckConfigRule = yup
   .object()
   .shape({

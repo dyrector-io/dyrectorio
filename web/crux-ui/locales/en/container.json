@@ -168,7 +168,8 @@
     "noSensitive": "{{path}} must not contain sensitive keywords",
     "pathOverlapsSomePortranges": "{{path}} overlaps some port ranges",
     "missingExternalPort": "{{path}} is missing the external port definition",
-    "shouldStartWithSlash": "{{path}} should start with a slash"
+    "shouldStartWithSlash": "{{path}} should start with a slash",
+    "healthCheckProbePropertyRequired": "Health check {{probe}} {{property}}"
   },
 
   "errors": {
