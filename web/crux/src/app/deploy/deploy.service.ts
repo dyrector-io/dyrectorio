@@ -532,6 +532,7 @@ export default class DeployService {
 
     // deployment config
     const deploymentConfig = deploymentConfigOf(deployment)
+    deployment.config = deploymentConfig
 
     if (deploymentConfig.secrets) {
       const invalidDeploymentSecrets = collectInvalidSecrets(deployment.configId, deploymentConfig, publicKey)
