@@ -68,8 +68,8 @@ func testExpectedCommon(req *agent.DeployWorkloadRequest) *v1.DeployImageRequest
 		},
 		InstanceConfig: v1.InstanceConfig{
 			UseSharedEnvs:     false,
-			Environment:       map[string]string{},
-			SharedEnvironment: map[string]string{},
+			Environment:       nil,
+			SharedEnvironment: nil,
 			ContainerPreName:  "",
 		},
 		ContainerConfig: v1.ContainerConfig{
