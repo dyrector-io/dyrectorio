@@ -1,4 +1,5 @@
 import DyoChips, { chipsQALabelFromValue } from '@app/elements/dyo-chips'
+import DyoMessage from '@app/elements/dyo-message'
 import { CONTAINER_PROBE_TYPE_VALUES, ContainerProbeType, HealthCheckProbe } from '@app/models'
 import { toNumber } from '@app/utils'
 import clsx from 'clsx'
@@ -7,7 +8,6 @@ import MultiInput from '../editor/multi-input'
 import { MultiInputEditorOptions } from '../editor/use-multi-input-state'
 import KeyOnlyInput from '../shared/key-only-input'
 import ConfigSectionLabel from './config-section-label'
-import DyoMessage from '@app/elements/dyo-message'
 
 type HealthCheckProbeMessages = {
   port?: string
@@ -30,7 +30,6 @@ const HealthCheckProbeConfig = (props: HealthCheckProbeProps) => {
   const { className, disabled, name, label, probe, onChange, editorOptions, messages } = props
 
   const { t } = useTranslation('container')
-  
 
   const onTypeChange = (type: ContainerProbeType) => {
     if (type === 'none') {
