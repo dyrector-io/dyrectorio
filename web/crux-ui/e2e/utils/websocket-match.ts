@@ -1,4 +1,11 @@
-import { HealthCheckProbe, HealthCheckNetworkProbe, UniqueSecretKeyValue, HealthCheckCommandProbe } from '@app/models'
+import {
+  HealthCheckCommandProbe,
+  HealthCheckNetworkProbe,
+  HealthCheckProbe,
+  JsonHealthCheckCommandProbe,
+  JsonHealthCheckProbe,
+  UniqueSecretKeyValue,
+} from '@app/models'
 
 export const wsPatchMatchPorts = (internalPort: string, externalPort?: string) => (payload: any) => {
   const internal = Number.parseInt(internalPort, 10)
@@ -183,6 +190,53 @@ export const wsPatchMatchHealthCheck =
       healthCheckProbesAreEqual(liveness, hc.liveness) &&
       healthCheckProbesAreEqual(readiness, hc.readiness) &&
       healthCheckProbesAreEqual(startup, hc.startup)
+    )
+  }
+
+const jsonHealthCheckProbesAreEqual = (json: JsonHealthCheckProbe, config: HealthCheckProbe): boolean => {
+  if (json === null) {
+    return config === null
+  }
+
+  if (config === null || json.type !== config.type) {
+    return false
+  }
+
+  if (json.type === 'http' || json.type === 'grpc') {
+    config = config as HealthCheckNetworkProbe
+
+    return json.path === config.path && json.port === config.port
+  }
+
+  json = json as JsonHealthCheckCommandProbe
+  config = config as HealthCheckCommandProbe
+
+  const jsonCommands = json.command ?? []
+  const configCommands = config.command ?? []
+
+  if (jsonCommands.length !== configCommands.length) {
+    return false
+  }
+
+  return !jsonCommands.find((oneCmd, index) => {
+    const otherCmd = configCommands[index]
+
+    return oneCmd !== otherCmd.key
+  })
+}
+
+export const wsPatchMatchJsonHealthCheck =
+  (liveness: JsonHealthCheckProbe, readiness: JsonHealthCheckProbe, startup: JsonHealthCheckProbe) =>
+  (payload: any) => {
+    const hc = payload.config?.healthCheckConfig
+    if (!hc) {
+      return false
+    }
+
+    return (
+      jsonHealthCheckProbesAreEqual(liveness, hc.liveness) &&
+      jsonHealthCheckProbesAreEqual(readiness, hc.readiness) &&
+      jsonHealthCheckProbesAreEqual(startup, hc.startup)
     )
   }
 

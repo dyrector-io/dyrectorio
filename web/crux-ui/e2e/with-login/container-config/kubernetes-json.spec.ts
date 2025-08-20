@@ -1,4 +1,4 @@
-import { HealthCheckProbe, WS_TYPE_PATCH_CONFIG } from '@app/models'
+import { HealthCheckProbe, JsonHealthCheckCommandProbe, WS_TYPE_PATCH_CONFIG } from '@app/models'
 import { expect, Page } from '@playwright/test'
 import { NGINX_TEST_IMAGE_WITH_TAG, TEAM_ROUTES } from 'e2e/utils/common'
 import {
@@ -6,9 +6,9 @@ import {
   wsPatchMatchDeploymentAnnotations,
   wsPatchMatchDeploymentLabel,
   wsPatchMatchDeploymentStrategy,
-  wsPatchMatchHealthCheck,
   wsPatchMatchIngressAnnotations,
   wsPatchMatchIngressLabel,
+  wsPatchMatchJsonHealthCheck,
   wsPatchMatchLBAnnotations,
   wsPatchMatchLoadBalancer,
   wsPatchMatchProxyHeader,
@@ -174,12 +174,9 @@ test.describe('Image kubernetes config from JSON', () => {
       path: 'test/readiness/',
       port: 5000,
     }
-    const startup: HealthCheckProbe = {
+    const startup: JsonHealthCheckCommandProbe = {
       type: 'exec',
-      command: [
-        { id: 'test-startup-command-first-id', key: 'test/startup/command/first' },
-        { id: 'test-startup-command-second-id', key: 'test/startup/command/second' },
-      ],
+      command: ['test/startup/command/first', 'test/startup/command/second'],
     }
 
     const jsonEditorButton = await page.waitForSelector('button:has-text("JSON")')
@@ -189,7 +186,12 @@ test.describe('Image kubernetes config from JSON', () => {
     const json = JSON.parse(await jsonEditor.inputValue())
     json.healthCheckConfig = { liveness, readiness, startup }
 
-    const wsSent = wsPatchSent(ws, wsRoute, WS_TYPE_PATCH_CONFIG, wsPatchMatchHealthCheck(liveness, readiness, startup))
+    const wsSent = wsPatchSent(
+      ws,
+      wsRoute,
+      WS_TYPE_PATCH_CONFIG,
+      wsPatchMatchJsonHealthCheck(liveness, readiness, startup),
+    )
     await jsonEditor.fill(JSON.stringify(json))
     await wsSent
 
@@ -204,12 +206,8 @@ test.describe('Image kubernetes config from JSON', () => {
       readiness.port.toString(),
     )
     await expect(hcConf.locator('[name="healthCheckConfig.crane.readinessProbe.path"]')).toHaveValue(readiness.path)
-    await expect(hcConf.locator('input[placeholder="Command"] >> visible=true').nth(0)).toHaveValue(
-      startup.command[0].key,
-    )
-    await expect(hcConf.locator('input[placeholder="Command"] >> visible=true').nth(1)).toHaveValue(
-      startup.command[1].key,
-    )
+    await expect(hcConf.locator('input[placeholder="Command"] >> visible=true').nth(0)).toHaveValue(startup.command[0])
+    await expect(hcConf.locator('input[placeholder="Command"] >> visible=true').nth(1)).toHaveValue(startup.command[1])
   })
 
   test('Resource config should be saved', async ({ page }) => {
