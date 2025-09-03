@@ -45,18 +45,13 @@ metadata:
   labels:
     rbac.dyrector.io/crane: "restricted-api-access"
 rules:
--
-  apiGroups:
-  - apps
-  - ""
-  - "monitoring.coreos.com"
+- apiGroups: [""]
   resources:
   - deployments
   - services
   - pods
   - ingress
   - secrets
-  - servicemonitors
   - configmaps
   - events
   - namespaces
@@ -69,6 +64,43 @@ rules:
   - patch
   - update
   - watch
+- apiGroups: ["networking.k8s.io"]
+  resources:
+    - ingresses
+  verbs:
+    - create
+    - delete
+    - deletecollection
+    - get
+    - list
+    - patch
+    - update
+    - watch
+- apiGroups: ["apps"]
+  resources:
+    - deployments
+    - replicasets
+  verbs:
+    - create
+    - delete
+    - deletecollection
+    - get
+    - list
+    - patch
+    - update
+    - watch
+- apiGroups: ["monitoring.coreos.com"]
+  resources:
+    - servicemonitors
+  verbs:
+    - create
+    - delete
+    - deletecollection
+    - get
+    - list
+    - patch
+    - update
+    - watch
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
