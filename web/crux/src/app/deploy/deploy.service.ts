@@ -985,6 +985,11 @@ export default class DeployService {
       },
       include: {
         config: true,
+        configBundles: {
+          select: {
+            configBundleId: true,
+          },
+        },
         instances: {
           include: {
             config: true,
@@ -1003,6 +1008,11 @@ export default class DeployService {
         createdBy: identity.id,
         version: { connect: { id: copiedDeployment.versionId } },
         node: { connect: { id: request.nodeId } },
+        configBundles: {
+          createMany: {
+            data: oldDeployment.configBundles.map(it => ({ configBundleId: it.configBundleId })),
+          },
+        },
         config: !copiedDeployment.config
           ? undefined
           : {
