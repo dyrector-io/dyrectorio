@@ -412,7 +412,7 @@ class PackageService {
       source.deployments.at(0)
 
     const copiedDeployment = copyDeployment(sourceDeployment)
-    const deploymentData = this.deployMapper.dbDeploymentToCreateDeploymentStatement(copiedDeployment)
+    const deploymentData = this.deployMapper.copiedDeploymentToCreateDeploymentStatement(copiedDeployment)
 
     const findSourceImageFor = (image: ImageWithConfig): ImageWithConfig | null => {
       const targetName = containerNameOfImage(image)
@@ -463,7 +463,7 @@ class PackageService {
               },
           configBundles: {
             createMany: {
-              data: sourceDeployment.configBundles.map(it => ({ configBundleId: it.configBundleId })),
+              data: copiedDeployment.configBundles,
             },
           },
           instances: undefined,

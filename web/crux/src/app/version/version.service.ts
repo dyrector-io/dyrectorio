@@ -479,6 +479,7 @@ export default class VersionService {
           },
           include: {
             config: true,
+            configBundles: true,
             instances: {
               include: {
                 config: true,
@@ -568,7 +569,7 @@ export default class VersionService {
       const imageIdMap = new Map(imageIdEntries)
       await Promise.all(
         increased.deployments.map(async deployment => {
-          const data = this.deployMapper.dbDeploymentToCreateDeploymentStatement(deployment)
+          const data = this.deployMapper.copiedDeploymentToCreateDeploymentStatement(deployment)
 
           const newDeployment = await prisma.deployment.create({
             data: {
@@ -588,6 +589,11 @@ export default class VersionService {
               config: {
                 create: {
                   type: 'deployment',
+                },
+              },
+              configBundles: {
+                createMany: {
+                  data: deployment.configBundles,
                 },
               },
             },

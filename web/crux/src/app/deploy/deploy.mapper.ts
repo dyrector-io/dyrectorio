@@ -42,6 +42,7 @@ import {
 } from 'src/domain/domain-events'
 import { ImageDetails } from 'src/domain/image'
 import { DeployableDeployment } from 'src/domain/start-deployment'
+import { CopiedDeployment } from 'src/domain/version-increase'
 import { CruxInternalServerErrorException } from 'src/exception/crux-exception'
 import {
   InitContainer as AgentInitContainer,
@@ -218,6 +219,18 @@ export default class DeployMapper {
 
   concreteConfigToDto(config: ContainerConfig): ConcreteContainerConfigDto {
     return this.containerMapper.configDataToDto(config) as ConcreteContainerConfigDto
+  }
+
+  copiedDeploymentToCreateDeploymentStatement(
+    deployment: CopiedDeployment,
+  ): Omit<Deployment, 'id' | 'nodeId' | 'versionId' | 'configId'> {
+    const result = {
+      ...deployment,
+    }
+
+    delete result.nodeId
+
+    return result
   }
 
   dbDeploymentToCreateDeploymentStatement(

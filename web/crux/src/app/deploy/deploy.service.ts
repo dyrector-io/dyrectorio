@@ -1006,11 +1006,11 @@ export default class DeployService {
         note: request.note,
         status: DeploymentStatusEnum.preparing,
         createdBy: identity.id,
-        version: { connect: { id: copiedDeployment.versionId } },
+        version: { connect: { id: oldDeployment.versionId } },
         node: { connect: { id: request.nodeId } },
         configBundles: {
           createMany: {
-            data: oldDeployment.configBundles.map(it => ({ configBundleId: it.configBundleId })),
+            data: copiedDeployment.configBundles.map(it => ({ configBundleId: it.configBundleId })),
           },
         },
         config: !copiedDeployment.config

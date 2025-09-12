@@ -355,7 +355,7 @@ export default class ContainerMapper {
         return {
           id: image.id,
           name: image.name,
-          mutable: deploymentIsMutable(deployment.status, deployment.version.type),
+          mutable: deploymentIsMutable(deployment.status),
         }
       }
       case 'deployment': {
@@ -364,7 +364,7 @@ export default class ContainerMapper {
         return {
           id: deployment.id,
           name: deployment.prefix,
-          mutable: deploymentIsMutable(deployment.status, deployment.version.type),
+          mutable: deploymentIsMutable(deployment.status),
         }
       }
       case 'configBundle': {

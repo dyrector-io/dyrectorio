@@ -29,7 +29,7 @@ test.describe('Versioned Project incremental version', () => {
     await expect(await page.locator('input[id="common.name"]')).toBeEditable()
   })
 
-  test('successful deployment should be immutable', async ({ page }, testInfo) => {
+  test('successful deployment should be mutable', async ({ page }, testInfo) => {
     const projectId = await createProject(page, 'versioned-mutability-2', 'versioned')
     const versionId = await createVersion(page, projectId, '0.1.0', 'Incremental')
     await createImage(page, projectId, versionId, image)
@@ -46,7 +46,7 @@ test.describe('Versioned Project incremental version', () => {
     await page.goto(TEAM_ROUTES.deployment.details(deploymentId))
     await page.waitForSelector('h2:text-is("Deployments")')
 
-    await expect(await page.locator('button:has-text("Edit")')).toHaveCount(0)
+    await expect(await page.locator('button:has-text("Edit")')).toHaveCount(1)
 
     const configButton = await page
       .locator(`[src="/concrete_container_config.svg"]:right-of(:has-text("${image}"))`)
@@ -55,10 +55,10 @@ test.describe('Versioned Project incremental version', () => {
 
     await page.locator('button:has-text("Name")').click()
     await page.waitForSelector('input[id="common.name"]')
-    await expect(await page.locator('input[id="common.name"]')).toBeDisabled()
+    await expect(await page.locator('input[id="common.name"]')).toBeEditable()
   })
 
-  test('obsolete deployment should be immutable', async ({ page }, testInfo) => {
+  test('obsolete deployment should be mutable', async ({ page }, testInfo) => {
     const projectId = await createProject(page, 'version-mutability-3', 'versioned')
     const versionId = await createVersion(page, projectId, '0.1.0', 'Incremental')
     await createImage(page, projectId, versionId, image)

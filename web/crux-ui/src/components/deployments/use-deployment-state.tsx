@@ -87,8 +87,8 @@ const useDeploymentState = (options: DeploymentStateOptions): [DeploymentState, 
   const [confirmationModal, confirm] = useConfirmation()
   const [deployInstances, setDeployInstances] = useState<string[]>(deployment.instances?.map(it => it.id) ?? [])
 
-  const mutable = deploymentIsMutable(deployment.status, version.type)
-  const deployable = deploymentIsDeployable(deployment.status, version.type)
+  const mutable = deploymentIsMutable(deployment.status)
+  const deployable = deploymentIsDeployable(deployment.status)
   const deletable = deploymentIsDeletable(deployment.status)
   const copiable = deploymentIsCopiable(deployment.status)
   const showDeploymentLog = deploymentLogVisible(deployment.status)

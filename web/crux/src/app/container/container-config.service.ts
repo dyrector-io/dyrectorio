@@ -376,9 +376,9 @@ export default class ContainerConfigService {
       case 'image':
         return versionIsMutable(config.image.version)
       case 'deployment':
-        return deploymentIsMutable(config.deployment.status, config.deployment.version.type)
+        return deploymentIsMutable(config.deployment.status)
       case 'instance':
-        return deploymentIsMutable(config.instance.deployment.status, config.instance.deployment.version.type)
+        return deploymentIsMutable(config.instance.deployment.status)
       case 'configBundle':
         return true
       default:

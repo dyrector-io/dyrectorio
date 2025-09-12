@@ -8,8 +8,13 @@ type InstanceWithConfig = Instance & {
   config: ContainerConfig | null
 }
 
+type DeploymentOnConfigBundle = {
+  configBundleId: string
+}
+
 type DeploymentWithInstances = Deployment & {
   config: ContainerConfig | null
+  configBundles: DeploymentOnConfigBundle[]
   instances: InstanceWithConfig[]
 }
 
@@ -28,14 +33,15 @@ type CopiedInstanceWithConfig = Omit<Instance, 'id' | 'configId' | 'deploymentId
   config: Omit<ContainerConfig, 'id'>
 }
 
-type CopiedDeploymentWithInstances = Deployment & {
+export type CopiedDeployment = Omit<Deployment, 'id' | 'configId' | 'versionId'> & {
   config: Omit<ContainerConfig, 'id'>
+  configBundles: DeploymentOnConfigBundle[]
   instances: CopiedInstanceWithConfig[]
 }
 
 export type IncreasedVersion = Omit<Version, 'id' | 'createdAt' | 'createdBy' | 'projectId' | 'chainId'> & {
   images: CopiedImageWithConfig[]
-  deployments: CopiedDeploymentWithInstances[]
+  deployments: CopiedDeployment[]
 }
 
 const copyConfig = (config: ContainerConfig | null): Omit<ContainerConfig, 'id'> | null => {
@@ -61,14 +67,24 @@ const copyInstance = (instance: InstanceWithConfig): CopiedInstanceWithConfig =>
   return newInstance
 }
 
-export const copyDeployment = (deployment: DeploymentWithInstances): CopiedDeploymentWithInstances => {
-  const newDeployment: CopiedDeploymentWithInstances = {
-    ...deployment,
+const copyConfigBundleRelation = (bundle: DeploymentOnConfigBundle): DeploymentOnConfigBundle => ({
+  configBundleId: bundle.configBundleId,
+})
+
+export const copyDeployment = (deployment: DeploymentWithInstances): CopiedDeployment => {
+  const newDeployment: CopiedDeployment = {
+    prefix: deployment.prefix,
+    nodeId: deployment.nodeId,
+    note: deployment.note,
+    protected: deployment.protected,
+    configBundles: deployment.configBundles.map(it => copyConfigBundleRelation(it)),
     // default status for deployments is preparing
     status: DeploymentStatusEnum.preparing,
     config: copyConfig(deployment.config),
     tries: 0,
     instances: [],
+    deployedAt: undefined,
+    deployedBy: undefined,
     createdAt: undefined,
     createdBy: undefined,
     updatedAt: undefined,

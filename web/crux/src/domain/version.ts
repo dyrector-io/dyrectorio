@@ -38,7 +38,7 @@ export type VersionDeletabilityCheckDao = VersionMutabilityCheckDao & {
 }
 
 export const versionHasImmutableDeployments = (version: VersionMutabilityCheckDao): boolean =>
-  version.deployments.filter(it => !deploymentIsMutable(it.status, version.type)).length > 0
+  version.deployments.filter(it => !deploymentIsMutable(it.status)).length > 0
 
 // - 'rolling' versions are not increasable
 // - an 'incremental' version is increasable, when it does not have any child yet

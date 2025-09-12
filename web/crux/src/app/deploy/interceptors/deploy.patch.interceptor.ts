@@ -24,7 +24,7 @@ export default class DeployPatchValidationInterceptor implements NestInterceptor
       },
     })
 
-    if (!deploymentIsMutable(deployment.status, deployment.version.type)) {
+    if (!deploymentIsMutable(deployment.status)) {
       throw new CruxPreconditionFailedException({
         message: 'Invalid deployment status.',
         property: 'status',

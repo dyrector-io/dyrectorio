@@ -1,11 +1,10 @@
 import { CallHandler, ExecutionContext, Injectable, NestInterceptor } from '@nestjs/common'
 import { Observable } from 'rxjs'
 import AgentService from 'src/app/agent/agent.service'
-import ContainerMapper from 'src/app/container/container.mapper'
 import { ImageValidation } from 'src/app/image/image.dto'
 import { ContainerConfigDataWithId } from 'src/domain/container'
 import { getConflictsForConcreteConfig } from 'src/domain/container-conflict'
-import { checkDeploymentDeployability } from 'src/domain/deployment'
+import { deploymentIsDeployable } from 'src/domain/deployment'
 import { deploymentConfigOf, instanceConfigOf, missingSecretsOf } from 'src/domain/start-deployment'
 import { createInstancesSchema, nullifyUndefinedProperties, yupValidate } from 'src/domain/validation'
 import { CruxPreconditionFailedException } from 'src/exception/crux-exception'
@@ -18,7 +17,6 @@ export default class DeployStartValidationInterceptor implements NestInterceptor
   constructor(
     private prisma: PrismaService,
     private agentService: AgentService,
-    private containerMapper: ContainerMapper,
     private deployMapper: DeployMapper,
   ) {}
 
@@ -68,7 +66,7 @@ export default class DeployStartValidationInterceptor implements NestInterceptor
     const deployment = this.deployMapper.dbDeploymentToDeployableDeployment(dbDeployment)
 
     // deployment
-    if (!checkDeploymentDeployability(deployment.status, deployment.version.type)) {
+    if (!deploymentIsDeployable(deployment.status)) {
       throw new CruxPreconditionFailedException({
         message: 'Invalid deployment status.',
         property: 'status',

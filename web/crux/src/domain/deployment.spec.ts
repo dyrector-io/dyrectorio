@@ -1,24 +1,17 @@
-import { DeploymentStatusEnum, VersionTypeEnum } from '@prisma/client'
+import { DeploymentStatusEnum } from '@prisma/client'
 import { ContainerState, DeploymentStatus as ProtoDeploymentStatus } from 'src/grpc/protobuf/proto/common'
 import {
   checkDeploymentCopiability,
-  checkDeploymentDeployability,
   containerNameFromImageName,
   containerStateToDto,
   deploymentIsDeletable,
+  deploymentIsDeployable,
   deploymentIsMutable,
   deploymentStatusToDb,
 } from './deployment'
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-const DEPLOYMENT_STATUSES = Object.entries(DeploymentStatusEnum).map(([key, value]) => value)
-
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-const VERSION_TYPES = Object.entries(VersionTypeEnum).map(([key, value]) => value)
-
-const DEPLOYMENT_STATUSES_VERSION_TYPES = DEPLOYMENT_STATUSES.flatMap(status =>
-  VERSION_TYPES.map(type => [status, type]),
-)
+const DEPLOYMENT_STATUSES = Object.entries(DeploymentStatusEnum).map(([_, value]) => value)
 
 describe('DomainDeployment', () => {
   it('test deploymentStatusToDb', () => {
@@ -55,7 +48,7 @@ describe('DomainDeployment', () => {
   })
 
   describe('checkDeploymentCopiability', () => {
-    it.each(DEPLOYMENT_STATUSES_VERSION_TYPES)(
+    it.each(DEPLOYMENT_STATUSES)(
       'should be true when status is not inProgress or preparing and the version is not rolling (%p and %p)',
       (status: DeploymentStatusEnum) => {
         expect(checkDeploymentCopiability(status)).toEqual(status !== 'inProgress')
@@ -68,23 +61,24 @@ describe('DomainDeployment', () => {
   })
 
   describe('checkDeploymentMutability', () => {
-    it.each(DEPLOYMENT_STATUSES_VERSION_TYPES)(
-      'should return true if status is deploying or if the status is successful or failed and the version is rolling (%p and %p)',
-      (status: DeploymentStatusEnum, type: VersionTypeEnum) => {
-        expect(deploymentIsMutable(status, type)).toEqual(
-          status === 'preparing' || status === 'failed' || (status === 'successful' && type === 'rolling'),
+    it.each(DEPLOYMENT_STATUSES)(
+      'should return true if status is preparing, successful or failed (%p)',
+      (status: DeploymentStatusEnum) => {
+        expect(deploymentIsMutable(status)).toEqual(
+          status === 'preparing' || status === 'failed' || status === 'successful',
         )
       },
     )
 
-    it.each(DEPLOYMENT_STATUSES_VERSION_TYPES)(
-      'should return true if status is preparing, is obsolete or is successful or failed and the type is rolling (%p and %p)',
-      (status: DeploymentStatusEnum, type: VersionTypeEnum) => {
-        expect(checkDeploymentDeployability(status, type)).toEqual(
+    it.each(DEPLOYMENT_STATUSES)(
+      'should return true if status is preparing, obsolete, successful or failed (%p)',
+      (status: DeploymentStatusEnum) => {
+        expect(deploymentIsDeployable(status)).toEqual(
           status === 'preparing' ||
             status === 'obsolete' ||
+            status === 'downgraded' ||
             status === 'failed' ||
-            (status === 'successful' && type === 'rolling'),
+            status === 'successful',
         )
       },
     )

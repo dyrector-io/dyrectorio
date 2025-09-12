@@ -228,7 +228,7 @@ const VersionDeploymentsSection = (props: VersionDeploymentsSectionProps) => {
                     >
                       <DyoIcon src="/eye.svg" alt={t('common:view')} size="md" />
                     </DyoLink>
-                    {deploymentIsDeployable(it.status, version.type) && (
+                    {deploymentIsDeployable(it.status) && (
                       <div
                         className={clsx(
                           'mr-2 inline-block',

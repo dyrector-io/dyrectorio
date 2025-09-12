@@ -145,30 +145,18 @@ export const checkPrefixAvailability = (
 
 export const deploymentIsDeletable = (status: DeploymentStatusEnum): boolean => status !== 'inProgress'
 
-export const deploymentIsMutable = (status: DeploymentStatusEnum, type: VersionTypeEnum): boolean => {
+export const deploymentIsMutable = (status: DeploymentStatusEnum): boolean => {
   switch (status) {
     case 'preparing':
     case 'failed':
-      return true
     case 'successful':
-      return type === 'rolling'
+      return true
     default:
       return false
   }
 }
 
-export const checkDeploymentDeployability = (status: DeploymentStatusEnum, type: VersionTypeEnum): boolean => {
-  switch (status) {
-    case 'preparing':
-    case 'failed':
-    case 'obsolete':
-      return true
-    case 'successful':
-      return type === 'rolling'
-    default:
-      return false
-  }
-}
+export const deploymentIsDeployable = (status: DeploymentStatusEnum): boolean => status !== 'inProgress'
 
 export type DeploymentNotification = {
   teamId: string

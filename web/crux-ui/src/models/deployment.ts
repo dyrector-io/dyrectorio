@@ -6,7 +6,7 @@ import { ImageDeletedMessage, VersionImage } from './image'
 import { Instance } from './instance'
 import { DyoNode } from './node'
 import { BasicProject, ProjectDetails } from './project'
-import { BasicVersion, VersionDetails, VersionType } from './version'
+import { BasicVersion, VersionDetails } from './version'
 
 export type EnvironmentToConfigBundleNameMap = Record<string, string>
 
@@ -187,26 +187,24 @@ export type DeploymentEventMessage = DeploymentEvent
 
 export const WS_TYPE_DEPLOYMENT_FINISHED = 'deployment-finished'
 
-export const deploymentIsMutable = (status: DeploymentStatus, type: VersionType): boolean => {
+export const deploymentIsMutable = (status: DeploymentStatus): boolean => {
   switch (status) {
     case 'preparing':
     case 'failed':
-      return true
     case 'successful':
-      return type === 'rolling'
+      return true
     default:
       return false
   }
 }
 
-export const deploymentIsDeployable = (status: DeploymentStatus, type: VersionType): boolean => {
+export const deploymentIsDeployable = (status: DeploymentStatus): boolean => {
   switch (status) {
     case 'preparing':
     case 'failed':
     case 'obsolete':
-      return true
     case 'successful':
-      return type === 'rolling'
+      return true
     default:
       return false
   }
