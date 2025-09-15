@@ -84,7 +84,7 @@ func (cm *configmap) deployConfigMapRuntime(runtimeType v1.RuntimeConfigType, na
 	return nil
 }
 
-func (cm *configmap) deployIngressProxyHeaders(namespace string, containerName string, headers ...string) error {
+func (cm *configmap) deployIngressProxyHeaders(namespace, containerName string, headers ...string) error {
 	client, err := getConfigMapClient(namespace, cm.appConfig)
 	if err != nil {
 		return err

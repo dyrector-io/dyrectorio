@@ -27,21 +27,26 @@ type ingress struct {
 	status    string
 }
 
+type routingOptions struct {
+	ingressHost    string
+	ingressPath    string
+	uploadLimit    string
+	proxyHeaders   []string
+	corsHeaders    []string
+	portList       []int32
+	port           uint16
+	proxyBuffering bool
+	stripPrefix    bool
+	tls            bool
+}
+
 type DeployIngressOptions struct {
 	annotations   map[string]string
 	labels        map[string]string
 	containerName string
-	ingressName   string
-	ingressHost   string
-	ingressPath   string
-	uploadLimit   string
+	name          string
 	namespace     string
-	proxyHeaders  []string
-	corsHeaders   []string
-	portList      []int32
-	port          uint16
-	buffering     bool
-	stripPrefix   bool
+	routing       routingOptions
 	tls           bool
 }
 
@@ -59,29 +64,31 @@ func (ing *ingress) deployIngress(options *DeployIngressOptions) error {
 		log.Error().Err(err).Stack().Msg("Error with ingress client")
 	}
 
-	if options.port == 0 && len(options.portList) == 0 {
+	routing := options.routing
+
+	if routing.port == 0 && len(routing.portList) == 0 {
 		return errors.New("empty ports, nothing to expose")
 	}
 
-	routedPort := options.port
+	routedPort := routing.port
 	if routedPort == 0 {
-		routedPort = uint16(options.portList[0]) //#nosec G115
+		routedPort = uint16(routing.portList[0]) //#nosec G115
 	}
 
 	ingressDomain := domain.GetHostRule(
 		&domain.HostRouting{
-			Subdomain:      options.ingressName,
-			RootDomain:     options.ingressHost,
+			Subdomain:      options.name,
+			RootDomain:     routing.ingressHost,
 			ContainerName:  options.containerName,
 			Prefix:         options.namespace,
 			DomainFallback: ing.appConfig.RootDomain,
 		})
 
 	ingressPath := "/"
-	if options.ingressPath != "" {
-		ingressPath = options.ingressPath
+	if routing.ingressPath != "" {
+		ingressPath = routing.ingressPath
 		// prefix stripping works in combination with annotations
-		if options.stripPrefix {
+		if routing.stripPrefix {
 			split := strings.Split(ingressPath, "/")
 
 			split = append(split, "?(.*)")
@@ -110,7 +117,7 @@ func (ing *ingress) deployIngress(options *DeployIngressOptions) error {
 		spec.WithTLS(tlsConf)
 	}
 
-	annot := getIngressAnnotations(options)
+	annot := getIngressAnnotations(options.namespace, options.containerName, &options.routing)
 	maps.Copy(annot, options.annotations)
 
 	labels := map[string]string{}
@@ -153,7 +160,7 @@ func getTLSConfig(ingressPath, containerName string, enabled bool) *netv1.Ingres
 	return nil
 }
 
-func getIngressAnnotations(opts *DeployIngressOptions) map[string]string {
+func getIngressAnnotations(namespace, name string, opts *routingOptions) map[string]string {
 	annotations := map[string]string{
 		"kubernetes.io/ingress.class": "nginx",
 	}
@@ -168,13 +175,13 @@ func getIngressAnnotations(opts *DeployIngressOptions) map[string]string {
 		annotations["nginx.ingress.kubernetes.io/cors-allow-headers"] = strings.Join(opts.proxyHeaders, ", ")
 	}
 
-	if opts.buffering {
+	if opts.proxyBuffering {
 		annotations["nginx.ingress.kubernetes.io/proxy-buffering"] = "on"
 		annotations["nginx.ingress.kubernetes.io/proxy-buffer-size"] = "256k"
 	}
 
 	if len(opts.proxyHeaders) > 0 {
-		annotations["nginx.ingress.kubernetes.io/proxy-set-headers"] = util.JoinV("/", opts.namespace, opts.containerName)
+		annotations["nginx.ingress.kubernetes.io/proxy-set-headers"] = util.JoinV("/", namespace, name)
 	}
 
 	if opts.uploadLimit != "" {
