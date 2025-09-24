@@ -105,6 +105,7 @@ export const QA_DIALOG_LABEL_CHANGE_TEAM_SLUG = 'changeTeamSlug'
 export const QA_DIALOG_LABEL_LEAVE_TEAM = 'leaveTeam'
 export const QA_DIALOG_LABEL_UPDATE_USER_ROLE = 'updateUserRole'
 export const QA_DIALOG_LABEL_DEPLOY_PROTECTED = 'deployProtected'
+export const QA_DIALOG_LABEL_DEPLOY_CONFIRM = "deployConfirm"
 export const QA_DIALOG_LABEL_HIDE_ONBOARDING = 'hideOnboarding'
 export const QA_DIALOG_LABEL_CONVERT_PROJECT_TO_VERSIONED = ''
 export const QA_DIALOG_LABEL_REMOVE_OIDC_ACCOUNT = 'removeOIDCAccount'
