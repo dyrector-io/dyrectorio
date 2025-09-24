@@ -1,5 +1,11 @@
 import { defaultApiErrorHandler } from '@app/errors'
-import { DeploymentDetails, DyoApiError, mergeConfigsWithConcreteConfig, StartDeployment } from '@app/models'
+import {
+  DeploymentDetails,
+  deploymentShouldBeConfirmed,
+  DyoApiError,
+  mergeConfigsWithConcreteConfig,
+  StartDeployment,
+} from '@app/models'
 import { TeamRoutes } from '@app/routes'
 import { sendForm } from '@app/utils'
 import {
@@ -11,7 +17,7 @@ import {
 import { Translate } from 'next-translate'
 import useTranslation from 'next-translate/useTranslation'
 import { NextRouter } from 'next/router'
-import { QA_DIALOG_LABEL_DEPLOY_PROTECTED } from 'quality-assurance'
+import { QA_DIALOG_LABEL_DEPLOY_CONFIRM, QA_DIALOG_LABEL_DEPLOY_PROTECTED } from 'quality-assurance'
 import toast from 'react-hot-toast'
 import { DyoConfirmationAction } from './use-confirmation'
 
@@ -83,6 +89,20 @@ export const useDeploy = (opts: UseDeployOptions): UseDeployAction => {
             className: toastClassName,
           },
         )
+        return
+      }
+    }
+
+    if (deploymentShouldBeConfirmed(deployment.status)) {
+      const confirmed = await confirm({
+        qaLabel: QA_DIALOG_LABEL_DEPLOY_CONFIRM,
+        title: t('common:deployConfirm.title'),
+        description: t('common:deployConfirm.description', deployment),
+        confirmText: t('common:deploy'),
+        cancelColor: 'bg-warning-orange',
+      })
+
+      if (!confirmed) {
         return
       }
     }

@@ -203,6 +203,18 @@ export const deploymentIsDeployable = (status: DeploymentStatus): boolean => {
     case 'preparing':
     case 'failed':
     case 'obsolete':
+    case 'downgraded':
+    case 'successful':
+      return true
+    default:
+      return false
+  }
+}
+
+export const deploymentShouldBeConfirmed = (status: DeploymentStatus) => {
+  switch (status) {
+    case 'downgraded':
+    case 'obsolete':
     case 'successful':
       return true
     default:
