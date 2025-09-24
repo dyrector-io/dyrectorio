@@ -162,6 +162,7 @@
   },
 
   "deploymentStatuses": {
+    "downgraded": "Downgraded",
     "obsolete": "Obsolete",
     "unknown": "Unknown",
     "preparing": "Preparing",

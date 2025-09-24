@@ -33,6 +33,28 @@ const DeploymentDetailsSection = (props: DeploymentDetailsSectionProps) => {
         </DyoLabel>
       </div>
 
+      {deployment.configBundles.length > 0 && (
+        <>
+          <DyoLabel className="mt-2">{t('attachedBundles')}</DyoLabel>
+
+          <div className="flex flex-wrap gap-4 mt-2">
+            {deployment.configBundles.map(bundle => (
+              <DyoButton className="px-2" outlined href={routes.containerConfig.details(bundle.config.id)}>
+                <div className="flex flex-row items-center gap-2">
+                  <Image
+                    src="/config_bundle_turquoise.svg"
+                    width={17}
+                    height={21}
+                    alt={t('altDefaultConfigBundlePicture')}
+                  />
+                  {bundle.name}
+                </div>
+              </DyoButton>
+            ))}
+          </div>
+        </>
+      )}
+
       <div className="self-end mt-auto">
         <DyoButton className="px-2" outlined href={routes.containerConfig.details(deployment.config.id)}>
           <div className="flex flex-row items-center gap-2">
