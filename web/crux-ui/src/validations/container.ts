@@ -603,8 +603,9 @@ const createContainerConfigBaseSchema = (imageLabels: Record<string, string>) =>
 
     // crane
     deploymentStrategy: deploymentStrategyRule,
-    customHeaders: uniqueKeysOnlySchema.default(null).nullable().optional().label('container:crane.customHeaders'),
-    proxyHeaders: yup.boolean().default(null).nullable().optional().label('container:crane.proxyHeaders'),
+    corsHeaders: uniqueKeysOnlySchema.default(null).nullable().optional().label('container:crane.corsHeaders'),
+    proxyBuffering: yup.boolean().default(null).nullable().optional().label('container:crane.proxyBuffering'),
+    proxyHeaders: uniqueKeysOnlySchema.default(null).nullable().optional().label('container:crane.proxyHeaders'),
     useLoadBalancer: yup.boolean().default(null).nullable().optional().label('container:crane.useLoadBalancer'),
     extraLBAnnotations: uniqueKeyValuesSchema
       .default(null)

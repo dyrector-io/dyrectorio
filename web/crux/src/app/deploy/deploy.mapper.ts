@@ -453,12 +453,13 @@ export default class DeployMapper {
 
   craneConfigToAgentProto(config: ConcreteContainerConfigData): CraneContainerConfig {
     return {
-      customHeaders: this.mapUniqueKeyToStringArray(config.customHeaders),
+      corsHeaders: this.mapUniqueKeyToStringArray(config.corsHeaders),
       extraLBAnnotations: this.mapKeyValueToMap(config.extraLBAnnotations),
       deploymentStrategy:
         this.deploymentStrategyToProto(config.deploymentStrategy) ?? ProtoDeploymentStrategy.ROLLING_UPDATE,
       healthCheckConfig: this.healthCheckToProto(config.healthCheckConfig),
-      proxyHeaders: config.proxyHeaders,
+      proxyBuffering: config.proxyBuffering,
+      proxyHeaders: this.mapUniqueKeyToStringArray(config.proxyHeaders),
       useLoadBalancer: config.useLoadBalancer,
       resourceConfig: {
         limits: config.resourceConfig?.limits,

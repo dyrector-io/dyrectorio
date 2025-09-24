@@ -131,20 +131,20 @@ const CraneConfigSection = (props: CraneConfigSectionProps) => {
           </div>
         )}
 
-        {/* customHeaders */}
-        {filterContains('customHeaders', selectedFilters) && (
+        {/* corsHeaders */}
+        {filterContains('corsHeaders', selectedFilters) && (
           <div>
             <KeyOnlyInput
               labelClassName="text-bright font-semibold tracking-wide"
-              label={t('crane.customHeaders').toUpperCase()}
-              items={config.customHeaders ?? []}
+              label={t('crane.corsHeaders').toUpperCase()}
+              items={config.corsHeaders ?? []}
               keyPlaceholder={t('crane.placeholders.headerName')}
-              onChange={it => onChange({ customHeaders: it })}
+              onChange={it => onChange({ corsHeaders: it })}
               editorOptions={editorOptions}
               disabled={disabled}
-              onResetSection={resettableConfig.customHeaders ? () => onResetSection('customHeaders') : null}
+              onResetSection={resettableConfig.corsHeaders ? () => onResetSection('corsHeaders') : null}
             />
-            <DyoMessage grow message={findErrorFor(fieldErrors, 'customHeaders')} messageType="error" />
+            <DyoMessage grow message={findErrorFor(fieldErrors, 'corsHeaders')} messageType="error" />
           </div>
         )}
 
@@ -380,24 +380,41 @@ const CraneConfigSection = (props: CraneConfigSectionProps) => {
           </div>
         )}
 
-        {/* proxyHeaders */}
-        {filterContains('proxyHeaders', selectedFilters) && (
+        {/* proxyBuffering */}
+        {filterContains('proxyBuffering', selectedFilters) && (
           <div className="flex flex-row mb-8">
             <ConfigSectionLabel
-              disabled={disabled || !booleanResettable(baseConfig?.proxyHeaders, resettableConfig.proxyHeaders)}
-              onResetSection={() => onResetSection('proxyHeaders')}
-              error={conflictErrors?.proxyHeaders}
+              disabled={disabled || !booleanResettable(baseConfig?.proxyBuffering, resettableConfig.proxyBuffering)}
+              onResetSection={() => onResetSection('proxyBuffering')}
+              error={conflictErrors?.proxyBuffering}
             >
-              {t('crane.proxyHeaders').toUpperCase()}
+              {t('crane.proxyBuffering').toUpperCase()}
             </ConfigSectionLabel>
 
             <DyoToggle
               className="ml-2"
-              name="proxyHeaders"
-              checked={config.proxyHeaders}
-              onCheckedChange={it => onChange({ proxyHeaders: it })}
+              name="proxyBuffering"
+              checked={config.proxyBuffering}
+              onCheckedChange={it => onChange({ proxyBuffering: it })}
               disabled={disabled}
             />
+          </div>
+        )}
+
+        {/* proxyHeaders */}
+        {filterContains('proxyHeaders', selectedFilters) && (
+          <div>
+            <KeyOnlyInput
+              labelClassName="text-bright font-semibold tracking-wide"
+              label={t('crane.proxyHeaders').toUpperCase()}
+              items={config.proxyHeaders ?? []}
+              keyPlaceholder={t('crane.placeholders.headerName')}
+              onChange={it => onChange({ proxyHeaders: it })}
+              editorOptions={editorOptions}
+              disabled={disabled}
+              onResetSection={resettableConfig.proxyHeaders ? () => onResetSection('proxyHeaders') : null}
+            />
+            <DyoMessage grow message={findErrorFor(fieldErrors, 'proxyHeaders')} messageType="error" />
           </div>
         )}
 

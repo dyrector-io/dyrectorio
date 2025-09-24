@@ -272,7 +272,7 @@ export const mapComposeServiceToContainerConfig = (
     expose: 'none',
     capabilities: [],
     deploymentStrategy: 'recreate',
-    proxyHeaders: false,
+    proxyBuffering: false,
     useLoadBalancer: false,
   }
 }

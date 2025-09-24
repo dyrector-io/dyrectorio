@@ -2,7 +2,7 @@ import { expect, Page } from '@playwright/test'
 import { test } from '../../utils/test.fixture'
 import { NGINX_TEST_IMAGE_WITH_TAG, TEAM_ROUTES } from 'e2e/utils/common'
 import {
-  wsPatchMatchCustomHeader,
+  wsPatchMatchCorsHeader,
   wsPatchMatchDeploymentAnnotations,
   wsPatchMatchDeploymentLabel,
   wsPatchMatchDeploymentStrategy,
@@ -70,7 +70,7 @@ test.describe('Image kubernetes config from editor', () => {
     const header = 'test-header'
     const input = page.locator('div:has(label:has-text("CUSTOM HEADERS")) input[placeholder="Header name"]').first()
 
-    const wsSent = wsPatchSent(ws, wsRoute, WS_TYPE_PATCH_CONFIG, wsPatchMatchCustomHeader(header))
+    const wsSent = wsPatchSent(ws, wsRoute, WS_TYPE_PATCH_CONFIG, wsPatchMatchCorsHeader(header))
     await input.fill(header)
     await wsSent
 

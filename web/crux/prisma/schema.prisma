@@ -296,14 +296,15 @@ model ContainerConfig {
   deploymentStrategy DeploymentStrategy?
   healthCheckConfig  Json?
   resourceConfig     Json?
-  proxyHeaders       Boolean?
+  proxyBuffering     Boolean?
+  proxyHeaders       Json?
   useLoadBalancer    Boolean?
   extraLBAnnotations Json?
-  customHeaders      Json?
+  corsHeaders        Json?
   annotations        Json?
   labels             Json?
   metrics            Json?
-  replicas       Int?
+  replicas           Int?
 
   image        Image?
   instance     Instance?
@@ -315,13 +316,13 @@ model ContainerConfig {
 }
 
 model Deployment {
-  id        String   @id @default(uuid()) @db.Uuid
-  createdAt DateTime @default(now()) @db.Timestamptz(6)
-  createdBy String   @db.Uuid
-  updatedAt DateTime @updatedAt @db.Timestamptz(6)
-  updatedBy String?  @db.Uuid
+  id         String    @id @default(uuid()) @db.Uuid
+  createdAt  DateTime  @default(now()) @db.Timestamptz(6)
+  createdBy  String    @db.Uuid
+  updatedAt  DateTime  @updatedAt @db.Timestamptz(6)
+  updatedBy  String?   @db.Uuid
   deployedAt DateTime? @db.Timestamptz(6)
-  deployedBy String?  @db.Uuid
+  deployedBy String?   @db.Uuid
 
   note      String?
   prefix    String?
@@ -654,7 +655,7 @@ model ConfigBundle {
   teamId String @db.Uuid
 
   config   ContainerConfig? @relation(fields: [configId], references: [id], onDelete: Cascade)
-  configId String          @unique @db.Uuid
+  configId String           @unique @db.Uuid
 
   deployments ConfigBundleOnDeployments[]
 

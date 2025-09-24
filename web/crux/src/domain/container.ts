@@ -210,8 +210,9 @@ export type ContainerConfigData = {
 
   // crane
   deploymentStrategy?: ContainerDeploymentStrategyType
-  customHeaders?: UniqueKey[]
-  proxyHeaders?: boolean
+  corsHeaders?: UniqueKey[]
+  proxyBuffering?: boolean
+  proxyHeaders?: UniqueKey[]
   useLoadBalancer?: boolean
   extraLBAnnotations?: UniqueKeyValue[]
   healthCheckConfig?: HealthCheck
@@ -229,7 +230,8 @@ export type ContainerConfigDataWithId = ContainerConfigData & {
 type DagentSpecificConfigKeys = 'logConfig' | 'restartPolicy' | 'networkMode' | 'networks' | 'dockerLabels'
 type CraneSpecificConfigKeys =
   | 'deploymentStrategy'
-  | 'customHeaders'
+  | 'corsHeaders'
+  | 'proxyBuffering'
   | 'proxyHeaders'
   | 'useLoadBalancer'
   | 'extraLBAnnotations'

@@ -78,7 +78,7 @@ export type ConflictedContainerConfigData = {
 
   // crane
   deploymentStrategy?: string[]
-  proxyHeaders?: string[]
+  proxyBuffering?: string[]
   useLoadBalancer?: string[]
   extraLBAnnotations?: ConflictedUniqueItem[]
   healthCheckConfig?: string[]
@@ -600,7 +600,8 @@ const collectConflicts = (
   // crane
   checkStringConflict('deploymentStrategy')
   // 'customHeaders' are keys only so duplicates are allowed
-  checkBooleanConflict('proxyHeaders')
+  checkBooleanConflict('proxyBuffering')
+  // 'proxyHeaders' are keys only so duplicates are allowed
   checkBooleanConflict('useLoadBalancer')
   checkUniqueKeyValuesConflict('extraLBAnnotations')
   checkObjectConflict('healthCheckConfig')
