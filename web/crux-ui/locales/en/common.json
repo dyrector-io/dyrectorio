@@ -251,6 +251,11 @@
     "description": "There is a protected deployment with the same node and prefix. Continuing the deployment could result in unexpected behaviour. Are you sure want to continue?"
   },
 
+  "deployConfirm": {
+    "title": "Are you sure?",
+    "description": "Are you sure you want to deploy again a {{status}} deployment?"
+  },
+
   "imageConfig": "Image config",
   "instanceConfig": "Instance config",
   "deploymentConfig": "Deployment config"
