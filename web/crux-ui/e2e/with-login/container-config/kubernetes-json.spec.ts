@@ -63,7 +63,7 @@ test.describe('Image kubernetes config from JSON', () => {
     await expect(page.locator(`button.bg-dyo-turquoise:has-text("${strategy}")`)).toBeVisible()
   })
 
-  test('Cors headers should be saved', async ({ page }) => {
+  test('CORS headers should be saved', async ({ page }) => {
     const { imageConfigId } = await setup(page, 'cors-headers-json', '1.0.0', NGINX_TEST_IMAGE_WITH_TAG)
 
     const sock = waitSocketRef(page)
@@ -134,7 +134,7 @@ test.describe('Image kubernetes config from JSON', () => {
 
     const jsonEditor = await page.locator('textarea')
     const json = JSON.parse(await jsonEditor.inputValue())
-    json.customHeaders = [header]
+    json.proxyHeaders = [header]
 
     const wsSent = wsPatchSent(ws, wsRoute, WS_TYPE_PATCH_CONFIG, wsPatchMatchProxyHeader(header))
     await jsonEditor.fill(JSON.stringify(json))
