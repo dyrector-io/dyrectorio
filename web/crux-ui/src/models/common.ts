@@ -16,7 +16,14 @@ export type DyoApiError = DyoErrorDto & {
 
 // deployment
 
-export const DEPLOYMENT_STATUS_VALUES = ['preparing', 'in-progress', 'successful', 'failed', 'obsolete'] as const
+export const DEPLOYMENT_STATUS_VALUES = [
+  'preparing',
+  'in-progress',
+  'successful',
+  'failed',
+  'obsolete',
+  'downgraded',
+] as const
 export type DeploymentStatus = (typeof DEPLOYMENT_STATUS_VALUES)[number]
 
 // ws
