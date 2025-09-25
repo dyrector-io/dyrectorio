@@ -11,7 +11,10 @@ export default abstract class CruxExceptionFilter implements ExceptionFilter {
     if (exception instanceof HttpException) {
       this.handleHttpException(exception, host)
     } else if (exception instanceof Prisma.PrismaClientKnownRequestError) {
-      this.logger.error('Unhandled Prisma Exception')
+      this.logger.error(
+        `Unhandled Prisma Exception: ${exception.code} ${exception.name} ${exception.message}`,
+        exception.stack,
+      )
       const prismaError = PrismaErrorInterceptor.transformPrismaError(exception)
       this.handleHttpException(prismaError, host)
     } else {
