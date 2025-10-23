@@ -184,7 +184,7 @@ test('Incremental versions should keep config bundle environment after a success
 
   await page.goto(TEAM_ROUTES.deployment.details(deploymentId))
 
-  await page.locator('button:has-text("Config")').click()
+  await page.locator('button:has-text("Config"):right-of(:has-text("Successful"))').click()
 
   await expect(page.locator('input[placeholder="Key"]').first()).toHaveValue(BUNDLE_ENV)
   await expect(page.locator('input[placeholder="Value"]').first()).toHaveValue(BUNDLE_VALUE)
