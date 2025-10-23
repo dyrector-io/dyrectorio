@@ -58,7 +58,7 @@ const VersionViewList = (props: VersionViewListProps) => {
         <DyoTable data={state.version.images} dataKey="id" initialSortColumn={0} initialSortDirection="asc">
           <DyoColumn
             className="w-1/12"
-            header={t('order')}
+            header={t('common:order')}
             sortField="order"
             sortable
             sort={sortNumber}

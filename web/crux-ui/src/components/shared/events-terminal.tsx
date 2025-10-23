@@ -10,7 +10,7 @@ export type TerminalEvent = {
   className?: string
 }
 
-interface EventsTerminalProps<T> {
+type EventsTerminalProps<T> = {
   events: T[]
   formatEvent: (event: T) => TerminalEvent[]
 }
@@ -55,7 +55,7 @@ const EventsTerminal = <T,>(props: EventsTerminalProps<T>) => {
   const eventStrings: TerminalEvent[] = events.flatMap(it => formatEvent(it))
 
   return (
-    <div className="relative">
+    <div className="relative h-screen-2/3">
       <div
         ref={containerRef}
         onScroll={onScroll}
@@ -67,6 +67,7 @@ const EventsTerminal = <T,>(props: EventsTerminalProps<T>) => {
           </span>
         ))}
       </div>
+
       {!autoScroll && (
         <div
           onClick={scrollToBottom}
