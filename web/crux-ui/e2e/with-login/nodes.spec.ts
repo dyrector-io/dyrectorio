@@ -221,7 +221,7 @@ test('Stopping the underlying container of a log stream should not affect the co
   const nodeButton = await page.locator(`h3:has-text("${DAGENT_NODE}")`)
   await nodeButton.click()
 
-  await page.locator('button:has-text("Containers")').click()
+  await page.getByRole('button', { name: 'Containers' }).click()
 
   await page.getByPlaceholder('Search').fill(prefix)
   await expect(page.locator('table.w-full >> tbody >> tr')).toHaveCount(1)
@@ -252,7 +252,7 @@ test('Stopping the underlying container of a log stream should not affect the co
 
   await detailsPage.goto(TEAM_ROUTES.node.details(nodeId))
 
-  await detailsPage.locator('button:has-text("Containers")').click()
+  await detailsPage.getByRole('button', { name: 'Containers' }).click()
 
   const detailsRow = detailsPage.getByRole('row', { name: containerName })
 
