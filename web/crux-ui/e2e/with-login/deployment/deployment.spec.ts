@@ -147,7 +147,7 @@ test('Select specific instances to deploy', async ({ page }) => {
   await page.waitForURL(`${TEAM_ROUTES.node.list()}/**`)
   await page.waitForSelector('h2:text-is("Nodes")')
 
-  await page.waitForSelector('button:text-is("Containers")')
+  await page.getByRole('button', { name: 'Containers' })
   await page.locator('input[placeholder="Search"]').type(prefix)
 
   const nodeContainerRow = await page.locator('table.w-full >> tbody >> tr')

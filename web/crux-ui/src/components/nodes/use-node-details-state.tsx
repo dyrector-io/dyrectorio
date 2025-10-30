@@ -1,3 +1,4 @@
+import { DYO_LABEL_CONTAINER_PREFIX, DYO_LABEL_SERVICE_CATEGORY, DYO_SERVICE_CATEGORY_INTERNAL } from '@app/const'
 import { DyoConfirmationModalConfig } from '@app/elements/dyo-modal'
 import useAnchor from '@app/hooks/use-anchor'
 import useConfirmation from '@app/hooks/use-confirmation'
@@ -30,12 +31,16 @@ export type NodeDetailsSection = 'editing' | 'containers' | 'logs' | 'deployment
 
 export type ContainerTargetStates = { [key: string]: ContainerState } // containerName to targetState
 
+export type NodeContainersFilter = TextFilter & {
+  showAll: boolean
+}
+
 export type NodeDetailsState = {
   section: NodeDetailsSection
   node: NodeDetails
   confirmationModal: DyoConfirmationModalConfig
   containerTargetStates: ContainerTargetStates
-  containerFilters: FilterConfig<Container, TextFilter>
+  containerFilters: FilterConfig<Container, NodeContainersFilter>
 }
 
 export type NodeDetailsActions = {
@@ -46,6 +51,25 @@ export type NodeDetailsActions = {
   onStopContainer: (container: Container) => void
   onRestartContainer: (container: Container) => void
   onDeleteContainer: (container: Container) => void
+}
+
+const containerShowAllFilter = (items: Container[], filter: NodeContainersFilter) => {
+  if (filter.showAll) {
+    return items
+  }
+
+  return items.filter(it => {
+    const labelKeys = Object.keys(it.labels)
+
+    if (!labelKeys.includes(DYO_LABEL_CONTAINER_PREFIX)) {
+      return false
+    }
+
+    return (
+      !labelKeys.includes(DYO_LABEL_SERVICE_CATEGORY) ||
+      it.labels[DYO_LABEL_SERVICE_CATEGORY] !== DYO_SERVICE_CATEGORY_INTERNAL
+    )
+  })
 }
 
 export type NodeDetailsStateOptions = {
@@ -76,7 +100,7 @@ const useNodeDetailsState = (options: NodeDetailsStateOptions): [NodeDetailsStat
   }
 
   const [containerTargetStates, setContainerTargetStates] = useState<ContainerTargetStates>({})
-  const containerFilters = useFilters<Container, TextFilter>({
+  const containerFilters = useFilters<Container, NodeContainersFilter>({
     initialData: [],
     filters: [
       textFilterFor<Container>(it => [
@@ -88,7 +112,12 @@ const useNodeDetailsState = (options: NodeDetailsStateOptions): [NodeDetailsStat
         it.imageTag,
         utcDateToLocale(it.createdAt),
       ]),
+      containerShowAllFilter,
     ],
+    initialFilter: {
+      text: '',
+      showAll: node.type === 'k8s',
+    },
   })
 
   useEffect(() => {

@@ -127,7 +127,7 @@ test('Container log should appear on a node container', async ({ page }) => {
   await page.waitForURL(`${TEAM_ROUTES.node.list()}/**`)
   await page.waitForSelector('h2:text-is("Nodes")')
 
-  await page.waitForSelector('button:text-is("Containers")')
+  await page.getByRole('button', { name: 'Containers' })
   await page.locator('input[placeholder="Search"]').type(`pw-${prefix}-${imageName}`)
 
   const nodeContainerRow = await page.locator(`td:text-is("pw-${prefix}-${imageName}") >> xpath=../..`)

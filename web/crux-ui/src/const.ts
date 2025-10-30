@@ -45,4 +45,8 @@ export const COOKIE_TEAM_SLUG = 'crux_team_slug'
 
 export const TOAST_DURATION = 5000 // sec in millis
 
-export const DYO_ENV_LABEL_PREFIX = 'org.dyrectorio.env'
+export const DYO_LABEL_ENV_PREFIX = 'org.dyrectorio.env'
+export const DYO_LABEL_CONTAINER_PREFIX = 'org.dyrectorio.container.prefix'
+export const DYO_LABEL_SERVICE_CATEGORY = 'org.dyrectorio.service-category'
+
+export const DYO_SERVICE_CATEGORY_INTERNAL = '_internal'

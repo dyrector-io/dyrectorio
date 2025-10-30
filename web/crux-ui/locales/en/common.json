@@ -114,6 +114,7 @@
   "pipeline": "Pipeline",
   "token": "Token",
   "branch": "Branch",
+  "order": "Order",
 
   "changeToken": "Change token",
 

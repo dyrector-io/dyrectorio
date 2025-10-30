@@ -12,6 +12,7 @@ import Filters from '@app/components/shared/filters'
 import PageHeading from '@app/components/shared/page-heading'
 import { DetailsPageMenu } from '@app/components/shared/page-menu'
 import { DyoConfirmationModal } from '@app/elements/dyo-modal'
+import DyoToggle from '@app/elements/dyo-toggle'
 import { defaultApiErrorHandler } from '@app/errors'
 import useSubmit from '@app/hooks/use-submit'
 import useTeamRoutes from '@app/hooks/use-team-routes'
@@ -116,7 +117,14 @@ const NodeDetailsPage = (props: NodeDetailsPageProps) => {
 
           {state.section === 'containers' ? (
             <>
-              <Filters setTextFilter={it => state.containerFilters.setFilter({ text: it })} />
+              <Filters setTextFilter={it => state.containerFilters.setFilter({ text: it })}>
+                <DyoToggle
+                  labelClassName="text-light-eased mx-4"
+                  checked={state.containerFilters.filter?.showAll}
+                  onCheckedChange={it => state.containerFilters.setFilter({ showAll: it })}
+                  label={t('showAllContainers')}
+                />
+              </Filters>
 
               <NodeContainersList state={state} actions={actions} />
             </>
