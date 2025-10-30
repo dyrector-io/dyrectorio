@@ -196,7 +196,6 @@ message DagentContainerConfig {
 message CraneContainerConfig {
   optional common.DeploymentStrategy deploymentStrategy = 100;
   optional common.HealthCheckConfig healthCheckConfig = 101;
-  optional common.ResourceConfig resourceConfig = 102;
   optional bool proxyHeaders = 103;
   optional bool useLoadBalancer = 104;
   optional Marker annotations = 105;
@@ -217,6 +216,7 @@ message CommonContainerConfig {
   optional int64 user = 106;
   optional bool TTY = 107;
   optional string workingDirectory = 108;
+  optional common.ResourceConfig resourceConfig = 109;
 
   repeated Port ports = 1000;
   repeated PortRangeBinding portRanges = 1001;

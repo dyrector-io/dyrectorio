@@ -282,7 +282,6 @@ export interface DagentContainerConfig_LabelsEntry {
 export interface CraneContainerConfig {
   deploymentStrategy?: DeploymentStrategy | undefined
   healthCheckConfig?: HealthCheckConfig | undefined
-  resourceConfig?: ResourceConfig | undefined
   proxyHeaders?: boolean | undefined
   useLoadBalancer?: boolean | undefined
   annotations?: Marker | undefined
@@ -307,6 +306,7 @@ export interface CommonContainerConfig {
   user?: number | undefined
   TTY?: boolean | undefined
   workingDirectory?: string | undefined
+  resourceConfig?: ResourceConfig | undefined
   ports: Port[]
   portRanges: PortRangeBinding[]
   volumes: Volume[]
@@ -1127,7 +1127,6 @@ export const CraneContainerConfig = {
       healthCheckConfig: isSet(object.healthCheckConfig)
         ? HealthCheckConfig.fromJSON(object.healthCheckConfig)
         : undefined,
-      resourceConfig: isSet(object.resourceConfig) ? ResourceConfig.fromJSON(object.resourceConfig) : undefined,
       proxyHeaders: isSet(object.proxyHeaders) ? Boolean(object.proxyHeaders) : undefined,
       useLoadBalancer: isSet(object.useLoadBalancer) ? Boolean(object.useLoadBalancer) : undefined,
       annotations: isSet(object.annotations) ? Marker.fromJSON(object.annotations) : undefined,
@@ -1153,8 +1152,6 @@ export const CraneContainerConfig = {
       (obj.healthCheckConfig = message.healthCheckConfig
         ? HealthCheckConfig.toJSON(message.healthCheckConfig)
         : undefined)
-    message.resourceConfig !== undefined &&
-      (obj.resourceConfig = message.resourceConfig ? ResourceConfig.toJSON(message.resourceConfig) : undefined)
     message.proxyHeaders !== undefined && (obj.proxyHeaders = message.proxyHeaders)
     message.useLoadBalancer !== undefined && (obj.useLoadBalancer = message.useLoadBalancer)
     message.annotations !== undefined &&
@@ -1219,6 +1216,7 @@ export const CommonContainerConfig = {
       user: isSet(object.user) ? Number(object.user) : undefined,
       TTY: isSet(object.TTY) ? Boolean(object.TTY) : undefined,
       workingDirectory: isSet(object.workingDirectory) ? String(object.workingDirectory) : undefined,
+      resourceConfig: isSet(object.resourceConfig) ? ResourceConfig.fromJSON(object.resourceConfig) : undefined,
       ports: Array.isArray(object?.ports) ? object.ports.map((e: any) => Port.fromJSON(e)) : [],
       portRanges: Array.isArray(object?.portRanges)
         ? object.portRanges.map((e: any) => PortRangeBinding.fromJSON(e))
@@ -1257,6 +1255,8 @@ export const CommonContainerConfig = {
     message.user !== undefined && (obj.user = Math.round(message.user))
     message.TTY !== undefined && (obj.TTY = message.TTY)
     message.workingDirectory !== undefined && (obj.workingDirectory = message.workingDirectory)
+    message.resourceConfig !== undefined &&
+      (obj.resourceConfig = message.resourceConfig ? ResourceConfig.toJSON(message.resourceConfig) : undefined)
     if (message.ports) {
       obj.ports = message.ports.map(e => (e ? Port.toJSON(e) : undefined))
     } else {
