@@ -251,8 +251,9 @@ export type ContainerConfigData = {
 
   // crane
   deploymentStrategy?: ContainerDeploymentStrategyType
-  customHeaders?: UniqueKey[]
-  proxyHeaders?: boolean
+  corsHeaders?: UniqueKey[]
+  proxyBuffering?: boolean
+  proxyHeaders?: UniqueKey[]
   useLoadBalancer?: boolean
   extraLBAnnotations?: UniqueKeyValue[]
   healthCheckConfig?: ContainerConfigHealthCheck
@@ -284,12 +285,13 @@ export const COMMON_CONFIG_KEYS = [
 
 export const CRANE_CONFIG_KEYS = [
   'annotations',
-  'customHeaders',
+  'corsHeaders',
   'deploymentStrategy',
   'extraLBAnnotations',
   'healthCheckConfig',
   'labels',
   'metrics',
+  'proxyBuffering',
   'proxyHeaders',
   'resourceConfig',
   'useLoadBalancer',

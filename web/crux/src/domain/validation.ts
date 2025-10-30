@@ -314,8 +314,9 @@ export const concreteContainerConfigSchema = yup.object().shape({
 
   // crane
   deploymentStrategy: deploymentStrategyRule.optional().nullable(),
-  customHeaders: uniqueKeysOnlySchema.optional().nullable(),
-  proxyHeaders: yup.boolean().optional().nullable(),
+  corsHeaders: uniqueKeysOnlySchema.optional().nullable(),
+  proxyBuffering: yup.boolean().optional().nullable(),
+  proxyHeaders: uniqueKeysOnlySchema.optional().nullable(),
   useLoadBalancer: yup.boolean().optional().nullable(),
   extraLBAnnotations: uniqueKeyValuesSchema.optional().nullable(),
   healthCheckConfig: healthCheckConfigRule.optional().nullable(),

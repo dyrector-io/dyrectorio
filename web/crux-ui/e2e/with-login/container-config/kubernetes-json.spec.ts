@@ -2,7 +2,7 @@ import { HealthCheckProbe, JsonHealthCheckCommandProbe, WS_TYPE_PATCH_CONFIG } f
 import { expect, Page } from '@playwright/test'
 import { NGINX_TEST_IMAGE_WITH_TAG, TEAM_ROUTES } from 'e2e/utils/common'
 import {
-  wsPatchMatchCustomHeader,
+  wsPatchMatchCorsHeader,
   wsPatchMatchDeploymentAnnotations,
   wsPatchMatchDeploymentLabel,
   wsPatchMatchDeploymentStrategy,
@@ -11,6 +11,7 @@ import {
   wsPatchMatchJsonHealthCheck,
   wsPatchMatchLBAnnotations,
   wsPatchMatchLoadBalancer,
+  wsPatchMatchProxyBuffering,
   wsPatchMatchProxyHeader,
   wsPatchMatchReplicas,
   wsPatchMatchResourceConfig,
@@ -62,8 +63,8 @@ test.describe('Image kubernetes config from JSON', () => {
     await expect(page.locator(`button.bg-dyo-turquoise:has-text("${strategy}")`)).toBeVisible()
   })
 
-  test('Custom headers should be saved', async ({ page }) => {
-    const { imageConfigId } = await setup(page, 'custom-headers-json', '1.0.0', NGINX_TEST_IMAGE_WITH_TAG)
+  test('CORS headers should be saved', async ({ page }) => {
+    const { imageConfigId } = await setup(page, 'cors-headers-json', '1.0.0', NGINX_TEST_IMAGE_WITH_TAG)
 
     const sock = waitSocketRef(page)
     await page.goto(TEAM_ROUTES.containerConfig.details(imageConfigId))
@@ -78,20 +79,20 @@ test.describe('Image kubernetes config from JSON', () => {
 
     const jsonEditor = await page.locator('textarea')
     const json = JSON.parse(await jsonEditor.inputValue())
-    json.customHeaders = [header]
+    json.corsHeaders = [header]
 
-    const wsSent = wsPatchSent(ws, wsRoute, WS_TYPE_PATCH_CONFIG, wsPatchMatchCustomHeader(header))
+    const wsSent = wsPatchSent(ws, wsRoute, WS_TYPE_PATCH_CONFIG, wsPatchMatchCorsHeader(header))
     await jsonEditor.fill(JSON.stringify(json))
     await wsSent
 
     await page.reload()
 
-    const input = page.locator('div:has(label:has-text("CUSTOM HEADERS")) input[placeholder="Header name"]').first()
+    const input = page.locator('div:has(label:has-text("CORS HEADERS")) input[placeholder="Header name"]').first()
     await expect(input).toHaveValue(header)
   })
 
-  test('Proxy headers should be saved', async ({ page }) => {
-    const { imageConfigId } = await setup(page, 'proxy-headers-json', '1.0.0', NGINX_TEST_IMAGE_WITH_TAG)
+  test('Proxy buffering should be saved', async ({ page }) => {
+    const { imageConfigId } = await setup(page, 'proxy-buffering-json', '1.0.0', NGINX_TEST_IMAGE_WITH_TAG)
 
     const sock = waitSocketRef(page)
     await page.goto(TEAM_ROUTES.containerConfig.details(imageConfigId))
@@ -104,15 +105,45 @@ test.describe('Image kubernetes config from JSON', () => {
 
     const jsonEditor = await page.locator('textarea')
     const json = JSON.parse(await jsonEditor.inputValue())
-    json.proxyHeaders = true
+    json.proxyBuffering = true
 
-    const wsSent = wsPatchSent(ws, wsRoute, WS_TYPE_PATCH_CONFIG, wsPatchMatchProxyHeader(true))
+    const wsSent = wsPatchSent(ws, wsRoute, WS_TYPE_PATCH_CONFIG, wsPatchMatchProxyBuffering(true))
     await jsonEditor.fill(JSON.stringify(json))
     await wsSent
 
     await page.reload()
 
-    await expect(page.locator(':right-of(:text("PROXY HEADERS"))').getByRole('switch', { checked: true })).toBeVisible()
+    await expect(
+      page.locator(':right-of(:text("PROXY BUFFERING"))').getByRole('switch', { checked: true }),
+    ).toBeVisible()
+  })
+
+  test('Proxy headers should be saved', async ({ page }) => {
+    const { imageConfigId } = await setup(page, 'proxy-headers-json', '1.0.0', NGINX_TEST_IMAGE_WITH_TAG)
+
+    const sock = waitSocketRef(page)
+    await page.goto(TEAM_ROUTES.containerConfig.details(imageConfigId))
+    await page.waitForSelector('h2:text-is("Image config")')
+    const ws = await sock
+    const wsRoute = TEAM_ROUTES.containerConfig.detailsSocket(imageConfigId)
+
+    const header = 'test-header'
+
+    const jsonEditorButton = await page.waitForSelector('button:has-text("JSON")')
+    await jsonEditorButton.click()
+
+    const jsonEditor = await page.locator('textarea')
+    const json = JSON.parse(await jsonEditor.inputValue())
+    json.proxyHeaders = [header]
+
+    const wsSent = wsPatchSent(ws, wsRoute, WS_TYPE_PATCH_CONFIG, wsPatchMatchProxyHeader(header))
+    await jsonEditor.fill(JSON.stringify(json))
+    await wsSent
+
+    await page.reload()
+
+    const input = page.locator('div:has(label:has-text("PROXY HEADERS")) input[placeholder="Header name"]').first()
+    await expect(input).toHaveValue(header)
   })
 
   test('Load balancer should be saved', async ({ page }) => {

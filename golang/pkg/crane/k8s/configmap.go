@@ -84,6 +84,26 @@ func (cm *configmap) deployConfigMapRuntime(runtimeType v1.RuntimeConfigType, na
 	return nil
 }
 
+func (cm *configmap) deployIngressProxyHeaders(namespace, containerName string, headers ...string) error {
+	client, err := getConfigMapClient(namespace, cm.appConfig)
+	if err != nil {
+		return err
+	}
+
+	headerMap := make(map[string]string)
+	for _, item := range headers {
+		headerMap[item] = ""
+	}
+
+	_, err = client.Apply(cm.ctx,
+		corev1.ConfigMap(containerName, namespace).
+			WithData(headerMap),
+		metaV1.ApplyOptions{FieldManager: cm.appConfig.FieldManagerName, Force: cm.appConfig.ForceOnConflicts},
+	)
+
+	return err
+}
+
 // delete related configmaps. note: configmaps being in use are unaffected by this
 func (cm *configmap) deleteConfigMaps(namespace, name string) error {
 	client, err := getConfigMapClient(namespace, cm.appConfig)

@@ -172,6 +172,7 @@ func TestEventToMessageContainer(t *testing.T) {
 
 	assert.NoError(t, err)
 
+	// if this is failing locally, you have to log in to ghcr.io
 	containerID := *builder.GetContainerID()
 
 	event := events.Message{

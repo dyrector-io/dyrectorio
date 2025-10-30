@@ -283,14 +283,15 @@ export interface CraneContainerConfig {
   deploymentStrategy?: DeploymentStrategy | undefined
   healthCheckConfig?: HealthCheckConfig | undefined
   resourceConfig?: ResourceConfig | undefined
-  proxyHeaders?: boolean | undefined
+  proxyBuffering?: boolean | undefined
   useLoadBalancer?: boolean | undefined
   annotations?: Marker | undefined
   labels?: Marker | undefined
   metrics?: Metrics | undefined
   replicaCount?: number | undefined
-  customHeaders: string[]
   extraLBAnnotations: { [key: string]: string }
+  proxyHeaders: string[]
+  corsHeaders: string[]
 }
 
 export interface CraneContainerConfig_ExtraLBAnnotationsEntry {
@@ -1115,7 +1116,7 @@ export const DagentContainerConfig_LabelsEntry = {
 }
 
 function createBaseCraneContainerConfig(): CraneContainerConfig {
-  return { customHeaders: [], extraLBAnnotations: {} }
+  return { extraLBAnnotations: {}, proxyHeaders: [], corsHeaders: [] }
 }
 
 export const CraneContainerConfig = {
@@ -1128,19 +1129,20 @@ export const CraneContainerConfig = {
         ? HealthCheckConfig.fromJSON(object.healthCheckConfig)
         : undefined,
       resourceConfig: isSet(object.resourceConfig) ? ResourceConfig.fromJSON(object.resourceConfig) : undefined,
-      proxyHeaders: isSet(object.proxyHeaders) ? Boolean(object.proxyHeaders) : undefined,
+      proxyBuffering: isSet(object.proxyBuffering) ? Boolean(object.proxyBuffering) : undefined,
       useLoadBalancer: isSet(object.useLoadBalancer) ? Boolean(object.useLoadBalancer) : undefined,
       annotations: isSet(object.annotations) ? Marker.fromJSON(object.annotations) : undefined,
       labels: isSet(object.labels) ? Marker.fromJSON(object.labels) : undefined,
       metrics: isSet(object.metrics) ? Metrics.fromJSON(object.metrics) : undefined,
       replicaCount: isSet(object.replicaCount) ? Number(object.replicaCount) : undefined,
-      customHeaders: Array.isArray(object?.customHeaders) ? object.customHeaders.map((e: any) => String(e)) : [],
       extraLBAnnotations: isObject(object.extraLBAnnotations)
         ? Object.entries(object.extraLBAnnotations).reduce<{ [key: string]: string }>((acc, [key, value]) => {
             acc[key] = String(value)
             return acc
           }, {})
         : {},
+      proxyHeaders: Array.isArray(object?.proxyHeaders) ? object.proxyHeaders.map((e: any) => String(e)) : [],
+      corsHeaders: Array.isArray(object?.corsHeaders) ? object.corsHeaders.map((e: any) => String(e)) : [],
     }
   },
 
@@ -1155,23 +1157,28 @@ export const CraneContainerConfig = {
         : undefined)
     message.resourceConfig !== undefined &&
       (obj.resourceConfig = message.resourceConfig ? ResourceConfig.toJSON(message.resourceConfig) : undefined)
-    message.proxyHeaders !== undefined && (obj.proxyHeaders = message.proxyHeaders)
+    message.proxyBuffering !== undefined && (obj.proxyBuffering = message.proxyBuffering)
     message.useLoadBalancer !== undefined && (obj.useLoadBalancer = message.useLoadBalancer)
     message.annotations !== undefined &&
       (obj.annotations = message.annotations ? Marker.toJSON(message.annotations) : undefined)
     message.labels !== undefined && (obj.labels = message.labels ? Marker.toJSON(message.labels) : undefined)
     message.metrics !== undefined && (obj.metrics = message.metrics ? Metrics.toJSON(message.metrics) : undefined)
     message.replicaCount !== undefined && (obj.replicaCount = Math.round(message.replicaCount))
-    if (message.customHeaders) {
-      obj.customHeaders = message.customHeaders.map(e => e)
-    } else {
-      obj.customHeaders = []
-    }
     obj.extraLBAnnotations = {}
     if (message.extraLBAnnotations) {
       Object.entries(message.extraLBAnnotations).forEach(([k, v]) => {
         obj.extraLBAnnotations[k] = v
       })
+    }
+    if (message.proxyHeaders) {
+      obj.proxyHeaders = message.proxyHeaders.map(e => e)
+    } else {
+      obj.proxyHeaders = []
+    }
+    if (message.corsHeaders) {
+      obj.corsHeaders = message.corsHeaders.map(e => e)
+    } else {
+      obj.corsHeaders = []
     }
     return obj
   },

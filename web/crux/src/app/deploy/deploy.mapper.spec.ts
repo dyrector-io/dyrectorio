@@ -56,7 +56,8 @@ describe('DeployMapper', () => {
     deploymentStrategy: 'recreate',
     expose: 'expose',
     networkMode: 'bridge',
-    proxyHeaders: false,
+    proxyBuffering: false,
+    proxyHeaders: [{ id: 'proxyHeaders', key: 'proxyHeaders' }],
     restartPolicy: 'no',
     tty: false,
     useLoadBalancer: false,
@@ -124,10 +125,10 @@ describe('DeployMapper', () => {
       path: 'configCont',
       volume: 'configCont',
     },
-    customHeaders: [
+    corsHeaders: [
       {
-        id: 'customHead',
-        key: 'customHead',
+        id: 'corsHeaders',
+        key: 'corsHeaders',
       },
     ],
     dockerLabels: [
@@ -290,7 +291,13 @@ describe('DeployMapper', () => {
     deploymentStrategy: 'recreate',
     expose: 'exposeWithTls',
     networkMode: 'host',
-    proxyHeaders: true,
+    proxyBuffering: true,
+    proxyHeaders: [
+      {
+        id: 'instance.proxyHeaders',
+        key: 'instance.proxyHeaders',
+      },
+    ],
     restartPolicy: 'onFailure',
     tty: true,
     useLoadBalancer: true,
@@ -358,10 +365,10 @@ describe('DeployMapper', () => {
       path: 'instance.configCont',
       volume: 'instance.configCont',
     },
-    customHeaders: [
+    corsHeaders: [
       {
-        id: 'instance.customHead',
-        key: 'instance.customHead',
+        id: 'instance.corsHeaders',
+        key: 'instance.corsHeaders',
       },
     ],
     dockerLabels: [

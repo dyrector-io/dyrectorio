@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/rs/zerolog/log"
+	"k8s.io/apimachinery/pkg/api/errors"
 
 	v1 "github.com/dyrector-io/dyrectorio/golang/api/v1"
 	"github.com/dyrector-io/dyrectorio/golang/internal/dogger"
@@ -13,8 +14,6 @@ import (
 	"github.com/dyrector-io/dyrectorio/golang/internal/util"
 	builder "github.com/dyrector-io/dyrectorio/golang/pkg/builder/container"
 	"github.com/dyrector-io/dyrectorio/golang/pkg/crane/config"
-
-	"k8s.io/apimachinery/pkg/api/errors"
 )
 
 type DeployFacade struct {
@@ -213,28 +212,39 @@ func (d *DeployFacade) Deploy() error {
 	}
 
 	if d.params.ContainerConfig.Expose {
+		if len(d.params.ContainerConfig.ProxyHeaders) > 0 {
+			if err := d.configmap.deployIngressProxyHeaders(d.namespace.name,
+				d.params.ContainerConfig.Container,
+				d.params.ContainerConfig.ProxyHeaders...,
+			); err != nil {
+				log.Error().Err(err).Stack().Msg("Error with ingress proxy headers configmap")
+			}
+		}
+
 		if err := d.ingress.deployIngress(
 			&DeployIngressOptions{
 				namespace:     d.namespace.name,
 				containerName: d.params.ContainerConfig.Container,
-				ingressName:   d.params.ContainerConfig.IngressName,
-				ingressHost:   d.params.ContainerConfig.IngressHost,
-				ingressPath:   d.params.ContainerConfig.IngressPath,
-				stripPrefix:   d.params.ContainerConfig.IngressStripPath,
-				uploadLimit:   d.params.ContainerConfig.IngressUploadLimit,
-				customHeaders: d.params.ContainerConfig.CustomHeaders,
-				port:          d.params.ContainerConfig.IngressPort,
-				portList:      d.service.portsBound,
-				tls:           d.params.ContainerConfig.ExposeTLS,
-				proxyHeaders:  d.params.ContainerConfig.ProxyHeaders,
-				annotations:   d.params.ContainerConfig.Annotations.Ingress,
-				labels:        d.params.ContainerConfig.Labels.Ingress,
+				name:          d.params.ContainerConfig.IngressName,
+				routing: routingOptions{
+					proxyBuffering: d.params.ContainerConfig.ProxyBuffering,
+					ingressHost:    d.params.ContainerConfig.IngressHost,
+					ingressPath:    d.params.ContainerConfig.IngressPath,
+					stripPrefix:    d.params.ContainerConfig.IngressStripPath,
+					uploadLimit:    d.params.ContainerConfig.IngressUploadLimit,
+					proxyHeaders:   d.params.ContainerConfig.ProxyHeaders,
+					corsHeaders:    d.params.ContainerConfig.CorsHeaders,
+					port:           d.params.ContainerConfig.IngressPort,
+					portList:       d.service.portsBound,
+					tls:            d.params.ContainerConfig.ExposeTLS,
+				},
+				annotations: d.params.ContainerConfig.Annotations.Ingress,
+				labels:      d.params.ContainerConfig.Labels.Ingress,
 			},
 		); err != nil {
 			log.Error().Err(err).Stack().Msg("Error with ingress")
 		}
 	}
-
 	return nil
 }
 

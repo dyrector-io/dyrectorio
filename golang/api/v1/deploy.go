@@ -179,17 +179,20 @@ type ContainerConfig struct {
 	Networks           []string                    `json:"networks"`
 	Ports              []builder.PortBinding       `json:"port" binding:"dive"`
 	PortRanges         []builder.PortRangeBinding  `json:"portRanges" binding:"dive"`
-	CustomHeaders      []string                    `json:"customHeaders,omitempty"`
-	Mounts             []string                    `json:"mount"`
-	IngressPort        uint16                      `json:"ingressPort"`
-	Replicas           uint8                       `json:"replicas"`
-	Shared             bool                        `json:"shared"`
-	UseLoadBalancer    bool                        `json:"useLoadBalancer"`
-	Expose             bool                        `json:"expose"`
-	ProxyHeaders       bool                        `json:"proxyHeaders"`
-	ExposeTLS          bool                        `json:"exposeTls"`
-	IngressStripPath   bool                        `json:"ingressPathStrip"`
-	TTY                bool                        `json:"tty"`
+	// These are CORS headers, providing value will enable CORS and add these headers as extra
+	CorsHeaders []string `json:"corsHeaders,omitempty"`
+	// Not all headers are proxied downstream by default, this allows the listed headers to reach backends
+	ProxyHeaders     []string `json:"proxyHeaders,omitempty"`
+	Mounts           []string `json:"mount"`
+	IngressPort      uint16   `json:"ingressPort"`
+	Replicas         uint8    `json:"replicas"`
+	Shared           bool     `json:"shared"`
+	ProxyBuffering   bool     `json:"proxyBuffering"`
+	UseLoadBalancer  bool     `json:"useLoadBalancer"`
+	Expose           bool     `json:"expose"`
+	ExposeTLS        bool     `json:"exposeTls"`
+	IngressStripPath bool     `json:"ingressPathStrip"`
+	TTY              bool     `json:"tty"`
 }
 
 type Metrics struct {

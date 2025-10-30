@@ -285,3 +285,7 @@ test-cli:
 .PHONY: coverage
 coverage:
 	go tool cover -func ./merged.cov
+
+.PHONY: fieldalign
+fieldalign:
+	fieldalign -fix ./...

@@ -102,8 +102,9 @@ export type JsonContainerConfig = {
 
   // crane
   deploymentStrategy?: ContainerDeploymentStrategyType
-  customHeaders?: string[]
-  proxyHeaders?: boolean
+  corsHeaders?: string[]
+  proxyBuffering?: boolean
+  proxyHeaders?: string[]
   useLoadBalancer?: boolean
   extraLBAnnotations?: JsonKeyValue
   healthCheckConfig?: JsonHealthCheck
@@ -212,8 +213,9 @@ export const containerConfigToJsonConfig = (config: ContainerConfigData): JsonCo
 
   // crane
   deploymentStrategy: config.deploymentStrategy ?? null,
-  customHeaders: keyArrayToJson(config.customHeaders),
-  proxyHeaders: booleanToJson(config.proxyHeaders),
+  corsHeaders: keyArrayToJson(config.corsHeaders),
+  proxyBuffering: booleanToJson(config.proxyBuffering),
+  proxyHeaders: keyArrayToJson(config.proxyHeaders),
   useLoadBalancer: booleanToJson(config.useLoadBalancer),
   extraLBAnnotations: keyValueArrayToJson(config.extraLBAnnotations),
   healthCheckConfig: healthCheckConfigToJson(config.healthCheckConfig),
@@ -455,7 +457,8 @@ export const mergeJsonConfigToConcreteContainerConfig = (
     replicas: json.replicas ?? config.replicas,
     name: json.name ?? config.name,
     networkMode: json.networkMode ?? config.networkMode,
-    proxyHeaders: json.proxyHeaders ?? config.proxyHeaders,
+    proxyBuffering: mergeBoolean(json.proxyBuffering, config.proxyBuffering),
+    proxyHeaders: mergeKeysWithJson(config.proxyHeaders, json.proxyHeaders),
     resourceConfig: json.resourceConfig ?? config.resourceConfig,
     restartPolicy: json.restartPolicy ?? config.restartPolicy,
     routing: json.routing ?? config.routing,
@@ -469,7 +472,7 @@ export const mergeJsonConfigToConcreteContainerConfig = (
     extraLBAnnotations: mergeKeyValuesWithJson(config.extraLBAnnotations, json.extraLBAnnotations),
     capabilities: mergeKeyValuesWithJson(config.capabilities, json.capabilities),
     commands: mergeKeysWithJson(config.commands, json.commands),
-    customHeaders: mergeKeysWithJson(config.customHeaders, json.customHeaders),
+    corsHeaders: mergeKeysWithJson(config.corsHeaders, json.corsHeaders),
     networks: mergeKeysWithJson(config.networks, json.networks),
     args: mergeKeysWithJson(config.args, json.args),
     logConfig: json.logConfig

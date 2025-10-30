@@ -454,11 +454,15 @@ export class ContainerConfigDto {
 
   @IsOptional()
   @ValidateNested({ each: true })
-  customHeaders?: UniqueKeyDto[]
+  corsHeaders?: UniqueKeyDto[]
 
   @IsBoolean()
   @IsOptional()
-  proxyHeaders?: boolean
+  proxyBuffering?: boolean
+
+  @IsOptional()
+  @ValidateNested({ each: true })
+  proxyHeaders?: UniqueKeyDto[]
 
   @IsBoolean()
   @IsOptional()

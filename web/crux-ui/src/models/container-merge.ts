@@ -174,8 +174,9 @@ const squashConfigs = (strong: ContainerConfigData, weak: ContainerConfigData): 
   storage: strong.storage ?? weak.storage,
 
   // crane
-  customHeaders: strong.customHeaders ?? weak.customHeaders,
-  proxyHeaders: mergeBoolean(strong.proxyHeaders, weak.proxyHeaders),
+  corsHeaders: strong.corsHeaders ?? weak.corsHeaders,
+  proxyBuffering: mergeBoolean(strong.proxyBuffering, weak.proxyBuffering),
+  proxyHeaders: strong.proxyHeaders ?? weak.proxyHeaders,
   extraLBAnnotations: strong.extraLBAnnotations ?? weak.extraLBAnnotations,
   healthCheckConfig: strong.healthCheckConfig ?? weak.healthCheckConfig,
   resourceConfig: strong.resourceConfig ?? weak.resourceConfig,
@@ -214,8 +215,9 @@ const mergeConfigs = (strong: ContainerConfigData, weak: ContainerConfigData): C
   storage: strong.storage ?? weak.storage,
 
   // crane
-  customHeaders: mergeUniqueKeys(strong.customHeaders, weak.customHeaders),
-  proxyHeaders: mergeBoolean(strong.proxyHeaders, weak.proxyHeaders),
+  corsHeaders: mergeUniqueKeys(strong.corsHeaders, weak.corsHeaders),
+  proxyBuffering: mergeBoolean(strong.proxyBuffering, weak.proxyBuffering),
+  proxyHeaders: mergeUniqueKeys(strong.proxyHeaders, weak.proxyHeaders),
   extraLBAnnotations: mergeUniqueKeyValues(strong.extraLBAnnotations, weak.extraLBAnnotations),
   healthCheckConfig: strong.healthCheckConfig ?? weak.healthCheckConfig ?? null,
   resourceConfig: strong.resourceConfig ?? weak.resourceConfig ?? null,
@@ -285,8 +287,9 @@ export const mergeInstanceConfigWithDeploymentConfig = (
   storage: instance.storage ?? deployment.storage,
 
   // crane
-  customHeaders: mergeUniqueKeys(instance.customHeaders, deployment.customHeaders),
-  proxyHeaders: mergeBoolean(instance.proxyHeaders, deployment.proxyHeaders),
+  corsHeaders: mergeUniqueKeys(instance.corsHeaders, deployment.corsHeaders),
+  proxyBuffering: mergeBoolean(instance.proxyBuffering, deployment.proxyBuffering),
+  proxyHeaders: mergeUniqueKeys(instance.proxyHeaders, deployment.proxyHeaders),
   extraLBAnnotations: mergeUniqueKeyValues(instance.extraLBAnnotations, deployment.extraLBAnnotations),
   healthCheckConfig: instance.healthCheckConfig ?? deployment.healthCheckConfig ?? null,
   resourceConfig: instance.resourceConfig ?? deployment.resourceConfig ?? null,
