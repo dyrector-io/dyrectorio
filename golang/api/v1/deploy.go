@@ -112,10 +112,12 @@ type HealthCheckConfig struct {
 	StartupProbe   *Probe `json:"startupProbe"`
 }
 
+// for docker it's limits only
 type Resources struct {
 	CPU    string `json:"cpu"`
 	Memory string `json:"memory"`
 }
+
 type ResourceConfig struct {
 	Limits   Resources `json:"limits"`
 	Requests Resources `json:"requests"`
