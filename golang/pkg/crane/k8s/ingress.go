@@ -47,7 +47,6 @@ type DeployIngressOptions struct {
 	name          string
 	namespace     string
 	routing       routingOptions
-	tls           bool
 }
 
 func newIngress(ctx context.Context, client *Client) *ingress {
@@ -112,7 +111,7 @@ func (ing *ingress) deployIngress(options *DeployIngressOptions) error {
 							),
 						),
 				)))
-	tlsConf := getTLSConfig(ingressDomain, options.containerName, options.tls)
+	tlsConf := getTLSConfig(ingressDomain, options.containerName, options.routing.tls)
 	if tlsConf != nil {
 		spec.WithTLS(tlsConf)
 	}
