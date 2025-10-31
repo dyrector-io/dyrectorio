@@ -195,20 +195,19 @@ const resourceConfigRule = yup
     limits: yup
       .object()
       .shape({
-        cpu: yup.string().nullable().label('container:crane.cpu'),
-        memory: yup.string().nullable().label('container:crane.memory'),
+        cpu: yup.string().nullable().label('container:common.cpu'),
+        memory: yup.string().nullable().label('container:common.memory'),
       })
       .nullable()
       .optional(),
     requests: yup
       .object()
       .shape({
-        cpu: yup.string().nullable().label('container:crane.cpu'),
-        memory: yup.string().nullable().label('container:crane.memory'),
+        cpu: yup.string().nullable().label('container:common.cpu'),
+        memory: yup.string().nullable().label('container:common.memory'),
       })
       .nullable()
       .optional(),
-    livenessProbe: yup.string().nullable().label('container:crane.livenessProbe'),
   })
   .default(null)
   .nullable()

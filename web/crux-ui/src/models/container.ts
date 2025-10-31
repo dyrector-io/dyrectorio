@@ -226,6 +226,7 @@ export type ContainerConfigData = {
   name?: string
   environment?: UniqueKeyValue[]
   secrets?: UniqueSecretKey[]
+  resourceConfig?: ResourceConfig
   routing?: ContainerConfigRouting
   expose?: ContainerConfigExposeStrategy
   user?: number
@@ -256,7 +257,6 @@ export type ContainerConfigData = {
   useLoadBalancer?: boolean
   extraLBAnnotations?: UniqueKeyValue[]
   healthCheckConfig?: ContainerConfigHealthCheck
-  resourceConfig?: ResourceConfig
   annotations?: Marker
   labels?: Marker
   metrics?: Metrics
@@ -274,6 +274,7 @@ export const COMMON_CONFIG_KEYS = [
   'portRanges',
   'ports',
   'routing',
+  'resourceConfig',
   'secrets',
   'storage',
   'tty',
@@ -291,7 +292,6 @@ export const CRANE_CONFIG_KEYS = [
   'labels',
   'metrics',
   'proxyHeaders',
-  'resourceConfig',
   'useLoadBalancer',
   'replicas',
 ] as const
