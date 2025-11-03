@@ -83,7 +83,9 @@ func (d *Deployment) DeployDeployment(p *DeploymentParams) error {
 
 	podSpec := corev1.PodSpec().WithContainers(containerConfig).
 		WithInitContainers(getInitContainers(p, d.appConfig)...).
-		WithVolumes(getVolumesFromMap(p.volumes, d.appConfig)...)
+		WithVolumes(getVolumesFromMap(p.volumes, d.appConfig)...).
+		WithNodeSelector(p.containerConfig.NodeSelector).
+		WithTolerations(p.containerConfig.Tolerations...)
 
 	if p.pullSecretName != "" {
 		podSpec.WithImagePullSecrets(corev1.LocalObjectReference().WithName(p.pullSecretName))
