@@ -45,7 +45,6 @@ func TestParseCPUToMilli(t *testing.T) {
 	}
 
 	for _, tc := range tests {
-		tc := tc
 		t.Run(tc.in, func(t *testing.T) {
 			t.Parallel()
 			got, err := util.ParseCPUToMilli(tc.in)
@@ -76,7 +75,6 @@ func TestMilliToNanoCPUs(t *testing.T) {
 	}
 
 	for _, tc := range tests {
-		tc := tc
 		t.Run(fmt.Sprintf("%dm", tc.milli), func(t *testing.T) {
 			t.Parallel()
 			got := util.MilliToNanoCPUs(tc.milli)
@@ -102,7 +100,6 @@ func TestParseBytes(t *testing.T) {
 	}
 
 	for _, tc := range tests {
-		tc := tc
 		t.Run(tc.in, func(t *testing.T) {
 			t.Parallel()
 			got, err := util.ParseBytes(tc.in)
@@ -130,7 +127,6 @@ func TestIntegration_CPUParseThenNanoCPUs(t *testing.T) {
 	}
 
 	for _, c := range cases {
-		c := c
 		t.Run(c.in, func(t *testing.T) {
 			t.Parallel()
 			milli, err := util.ParseCPUToMilli(c.in)

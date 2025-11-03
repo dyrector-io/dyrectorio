@@ -3,6 +3,7 @@ package util
 import (
 	"fmt"
 	"strings"
+	"time"
 
 	"k8s.io/apimachinery/pkg/api/resource"
 )
@@ -47,7 +48,7 @@ func ParseCPUToMilli(qty string) (int64, error) {
 
 // milliToNanoCPUs converts millicores to Docker NanoCPUs.
 func MilliToNanoCPUs(milli int64) int64 {
-	return milli * 1_000_000
+	return milli * int64(time.Millisecond)
 }
 
 // parseBytes parses a Kubernetes-style memory quantity string
