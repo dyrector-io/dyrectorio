@@ -605,8 +605,9 @@ const collectConflicts = (
 
   // crane
   checkStringConflict('deploymentStrategy')
-  // 'customHeaders' are keys only so duplicates are allowed
-  checkBooleanConflict('proxyHeaders')
+  // 'corsHeaders' are keys only so duplicates are allowed
+  checkBooleanConflict('proxyBuffering')
+  // 'proxyHeaders' are keys only so duplicates are allowed
   checkBooleanConflict('useLoadBalancer')
   checkUniqueKeyValuesConflict('extraLBAnnotations')
   checkObjectConflict('healthCheckConfig')

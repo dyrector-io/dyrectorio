@@ -22,7 +22,7 @@ const DeploymentViewList = (props: DeploymentViewListProps) => {
 
   return (
     <DyoCard className="relative mt-4">
-      <DyoTable data={instances} dataKey="id" initialSortColumn={4} initialSortDirection="asc">
+      <DyoTable data={instances} dataKey="id" initialSortColumn={1} initialSortDirection="asc">
         {dyoCheckboxColumn({
           allSelected: instances.length === deployInstances.length,
           selected: deployInstances,
@@ -33,7 +33,7 @@ const DeploymentViewList = (props: DeploymentViewListProps) => {
         <DyoColumn
           className="w-1/12"
           header={t('common:order')}
-          sortField="order"
+          sortField="image.order"
           sortable
           sort={sortNumber}
           body={data => `#${data.image.order + 1}`}

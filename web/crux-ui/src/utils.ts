@@ -519,3 +519,5 @@ export const getEndOfToday = () => {
   endOfToday.setHours(23, 59, 59, 999)
   return endOfToday
 }
+
+export const naturalSortCollator = new Intl.Collator(undefined, { numeric: true, sensitivity: 'base' })

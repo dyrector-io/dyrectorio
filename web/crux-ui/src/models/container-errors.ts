@@ -57,7 +57,7 @@ export type ContainerConfigErrors = {
 
   // crane
   deploymentStrategy?: string
-  proxyHeaders?: string
+  proxyBuffering?: string
   useLoadBalancer?: string
   extraLBAnnotations?: UniqueItemErrors
   healthCheckConfig?: string
@@ -177,7 +177,7 @@ export const conflictsToError = (
 
   // crane
   checkStringError('deploymentStrategy')
-  checkStringError('proxyHeaders')
+  checkStringError('proxyBuffering')
   checkStringError('useLoadBalancer')
   checkUniqueErrors('extraLBAnnotations')
   checkStringError('healthCheckConfig')

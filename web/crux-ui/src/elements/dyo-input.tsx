@@ -6,6 +6,7 @@ import DyoMessage from './dyo-message'
 export type MessageType = 'error' | 'info'
 export interface DyoInputProps extends React.InputHTMLAttributes<HTMLInputElement> {
   grow?: boolean
+  fixedWidth?: string
   label?: string
   labelClassName?: string
   containerClassName?: string
@@ -22,6 +23,7 @@ export const DyoInput = forwardRef((props: DyoInputProps, ref: ForwardedRef<HTML
     message,
     messageType,
     grow,
+    fixedWidth,
     name,
     className,
     containerClassName,
@@ -36,6 +38,8 @@ export const DyoInput = forwardRef((props: DyoInputProps, ref: ForwardedRef<HTML
 
   const error = (message && messageType === 'error') || invalid
 
+  const widthClass = fixedWidth ?? (grow ? 'w-full' : 'w-80')
+
   return (
     <>
       <div className={clsx(containerClassName, inline ? `flex flex-row ${message ? 'mb-0' : ''}` : 'flex flex-col')}>
@@ -48,7 +52,7 @@ export const DyoInput = forwardRef((props: DyoInputProps, ref: ForwardedRef<HTML
           </DyoLabel>
         )}
 
-        <div className={clsx('relative', className, grow ? 'w-full' : 'w-80')}>
+        <div className={clsx('relative', widthClass, className)}>
           <input
             {...forwardedProps}
             name={name}
@@ -59,7 +63,7 @@ export const DyoInput = forwardRef((props: DyoInputProps, ref: ForwardedRef<HTML
             className={clsx(
               className,
               'bg-medium h-11 p-4 ring-2 rounded-md focus:outline-none focus:dark',
-              grow ? 'w-full' : 'w-80',
+              widthClass,
               disabled
                 ? 'text-bright-muted ring-light-grey-muted cursor-not-allowed'
                 : error
@@ -85,7 +89,8 @@ export const DyoInput = forwardRef((props: DyoInputProps, ref: ForwardedRef<HTML
 
 DyoInput.displayName = 'DyoInput'
 DyoInput.defaultProps = {
-  grow: false,
+  grow: null,
+  fixedWidth: null,
   label: null,
   labelClassName: null,
   containerClassName: null,

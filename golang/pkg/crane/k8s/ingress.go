@@ -12,12 +12,11 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	applymetav1 "k8s.io/client-go/applyconfigurations/meta/v1"
 	netv1 "k8s.io/client-go/applyconfigurations/networking/v1"
+	networking "k8s.io/client-go/kubernetes/typed/networking/v1"
 
 	"github.com/dyrector-io/dyrectorio/golang/internal/domain"
 	"github.com/dyrector-io/dyrectorio/golang/internal/util"
 	"github.com/dyrector-io/dyrectorio/golang/pkg/crane/config"
-
-	networking "k8s.io/client-go/kubernetes/typed/networking/v1"
 )
 
 // facade object for ingress management
@@ -28,21 +27,26 @@ type ingress struct {
 	status    string
 }
 
+type routingOptions struct {
+	ingressHost    string
+	ingressPath    string
+	uploadLimit    string
+	proxyHeaders   []string
+	corsHeaders    []string
+	portList       []int32
+	port           uint16
+	proxyBuffering bool
+	stripPrefix    bool
+	tls            bool
+}
+
 type DeployIngressOptions struct {
 	annotations   map[string]string
 	labels        map[string]string
 	containerName string
-	ingressName   string
-	ingressHost   string
-	ingressPath   string
-	uploadLimit   string
+	name          string
 	namespace     string
-	customHeaders []string
-	portList      []int32
-	port          uint16
-	stripPrefix   bool
-	proxyHeaders  bool
-	tls           bool
+	routing       routingOptions
 }
 
 func newIngress(ctx context.Context, client *Client) *ingress {
@@ -59,29 +63,31 @@ func (ing *ingress) deployIngress(options *DeployIngressOptions) error {
 		log.Error().Err(err).Stack().Msg("Error with ingress client")
 	}
 
-	if options.port == 0 && len(options.portList) == 0 {
+	routing := options.routing
+
+	if routing.port == 0 && len(routing.portList) == 0 {
 		return errors.New("empty ports, nothing to expose")
 	}
 
-	routedPort := options.port
+	routedPort := routing.port
 	if routedPort == 0 {
-		routedPort = uint16(options.portList[0]) //#nosec G115
+		routedPort = uint16(routing.portList[0]) //#nosec G115
 	}
 
 	ingressDomain := domain.GetHostRule(
 		&domain.HostRouting{
-			Subdomain:      options.ingressName,
-			RootDomain:     options.ingressHost,
+			Subdomain:      options.name,
+			RootDomain:     routing.ingressHost,
 			ContainerName:  options.containerName,
 			Prefix:         options.namespace,
 			DomainFallback: ing.appConfig.RootDomain,
 		})
 
 	ingressPath := "/"
-	if options.ingressPath != "" {
-		ingressPath = options.ingressPath
+	if routing.ingressPath != "" {
+		ingressPath = routing.ingressPath
 		// prefix stripping works in combination with annotations
-		if options.stripPrefix {
+		if routing.stripPrefix {
 			split := strings.Split(ingressPath, "/")
 
 			split = append(split, "?(.*)")
@@ -105,12 +111,12 @@ func (ing *ingress) deployIngress(options *DeployIngressOptions) error {
 							),
 						),
 				)))
-	tlsConf := getTLSConfig(ingressDomain, options.containerName, options.tls)
+	tlsConf := getTLSConfig(ingressDomain, options.containerName, options.routing.tls)
 	if tlsConf != nil {
 		spec.WithTLS(tlsConf)
 	}
 
-	annot := getIngressAnnotations(options)
+	annot := getIngressAnnotations(options.namespace, options.containerName, &options.routing)
 	maps.Copy(annot, options.annotations)
 
 	labels := map[string]string{}
@@ -153,9 +159,7 @@ func getTLSConfig(ingressPath, containerName string, enabled bool) *netv1.Ingres
 	return nil
 }
 
-func getIngressAnnotations(opts *DeployIngressOptions) map[string]string {
-	corsHeaders := []string{}
-
+func getIngressAnnotations(namespace, name string, opts *routingOptions) map[string]string {
 	annotations := map[string]string{
 		"kubernetes.io/ingress.class": "nginx",
 	}
@@ -165,23 +169,18 @@ func getIngressAnnotations(opts *DeployIngressOptions) map[string]string {
 		annotations["cert-manager.io/cluster-issuer"] = "letsencrypt-prod"
 	}
 
-	// Add Custom Headers to the CORS Allow Header annotation if presents
-	if len(opts.customHeaders) > 0 {
-		corsHeaders = opts.customHeaders
+	if len(opts.corsHeaders) > 0 {
+		annotations["nginx.ingress.kubernetes.io/enable-cors"] = "true"
+		annotations["nginx.ingress.kubernetes.io/cors-allow-headers"] = strings.Join(opts.proxyHeaders, ", ")
 	}
 
-	if opts.proxyHeaders {
-		extraHeaders := []string{"X-Forwarded-For", "X-Forwarded-Host", "X-Forwarded-Server", "X-Real-IP", "X-Requested-With"}
-		corsHeaders = append(corsHeaders, extraHeaders...)
-
-		annotations["nginx.ingress.kubernetes.io/enable-cors"] = "true"
+	if opts.proxyBuffering {
 		annotations["nginx.ingress.kubernetes.io/proxy-buffering"] = "on"
 		annotations["nginx.ingress.kubernetes.io/proxy-buffer-size"] = "256k"
 	}
 
-	// Add header string to cors-allow-headers if presents any value
-	if len(corsHeaders) > 0 {
-		annotations["nginx.ingress.kubernetes.io/cors-allow-headers"] = strings.Join(corsHeaders, ", ")
+	if len(opts.proxyHeaders) > 0 {
+		annotations["nginx.ingress.kubernetes.io/proxy-set-headers"] = util.JoinV("/", namespace, name)
 	}
 
 	if opts.uploadLimit != "" {

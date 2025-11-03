@@ -9,7 +9,8 @@ describe('container-merge', () => {
     workingDirectory: '/app',
     expose: 'expose',
     networkMode: 'bridge',
-    proxyHeaders: false,
+    proxyBuffering: false,
+    proxyHeaders: [{ id: 'proxyHeaders', key: 'proxyHeaders' }],
     restartPolicy: 'no',
     tty: false,
     useLoadBalancer: false,
@@ -77,10 +78,10 @@ describe('container-merge', () => {
       path: 'configCont',
       volume: 'configCont',
     },
-    customHeaders: [
+    corsHeaders: [
       {
-        id: 'customHead',
-        key: 'customHead',
+        id: 'corsHeaders',
+        key: 'corsHeaders',
       },
     ],
     dockerLabels: [
@@ -249,7 +250,8 @@ describe('container-merge', () => {
     workingDirectory: '/app',
     expose: 'exposeWithTls',
     networkMode: 'host',
-    proxyHeaders: true,
+    proxyBuffering: true,
+    proxyHeaders: [{ id: 'concrete.proxyHeaders', key: 'concrete.proxyHeaders' }],
     restartPolicy: 'onFailure',
     tty: true,
     useLoadBalancer: true,
@@ -317,10 +319,10 @@ describe('container-merge', () => {
       path: 'concrete.configCont',
       volume: 'concrete.configCont',
     },
-    customHeaders: [
+    corsHeaders: [
       {
-        id: 'concrete.customHead',
-        key: 'concrete.customHead',
+        id: 'concrete.corsHeaders',
+        key: 'concrete.corsHeaders',
       },
     ],
     dockerLabels: [
@@ -487,7 +489,8 @@ describe('container-merge', () => {
     workingDirectory: '/app',
     expose: 'exposeWithTls',
     networkMode: 'host',
-    proxyHeaders: true,
+    proxyBuffering: true,
+    proxyHeaders: [{ id: 'deployment.proxyHeaders', key: 'deployment.proxyHeaders' }],
     restartPolicy: 'onFailure',
     tty: true,
     useLoadBalancer: true,
@@ -555,10 +558,10 @@ describe('container-merge', () => {
       path: 'deployment.configCont',
       volume: 'deployment.configCont',
     },
-    customHeaders: [
+    corsHeaders: [
       {
-        id: 'deployment.customHead',
-        key: 'deployment.customHead',
+        id: 'deployment.corsHeaders',
+        key: 'deployment.corsHeaders',
       },
     ],
     dockerLabels: [
@@ -858,7 +861,8 @@ describe('container-merge', () => {
         ...fullConcreteConfig,
         args: [...instance.args, ...deployment.args],
         commands: [...instance.commands, ...deployment.commands],
-        customHeaders: [...instance.customHeaders, ...deployment.customHeaders],
+        corsHeaders: [...instance.corsHeaders, ...deployment.corsHeaders],
+        proxyHeaders: [...instance.proxyHeaders, ...deployment.proxyHeaders],
         dockerLabels: [...instance.dockerLabels, ...deployment.dockerLabels],
         environment: [...instance.environment, ...deployment.environment],
         extraLBAnnotations: [...instance.extraLBAnnotations, ...deployment.extraLBAnnotations],

@@ -16,12 +16,13 @@ export type PaginationSettings = {
 export type PaginatorProps = {
   length: number
   defaultPagination: PaginationSettings
+  noTexts?: boolean
   onChanged: (settings: PaginationSettings) => void
 }
 export type ChangePageProps = { type: PaginationType } | { type: 'exact'; page: number }
 
 const Paginator = (props: PaginatorProps) => {
-  const { length, defaultPagination, onChanged } = props
+  const { length, defaultPagination, noTexts, onChanged } = props
 
   const { t } = useTranslation('common')
 
@@ -70,7 +71,7 @@ const Paginator = (props: PaginatorProps) => {
   return (
     <div className="flex justify-between my-2 items-center">
       <div>
-        <a className="text-light-eased mx-4">{t('itemsPerPage')}</a>
+        {!noTexts && <a className="text-light-eased mx-4">{t('itemsPerPage')}</a>}
 
         <DyoSelect
           onChange={index => {
@@ -89,7 +90,7 @@ const Paginator = (props: PaginatorProps) => {
       </div>
 
       <div className="flex items-center mx-4">
-        <a className="text-light-eased mr-8">{t('showingItems', { pageFrom, pageTo, total: length })}</a>
+        {!noTexts && <a className="text-light-eased mr-8">{t('showingItems', { pageFrom, pageTo, total: length })}</a>}
 
         <DyoButton
           className="w-8 text-xl"
@@ -136,10 +137,10 @@ const Paginator = (props: PaginatorProps) => {
         )}
 
         <DyoInput
-          className="w-4 h-10 bg-dyo-turquoise rounded-full text-center !text-white font-semibold p-0"
+          className="h-10 bg-dyo-turquoise rounded-full text-center !text-white font-semibold p-0"
+          fixedWidth="w-12"
           value={pagination.pageNumber + 1}
           onChange={e => onPageChanged({ type: 'exact', page: Number(e.target.value) - 1 })}
-          grow
           disabled={disabled}
         />
 

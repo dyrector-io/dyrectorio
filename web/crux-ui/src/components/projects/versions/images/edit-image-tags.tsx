@@ -1,3 +1,4 @@
+import Paginator, { PaginationSettings } from '@app/components/shared/paginator'
 import { DyoHeading } from '@app/elements/dyo-heading'
 import { DyoInput } from '@app/elements/dyo-input'
 import { DyoLabel } from '@app/elements/dyo-label'
@@ -6,7 +7,7 @@ import DyoRadioButton from '@app/elements/dyo-radio-button'
 import LoadingIndicator from '@app/elements/loading-indicator'
 import { TextFilter, textFilterFor, useFilters } from '@app/hooks/use-filters'
 import { RegistryImageTag } from '@app/models'
-import { utcDateToLocale } from '@app/utils'
+import { naturalSortCollator, utcDateToLocale } from '@app/utils'
 import useTranslation from 'next-translate/useTranslation'
 import { useEffect, useMemo, useState } from 'react'
 import TagSortToggle, { TagSortState } from './tag-sort-toggle'
@@ -29,7 +30,7 @@ const SelectImageTagList = (props: SelectImageTagListProps) => {
 
   const [selected, setSelected] = useState(propsSelected)
   const [sortState, setSortState] = useState<TagSortState>({
-    mode: 'date',
+    mode: 'alphabetical',
     direction: 'desc',
   })
 
@@ -41,17 +42,19 @@ const SelectImageTagList = (props: SelectImageTagListProps) => {
     },
   })
 
+  const [pagination, setPagination] = useState<PaginationSettings>({ pageNumber: 0, pageSize: 10 })
+
   // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => filters.setItems(tags), [tags])
 
   const sortedItems = useMemo(() => {
-    const dir = sortState.direction === 'asc' ? -1 : 1
+    const dir = sortState.direction === 'asc' ? 1 : -1
 
     const items = filters.filtered
 
     switch (sortState.mode) {
       case 'alphabetical':
-        return [...items].sort((one, other) => other.name.localeCompare(one.name) * dir)
+        return [...items].sort((one, other) => naturalSortCollator.compare(one.name, other.name) * dir)
       case 'date':
         return [...items].sort((one, other) => {
           if (!one.created) {
@@ -78,6 +81,8 @@ const SelectImageTagList = (props: SelectImageTagListProps) => {
     return Date.parse(tag.created) > Date.parse(selectedTag.created)
   }
 
+  const pageStart = pagination.pageNumber * pagination.pageSize
+
   return (
     <div className="flex flex-col">
       <DyoInput
@@ -103,7 +108,7 @@ const SelectImageTagList = (props: SelectImageTagListProps) => {
         <>
           {selected ? null : <DyoMessage messageType="info" message={t('selectTag')} />}
           <div className="flex flex-col max-h-96 overflow-y-auto mt-2">
-            {sortedItems.map((it, index) => (
+            {sortedItems.slice(pageStart, pageStart + pagination.pageSize).map((it, index) => (
               <div className="flex flex-row gap-2 justify-between">
                 <DyoRadioButton
                   key={`tag-${it}`}
@@ -132,6 +137,8 @@ const SelectImageTagList = (props: SelectImageTagListProps) => {
               </div>
             ))}
           </div>
+
+          <Paginator onChanged={setPagination} length={sortedItems.length} defaultPagination={pagination} noTexts />
         </>
       )}
     </div>

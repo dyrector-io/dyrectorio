@@ -2,7 +2,7 @@ import { expect, Page } from '@playwright/test'
 import { test } from '../../utils/test.fixture'
 import { NGINX_TEST_IMAGE_WITH_TAG, TEAM_ROUTES } from 'e2e/utils/common'
 import {
-  wsPatchMatchCustomHeader,
+  wsPatchMatchCorsHeader,
   wsPatchMatchDeploymentAnnotations,
   wsPatchMatchDeploymentLabel,
   wsPatchMatchDeploymentStrategy,
@@ -11,6 +11,7 @@ import {
   wsPatchMatchIngressLabel,
   wsPatchMatchLBAnnotations,
   wsPatchMatchLoadBalancer,
+  wsPatchMatchProxyBuffering,
   wsPatchMatchProxyHeader,
   wsPatchMatchReplicas,
   wsPatchMatchResourceConfig,
@@ -56,8 +57,8 @@ test.describe('Image kubernetes config from editor', () => {
     await expect(page.locator(`button.bg-dyo-turquoise:has-text("${strategy}")`)).toBeVisible()
   })
 
-  test('Custom headers should be saved', async ({ page }) => {
-    const { imageConfigId } = await setup(page, 'custom-headers-editor', '1.0.0', NGINX_TEST_IMAGE_WITH_TAG)
+  test('CORS headers should be saved', async ({ page }) => {
+    const { imageConfigId } = await setup(page, 'cors-headers-editor', '1.0.0', NGINX_TEST_IMAGE_WITH_TAG)
 
     const sock = waitSocketRef(page)
     await page.goto(TEAM_ROUTES.containerConfig.details(imageConfigId))
@@ -65,18 +66,40 @@ test.describe('Image kubernetes config from editor', () => {
     const ws = await sock
     const wsRoute = TEAM_ROUTES.containerConfig.detailsSocket(imageConfigId)
 
-    await page.locator('button:has-text("Custom headers")').click()
+    await page.locator('button:has-text("CORS headers")').click()
 
     const header = 'test-header'
-    const input = page.locator('div:has(label:has-text("CUSTOM HEADERS")) input[placeholder="Header name"]').first()
+    const input = page.locator('div:has(label:has-text("CORS HEADERS")) input[placeholder="Header name"]').first()
 
-    const wsSent = wsPatchSent(ws, wsRoute, WS_TYPE_PATCH_CONFIG, wsPatchMatchCustomHeader(header))
+    const wsSent = wsPatchSent(ws, wsRoute, WS_TYPE_PATCH_CONFIG, wsPatchMatchCorsHeader(header))
     await input.fill(header)
     await wsSent
 
     await page.reload()
 
     await expect(input).toHaveValue(header)
+  })
+
+  test('Proxy buffering should be saved', async ({ page }) => {
+    const { imageConfigId } = await setup(page, 'proxy-buffering-editor', '1.0.0', NGINX_TEST_IMAGE_WITH_TAG)
+
+    const sock = waitSocketRef(page)
+    await page.goto(TEAM_ROUTES.containerConfig.details(imageConfigId))
+    await page.waitForSelector('h2:text-is("Image config")')
+    const ws = await sock
+    const wsRoute = TEAM_ROUTES.containerConfig.detailsSocket(imageConfigId)
+
+    await page.locator('button:has-text("Proxy buffering")').click()
+
+    const wsSent = wsPatchSent(ws, wsRoute, WS_TYPE_PATCH_CONFIG, wsPatchMatchProxyBuffering(true))
+    await page.locator('button[aria-checked="false"]:right-of(label:has-text("PROXY BUFFERING"))').click()
+    await wsSent
+
+    await page.reload()
+
+    await expect(
+      page.locator(':right-of(:text("PROXY BUFFERING"))').getByRole('switch', { checked: true }),
+    ).toBeVisible()
   })
 
   test('Proxy headers should be saved', async ({ page }) => {
@@ -90,13 +113,16 @@ test.describe('Image kubernetes config from editor', () => {
 
     await page.locator('button:has-text("Proxy headers")').click()
 
-    const wsSent = wsPatchSent(ws, wsRoute, WS_TYPE_PATCH_CONFIG, wsPatchMatchProxyHeader(true))
-    await page.locator('button[aria-checked="false"]:right-of(label:has-text("PROXY HEADERS"))').click()
+    const header = 'test-header'
+    const input = page.locator('div:has(label:has-text("PROXY HEADERS")) input[placeholder="Header name"]').first()
+
+    const wsSent = wsPatchSent(ws, wsRoute, WS_TYPE_PATCH_CONFIG, wsPatchMatchProxyHeader(header))
+    await input.fill(header)
     await wsSent
 
     await page.reload()
 
-    await expect(page.locator(':right-of(:text("PROXY HEADERS"))').getByRole('switch', { checked: true })).toBeVisible()
+    await expect(input).toHaveValue(header)
   })
 
   test('Load balancer should be saved', async ({ page }) => {

@@ -18,7 +18,8 @@ export const COMMON_CONFIG_PROPERTIES = [
 
 export const CRANE_CONFIG_PROPERTIES = [
   'deploymentStrategy',
-  'customHeaders',
+  'corsHeaders',
+  'proxyBuffering',
   'proxyHeaders',
   'useLoadBalancer',
   'extraLBAnnotations',

@@ -136,10 +136,13 @@ export const wsPatchMatchDockerLabel = (key: string, value: string) => (payload:
 export const wsPatchMatchDeploymentStrategy = (strategy: string) => (payload: any) =>
   payload.config?.deploymentStrategy === strategy
 
-export const wsPatchMatchCustomHeader = (header: string) => (payload: any) =>
-  payload.config?.customHeaders?.some(it => it.key === header)
+export const wsPatchMatchCorsHeader = (header: string) => (payload: any) =>
+  payload.config?.corsHeaders?.some(it => it.key === header)
 
-export const wsPatchMatchProxyHeader = (proxy: boolean) => (payload: any) => payload.config?.proxyHeaders === proxy
+export const wsPatchMatchProxyBuffering = (proxy: boolean) => (payload: any) => payload.config?.proxyBuffering === proxy
+
+export const wsPatchMatchProxyHeader = (header: string) => (payload: any) =>
+  payload.config?.proxyHeaders?.some(it => it.key === header)
 
 export const wsPatchMatchLoadBalancer = (loadbalancer: boolean) => (payload: any) =>
   payload.config?.useLoadBalancer === loadbalancer
