@@ -39,6 +39,11 @@ func Fallback(str ...string) string {
 
 // parseCPUToMilli parses a Kubernetes-style CPU quantity string
 func ParseCPUToMilli(qty string) (int64, error) {
+	qty = strings.TrimSpace(qty)
+	if qty == "" {
+		return 0, nil
+	}
+
 	q, err := resource.ParseQuantity(qty)
 	if err != nil {
 		return 0, fmt.Errorf("invalid CPU quantity %q: %w", qty, err)
@@ -53,6 +58,11 @@ func MilliToNanoCPUs(milli int64) int64 {
 
 // parseBytes parses a Kubernetes-style memory quantity string
 func ParseBytes(qty string) (int64, error) {
+	qty = strings.TrimSpace(qty)
+	if qty == "" {
+		return 0, nil
+	}
+
 	q, err := resource.ParseQuantity(qty)
 	if err != nil {
 		return 0, fmt.Errorf("invalid memory quantity %q: %w", qty, err)
