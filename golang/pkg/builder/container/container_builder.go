@@ -69,35 +69,35 @@ type DockerContainerBuilder struct {
 	logger           dogger.LogWriter
 	client           client.APIClient
 	ctx              context.Context
+	pullDisplayFn    imageHelper.PullDisplayFn
 	user             *int64
-	memoryLimit      int64
-	cpuLimit         int64
 	networkMap       map[string]string
 	labels           map[string]string
-	pullDisplayFn    imageHelper.PullDisplayFn
 	containerID      *string
 	logConfig        *container.LogConfig
 	sysctls          map[string]string
+	restartPolicy    container.RestartPolicyMode
+	networkMode      string
 	workingDirectory string
 	containerName    string
 	imageWithTag     string
 	registryAuth     string
-	networkMode      string
-	restartPolicy    container.RestartPolicyMode
 	hooksPostStart   []LifecycleFunc
+	mountList        []mount.Mount
+	networks         []string
 	portList         []PortBinding
 	hooksPreCreate   []LifecycleFunc
 	entrypoint       []string
 	cmd              []string
 	shell            []string
 	hooksPostCreate  []LifecycleFunc
-	mountList        []mount.Mount
+	extraHosts       []string
 	portRanges       []PortRangeBinding
 	hooksPreStart    []LifecycleFunc
 	envList          []string
 	networkAliases   []string
-	extraHosts       []string
-	networks         []string
+	cpuLimit         int64
+	memoryLimit      int64
 	imagePriority    imageHelper.PullPriority
 	tty              bool
 	withoutConflict  bool
