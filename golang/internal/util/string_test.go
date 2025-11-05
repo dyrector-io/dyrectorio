@@ -42,6 +42,8 @@ func TestParseCPUToMilli(t *testing.T) {
 		{"0", 0, false},
 		{"250m", 250, false},
 		{"abc", 0, true},
+		{" ", 0, false},
+		{"", 0, false},
 	}
 
 	for _, tc := range tests {
@@ -97,6 +99,8 @@ func TestParseBytes(t *testing.T) {
 		{"500M", 500 * 1_000_000, false},       // decimal MB
 		{"2Gi", 2 * 1024 * 1024 * 1024, false}, // 2,147,483,648
 		{"turtles", 0, true},
+		{" ", 0, false},
+		{"", 0, false},
 	}
 
 	for _, tc := range tests {
