@@ -1,5 +1,6 @@
 import { Status } from '@grpc/grpc-js/build/src/constants'
-import { HandlerType, Http2ServerCallStream, ServerReadableStream } from '@grpc/grpc-js/build/src/server-call'
+import { HandlerType, ServerDuplexStream, ServerReadableStream } from '@grpc/grpc-js/build/src/server-call'
+import { BaseServerInterceptingCall } from '@grpc/grpc-js/build/src/server-interceptors'
 import { ArgumentsHost, Catch, HttpException, Logger, RpcExceptionFilter } from '@nestjs/common'
 import { RpcException } from '@nestjs/microservices'
 import { Observable, of, throwError } from 'rxjs'
@@ -67,8 +68,11 @@ export default class GrpcExceptionFilter implements RpcExceptionFilter {
   private sendErrorToClientStream(error: GrpcErrorObject, host: ArgumentsHost): Observable<any> {
     const call = host.getArgByIndex(2)
 
-    const streamCall = call.call as Http2ServerCallStream<any, any>
-    streamCall.sendError(error)
+    const interceptingCall = call.call as BaseServerInterceptingCall
+    interceptingCall.sendStatus({
+      code: error.code,
+      details: error.message,
+    })
 
     const readstream = call as ServerReadableStream<any, any>
     readstream.destroy()
