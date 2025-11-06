@@ -1,5 +1,5 @@
 import { Status } from '@grpc/grpc-js/build/src/constants'
-import { HandlerType, ServerDuplexStream, ServerReadableStream } from '@grpc/grpc-js/build/src/server-call'
+import { HandlerType, ServerReadableStream } from '@grpc/grpc-js/build/src/server-call'
 import { BaseServerInterceptingCall } from '@grpc/grpc-js/build/src/server-interceptors'
 import { ArgumentsHost, Catch, HttpException, Logger, RpcExceptionFilter } from '@nestjs/common'
 import { RpcException } from '@nestjs/microservices'
