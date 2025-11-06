@@ -464,6 +464,7 @@ const ContainerConfigPage = (props: ContainerConfigPageProps) => {
             editorOptions={editorState}
             fieldErrors={fieldErrors}
             conflictErrors={conflictErrors}
+            showCraneConfig={showCraneConfig}
           />
 
           {showCraneConfig && (

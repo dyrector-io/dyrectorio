@@ -47,6 +47,7 @@
     "configContainer": "Config container",
     "keepFiles": "Keep files",
     "useParent": "Use parent",
+    "resourceConfig": "Resource config",
     "routing": "Routing",
     "domain": "Domain",
     "stripPath": "Strip path",
@@ -62,12 +63,18 @@
     "storage": "Storage",
     "bucketPath": "Bucket path",
     "buketPathTips": "You can also use any subfolder of a bucket by specifying its path (\"bucket/folder/sub-folder\").",
+    "cpu": "Cpu",
+    "memory": "Memory",
+    "limits": "Limits",
+    "requestsK8s": "Requests (k8s)",
     "key": "Key",
     "value": "Value",
     "placeholders": {
       "port": "Port",
       "path": "Path",
-      "containerDefault": "Container default"
+      "containerDefault": "Container default",
+      "cpuUsageExample": "10m",
+      "memoryUsageExample": "512Mi"
     }
   },
 
@@ -123,11 +130,6 @@
     "readinessProbe": "Readiness probe",
     "startupProbe": "Startup probe",
     "corsHeaders": "CORS headers",
-    "resourceConfig": "Resource config",
-    "cpu": "Cpu",
-    "memory": "Memory",
-    "limits": "Limits",
-    "requests": "Requests",
     "proxyBuffering": "Proxy buffering",
     "proxyHeaders": "Proxy headers",
     "loadBalancer": "Load balancer",
@@ -151,8 +153,6 @@
     },
     "placeholders": {
       "headerName": "Header name",
-      "cpuUsageExample": "10m",
-      "memoryUsageExample": "512Mi",
       "metricsPath": "/metrics"
     }
   },

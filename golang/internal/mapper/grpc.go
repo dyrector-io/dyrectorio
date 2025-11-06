@@ -118,6 +118,10 @@ func mapContainerConfig(prefix string, in *agent.DeployWorkloadRequest) v1.Conta
 		containerConfig.ConfigContainer = mapConfigContainer(cc.ConfigContainer)
 	}
 
+	if cc.ResourceConfig != nil {
+		containerConfig.ResourceConfig = mapResourceConfig(cc.ResourceConfig)
+	}
+
 	if in.Dagent != nil {
 		mapDagentConfig(in.Dagent, &containerConfig)
 	}
@@ -191,10 +195,6 @@ func mapCraneConfig(crane *agent.CraneContainerConfig, containerConfig *v1.Conta
 
 	if crane.HealthCheckConfig != nil {
 		containerConfig.HealthCheck = mapHealthCheckConfig(crane.HealthCheckConfig)
-	}
-
-	if crane.ResourceConfig != nil {
-		containerConfig.ResourceConfig = mapResourceConfig(crane.ResourceConfig)
 	}
 
 	if crane.ExtraLBAnnotations != nil {

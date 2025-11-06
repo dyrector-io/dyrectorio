@@ -424,6 +424,10 @@ export default class DeployMapper {
       portRanges: config.portRanges ?? [],
       ports: config.ports ?? [],
       volumes: this.volumesToProto(config.volumes),
+      resourceConfig: {
+        limits: config.resourceConfig?.limits,
+        requests: config.resourceConfig?.requests,
+      },
     }
   }
 
@@ -461,10 +465,6 @@ export default class DeployMapper {
       proxyBuffering: config.proxyBuffering,
       proxyHeaders: this.mapUniqueKeyToStringArray(config.proxyHeaders),
       useLoadBalancer: config.useLoadBalancer,
-      resourceConfig: {
-        limits: config.resourceConfig?.limits,
-        requests: config.resourceConfig?.requests,
-      },
       labels: config.labels
         ? {
             deployment: this.mapKeyValueToMap(config.labels?.deployment),

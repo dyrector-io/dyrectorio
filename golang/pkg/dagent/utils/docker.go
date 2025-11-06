@@ -388,12 +388,24 @@ func DeployImage(ctx context.Context,
 		return fmt.Errorf("error building labels: %w", err)
 	}
 
+	cpuLimitMillis, err := util.ParseCPUToMilli(deployImageRequest.ContainerConfig.ResourceConfig.Limits.CPU)
+	if err != nil {
+		return fmt.Errorf("%s is invalid cpu limit: %w", deployImageRequest.ContainerConfig.ResourceConfig.Limits.CPU, err)
+	}
+
+	memLimitBytes, err := util.ParseBytes(deployImageRequest.ContainerConfig.ResourceConfig.Limits.Memory)
+	if err != nil {
+		return fmt.Errorf("%s is invalid memory limit: %w", deployImageRequest.ContainerConfig.ResourceConfig.Limits.Memory, err)
+	}
+
 	builder.WithImage(expandedImageName).
 		WithClient(cli).
 		WithName(containerName).
 		WithMountPoints(mountList).
 		WithPortBindings(deployImageRequest.ContainerConfig.Ports).
 		WithPortRanges(deployImageRequest.ContainerConfig.PortRanges).
+		WithCPULimit(util.MilliToNanoCPUs(cpuLimitMillis)).
+		WithMemoryLimit(util.MilliToNanoCPUs(memLimitBytes)).
 		WithNetworkMode(networkMode).
 		WithNetworks(networks).
 		WithNetworkAliases(containerName, deployImageRequest.ContainerConfig.Container).
