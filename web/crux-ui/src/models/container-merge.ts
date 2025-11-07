@@ -193,6 +193,7 @@ const squashConfigs = (strong: ContainerConfigData, weak: ContainerConfigData): 
   networks: strong.networks ?? weak.networks,
   dockerLabels: strong.dockerLabels ?? weak.dockerLabels,
   expectedState: strong.expectedState ?? weak.expectedState,
+  experimental: strong.experimental ?? weak.experimental,
 })
 
 const mergeConfigs = (strong: ContainerConfigData, weak: ContainerConfigData): ContainerConfigData => ({

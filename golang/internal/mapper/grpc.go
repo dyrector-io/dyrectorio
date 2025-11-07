@@ -664,7 +664,7 @@ func mapExperimental(experimental *string) v1.Experimental {
 		return exp
 	}
 
-	json.Unmarshal([]byte(*experimental), &exp)
+	json.Unmarshal([]byte(*experimental), &exp) //nolint:errcheck
 
 	return exp
 }

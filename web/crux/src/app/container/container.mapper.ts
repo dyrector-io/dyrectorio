@@ -234,6 +234,7 @@ export default class ContainerMapper {
       labels: config.labels ?? null,
       metrics: config.metrics ?? null,
       replicas: toNullableNumber(config.replicas),
+      experimental: config.experimental ?? null,
     } as any as ConfigData
   }
 
@@ -284,6 +285,7 @@ export default class ContainerMapper {
       labels: toPrismaJson(config.labels),
       metrics: toPrismaJson(config.metrics),
       replicas: toNullableNumber(config.replicas),
+      experimental: toPrismaJson(config.experimental),
     }
   }
 
@@ -330,6 +332,7 @@ export default class ContainerMapper {
       labels: 'labels' in config ? toPrismaJson(config.labels) : undefined,
       metrics: 'metrics' in config ? toPrismaJson(config.metrics) : undefined,
       replicas: 'replicas' in config ? toNullableNumber(config.replicas) : undefined,
+      experimental: 'experimental' in config ? toPrismaJson(config.experimental) : undefined,
     }
   }
 

@@ -305,6 +305,7 @@ model ContainerConfig {
   labels             Json?
   metrics            Json?
   replicas           Int?
+  experimental       Json?
 
   image        Image?
   instance     Instance?

@@ -419,6 +419,9 @@ export class ContainerConfigDto {
   @ValidateNested()
   storage?: ContainerStorageDto
 
+  @IsOptional()
+  experimental?: Record<string, any>
+
   // dagent
   @IsOptional()
   @ValidateNested()
@@ -491,6 +494,10 @@ export class ContainerConfigDto {
   @IsOptional()
   @ValidateNested()
   metrics?: MetricsDto
+
+  @IsOptional()
+  @IsInt()
+  replicas?: number
 }
 
 export class ContainerConfigRelationsDto {

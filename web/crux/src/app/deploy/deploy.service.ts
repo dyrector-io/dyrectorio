@@ -607,6 +607,7 @@ export default class DeployService {
               common: this.mapper.commonConfigToAgentProto(config, storage),
               crane: this.mapper.craneConfigToAgentProto(config),
               dagent: this.mapper.dagentConfigToAgentProto(config),
+              experimental: typeof config.experimental === 'object' ? JSON.stringify(config.experimental) : null,
               id: it.id,
               imageName: it.image.name,
               tag: it.image.tag,

@@ -241,6 +241,7 @@ export type ContainerConfigData = {
   initContainers?: InitContainer[]
   capabilities?: UniqueKeyValue[]
   storage?: ContainerStorage
+  experimental?: Record<string, any>
 
   // dagent
   logConfig?: Log
