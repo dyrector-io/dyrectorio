@@ -186,19 +186,23 @@ type ContainerConfig struct {
 	// These are CORS headers, providing value will enable CORS and add these headers as extra
 	CorsHeaders []string `json:"corsHeaders,omitempty"`
 	// Not all headers are proxied downstream by default, this allows the listed headers to reach backends
-	ProxyHeaders     []string                                `json:"proxyHeaders,omitempty"`
-	Mounts           []string                                `json:"mount"`
-	NodeSelector     map[string]string                       `json:"nodeSelector"`
-	Tolerations      []*applyv1.TolerationApplyConfiguration `json:"tolerations" binding:"dive"`
-	IngressPort      uint16                                  `json:"ingressPort"`
-	Replicas         uint8                                   `json:"replicas"`
-	Shared           bool                                    `json:"shared"`
-	ProxyBuffering   bool                                    `json:"proxyBuffering"`
-	UseLoadBalancer  bool                                    `json:"useLoadBalancer"`
-	Expose           bool                                    `json:"expose"`
-	ExposeTLS        bool                                    `json:"exposeTls"`
-	IngressStripPath bool                                    `json:"ingressPathStrip"`
-	TTY              bool                                    `json:"tty"`
+	ProxyHeaders     []string     `json:"proxyHeaders,omitempty"`
+	Mounts           []string     `json:"mount"`
+	IngressPort      uint16       `json:"ingressPort"`
+	Replicas         uint8        `json:"replicas"`
+	Shared           bool         `json:"shared"`
+	ProxyBuffering   bool         `json:"proxyBuffering"`
+	UseLoadBalancer  bool         `json:"useLoadBalancer"`
+	Expose           bool         `json:"expose"`
+	ExposeTLS        bool         `json:"exposeTls"`
+	IngressStripPath bool         `json:"ingressPathStrip"`
+	TTY              bool         `json:"tty"`
+	Experimental     Experimental `json:"experimental"`
+}
+
+type Experimental struct {
+	NodeSelector map[string]string                       `json:"nodeSelector"`
+	Tolerations  []*applyv1.TolerationApplyConfiguration `json:"tolerations" binding:"dive"`
 }
 
 type Metrics struct {
