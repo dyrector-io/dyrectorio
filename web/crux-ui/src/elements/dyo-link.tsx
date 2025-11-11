@@ -1,22 +1,32 @@
 import Link, { LinkProps } from 'next/link'
+import { useRouter } from 'next/router'
 import { sendQAClickEvent } from 'quality-assurance'
 import { useCallback } from 'react'
 
 type DyoLinkProps = Omit<React.AnchorHTMLAttributes<HTMLAnchorElement>, keyof LinkProps> &
   LinkProps & {
     qaLabel: string
+    reloadDocument?: boolean
     children: React.ReactNode
   } & React.RefAttributes<HTMLAnchorElement>
 
 const DyoLink = (props: DyoLinkProps) => {
-  const { qaLabel, onClick: propsOnClick, ...forwardedProps } = props
+  const { qaLabel, href, reloadDocument, onClick: propsOnClick, ...forwardedProps } = props
+
+  const router = useRouter()
+
+  const shouldReload = reloadDocument && router.asPath === href
 
   const sendQAEvent = useCallback(() => {
     sendQAClickEvent({
       elementType: 'a',
       label: qaLabel,
     })
-  }, [qaLabel])
+
+    if (shouldReload) {
+      router.reload()
+    }
+  }, [qaLabel, shouldReload, router])
 
   const onClick = propsOnClick
     ? ev => {
@@ -25,7 +35,7 @@ const DyoLink = (props: DyoLinkProps) => {
       }
     : sendQAEvent
 
-  return <Link {...forwardedProps} onClick={onClick} />
+  return <Link href={href} {...forwardedProps} onClick={onClick} />
 }
 
 export default DyoLink

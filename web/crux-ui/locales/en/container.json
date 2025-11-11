@@ -176,5 +176,8 @@
   "errors": {
     "ambiguousInConfigs": "Ambigous in {{configs}}",
     "ambiguousKeyInConfigs": "Ambigous {{key}} in {{configs}}"
-  }
+  },
+
+  "reset": "Reset",
+  "areYouSureResetSection": "Are you sure you want to reset {{section}}"
 }

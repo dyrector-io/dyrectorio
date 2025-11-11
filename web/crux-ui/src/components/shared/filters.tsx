@@ -22,7 +22,7 @@ const Filters = (props: FiltersProps) => {
         {t('common:filters')}
       </DyoHeading>
 
-      <div className="flex items-center mt-4">
+      <div className="flex flex-row items-center mt-4">
         <DyoInput
           className={clsx(searchClassName ?? 'grow')}
           placeholder={t('common:search')}

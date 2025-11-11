@@ -19,7 +19,9 @@ import DyoButton from '@app/elements/dyo-button'
 import { DyoCard } from '@app/elements/dyo-card'
 import { DyoHeading } from '@app/elements/dyo-heading'
 import DyoMessage from '@app/elements/dyo-message'
+import { DyoConfirmationModal } from '@app/elements/dyo-modal'
 import WebSocketSaveIndicator from '@app/elements/web-socket-save-indicator'
+import useConfirmation from '@app/hooks/use-confirmation'
 import useTeamRoutes from '@app/hooks/use-team-routes'
 import { CANCEL_THROTTLE, useThrottling } from '@app/hooks/use-throttleing'
 import useWebSocket from '@app/hooks/use-websocket'
@@ -64,6 +66,7 @@ import { getCruxFromContext } from '@server/crux-api'
 import { GetServerSidePropsContext } from 'next'
 import { Translate } from 'next-translate'
 import useTranslation from 'next-translate/useTranslation'
+import { QA_DIALOG_LABEL_RESET_SECTION } from 'quality-assurance'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
 const pageLinkOf = (t: Translate, url: string, type: ContainerConfigType): BreadcrumbLink => {
@@ -231,6 +234,8 @@ const ContainerConfigPage = (props: ContainerConfigPageProps) => {
   const { t } = useTranslation('container')
   const routes = useTeamRoutes()
 
+  const [confirmModal, confirm] = useConfirmation()
+
   const [resettableConfig, setResettableConfig] = useState<ContainerConfigDetails>(propsConfig)
   const [viewState, setViewState] = useState<ViewState>('editor')
   const [fieldErrors, setFieldErrors] = useState<ContainerConfigValidationErrors>(() =>
@@ -353,7 +358,19 @@ const ContainerConfigPage = (props: ContainerConfigPageProps) => {
     })
   }
 
-  const onResetSection = (section: ContainerConfigKey) => {
+  const onResetSection = async (section: ContainerConfigKey) => {
+    const confirmed = await confirm({
+      title: t('common:areYouSure'),
+      description: t('areYouSureResetSection', { section }),
+      confirmText: t('reset'),
+      confirmColor: 'bg-error-red',
+      qaLabel: QA_DIALOG_LABEL_RESET_SECTION,
+    })
+
+    if (!confirmed) {
+      return
+    }
+
     const newConfig = { ...resettableConfig } as any
     newConfig[section] = section === 'user' ? -1 : null
 
@@ -514,6 +531,8 @@ const ContainerConfigPage = (props: ContainerConfigPageProps) => {
           />
         </DyoCard>
       )}
+
+      {confirmModal && <DyoConfirmationModal config={confirmModal} />}
     </Layout>
   )
 }

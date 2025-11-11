@@ -1,3 +1,4 @@
+import { containerNameOfInstance, Instance } from '@app/models'
 import { nameRule } from './common'
 import { createConcreteContainerConfigSchema, uniqueKeyValuesSchema } from './container'
 import yup from './yup'
@@ -55,7 +56,7 @@ export const startDeploymentSchema = yup.object({
     .test(
       'containerNameAreUnique',
       'Container names must be unique',
-      instances => new Set(instances.map(it => it.config.name)).size === instances.length,
+      instances => new Set(instances.map((it: Instance) => containerNameOfInstance(it))).size === instances.length,
     ),
 })
 
