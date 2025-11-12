@@ -240,7 +240,7 @@ const squashConfigs = (strong: ContainerConfigData, weak: ContainerConfigData): 
   networks: strong.networks ?? weak.networks,
   dockerLabels: strong.dockerLabels ?? weak.dockerLabels,
   expectedState: strong.expectedState ?? weak.expectedState,
-  experimental: mergeObject(strong, weak),
+  experimental: mergeObject(strong.experimental, weak.experimental),
 })
 
 const mergeConfigs = (strong: ContainerConfigData, weak: ContainerConfigData): ContainerConfigData => ({
@@ -282,7 +282,7 @@ const mergeConfigs = (strong: ContainerConfigData, weak: ContainerConfigData): C
   networks: mergeUniqueKeys(strong.networks, weak.networks),
   dockerLabels: mergeUniqueKeyValues(strong.dockerLabels, weak.dockerLabels),
   expectedState: strong.expectedState ?? weak.expectedState ?? null,
-  experimental: mergeObject(strong, weak),
+  experimental: mergeObject(strong.experimental, weak.experimental),
 })
 
 export const mergeConfigList = (configs: ContainerConfigData[]): ContainerConfigData =>
