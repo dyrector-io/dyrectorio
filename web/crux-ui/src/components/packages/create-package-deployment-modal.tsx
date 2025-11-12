@@ -40,7 +40,7 @@ const CreatePackageDeploymentModal = (props: CreatePackageDeploymentModalProps) 
 
   const filters = useFilters<PackageVersion, TextFilter>({
     filters: [textFilterFor<PackageVersion>(it => [it.name])],
-    data: chain?.versions ?? [],
+    data: chain?.versions?.reverse() ?? [],
     initialFilter: {
       text: '',
     },
