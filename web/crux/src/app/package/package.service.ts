@@ -179,8 +179,8 @@ class PackageService {
                     },
                   },
                   orderBy: {
-                    createdAt: 'asc'
-                  }
+                    createdAt: 'asc',
+                  },
                 },
               },
             },
