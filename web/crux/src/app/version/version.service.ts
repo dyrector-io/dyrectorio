@@ -435,10 +435,24 @@ export default class VersionService {
   }
 
   async deleteVersion(versionId: string): Promise<void> {
-    await this.prisma.version.delete({
-      where: {
-        id: versionId,
-      },
+    await this.prisma.$transaction(async prisma => {
+      const version = await prisma.version.delete({
+        where: {
+          id: versionId,
+        },
+        select: {
+          chainId: true,
+          parent: true,
+        },
+      })
+
+      if (version.chainId === versionId) {
+        await prisma.versionChain.delete({
+          where: {
+            id: versionId,
+          },
+        })
+      }
     })
   }
 
