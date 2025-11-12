@@ -242,8 +242,8 @@ describe('container-merge', () => {
     metrics: null,
     expectedState: null,
     experimental: {
-      testFeature: "test"
-    }
+      testFeature: 'test',
+    },
   }
 
   const fullConcreteConfig: ConcreteContainerConfigData = {
@@ -484,8 +484,8 @@ describe('container-merge', () => {
     metrics: null,
     expectedState: null,
     experimental: {
-      testFeature: "concrete.test"
-    }
+      testFeature: 'concrete.test',
+    },
   }
 
   const fullDeploymentConfig: ConcreteContainerConfigData = {
@@ -734,8 +734,8 @@ describe('container-merge', () => {
     metrics: null,
     expectedState: null,
     experimental: {
-      testFeature: "deployment.test"
-    }
+      testFeature: 'deployment.test',
+    },
   }
 
   describe('mergeConfigsWithConcreteConfig', () => {
