@@ -1,6 +1,7 @@
 package mapper
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"strings"
@@ -71,6 +72,7 @@ func mapContainerConfig(prefix string, in *agent.DeployWorkloadRequest) v1.Conta
 		Secrets:          cc.Secrets,
 		InitContainers:   mapInitContainers(cc.InitContainers),
 		ImportContainer:  mapImportContainer(in.Common.ImportContainer),
+		Experimental:     mapExperimental(in.Experimental),
 	}
 
 	if cc.Environment != nil {
@@ -654,6 +656,17 @@ func mapKubeStatusToCruxContainerState(stateItem *common.ContainerStateItem, kub
 	}
 
 	return fmt.Errorf("unknown pod container state: %s", kubeContainerState.String())
+}
+
+func mapExperimental(experimental *string) v1.Experimental {
+	exp := v1.Experimental{}
+	if experimental == nil {
+		return exp
+	}
+
+	json.Unmarshal([]byte(*experimental), &exp) //nolint:errcheck
+
+	return exp
 }
 
 func MapDockerStateToCruxContainerState(state string) common.ContainerState {

@@ -335,6 +335,7 @@ export interface DeployWorkloadRequest {
   common?: CommonContainerConfig | undefined
   dagent?: DagentContainerConfig | undefined
   crane?: CraneContainerConfig | undefined
+  experimental?: string | undefined
   registry?: string | undefined
   imageName: string
   tag: string
@@ -1359,6 +1360,7 @@ export const DeployWorkloadRequest = {
       common: isSet(object.common) ? CommonContainerConfig.fromJSON(object.common) : undefined,
       dagent: isSet(object.dagent) ? DagentContainerConfig.fromJSON(object.dagent) : undefined,
       crane: isSet(object.crane) ? CraneContainerConfig.fromJSON(object.crane) : undefined,
+      experimental: isSet(object.experimental) ? String(object.experimental) : undefined,
       registry: isSet(object.registry) ? String(object.registry) : undefined,
       imageName: isSet(object.imageName) ? String(object.imageName) : '',
       tag: isSet(object.tag) ? String(object.tag) : '',
@@ -1374,6 +1376,7 @@ export const DeployWorkloadRequest = {
     message.dagent !== undefined &&
       (obj.dagent = message.dagent ? DagentContainerConfig.toJSON(message.dagent) : undefined)
     message.crane !== undefined && (obj.crane = message.crane ? CraneContainerConfig.toJSON(message.crane) : undefined)
+    message.experimental !== undefined && (obj.experimental = message.experimental)
     message.registry !== undefined && (obj.registry = message.registry)
     message.imageName !== undefined && (obj.imageName = message.imageName)
     message.tag !== undefined && (obj.tag = message.tag)

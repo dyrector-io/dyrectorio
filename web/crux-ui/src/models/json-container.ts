@@ -92,6 +92,7 @@ export type JsonContainerConfig = {
   capabilities?: JsonKeyValue
   storage?: ContainerStorage
   expectedState?: ExpectedContainerState
+  experimental?: Record<string, any>
 
   // dagent
   logConfig?: JsonContainerConfigLog
@@ -236,6 +237,7 @@ export const containerConfigToJsonConfig = (config: ContainerConfigData): JsonCo
       },
   metrics: config.metrics ?? null,
   replicas: config.replicas ?? null,
+  experimental: config.experimental ?? null,
 })
 
 export const concreteContainerConfigToJsonConfig = (config: ConcreteContainerConfig): ConcreteJsonContainerConfig => {
@@ -519,6 +521,7 @@ export const mergeJsonConfigToConcreteContainerConfig = (
             id: currentVol?.id ?? uuid(),
           }
         }),
+    experimental: json.experimental ?? null,
   }
 
   return result
@@ -531,6 +534,7 @@ export const mergeJsonWithContainerConfig = (config: ContainerConfig, json: Json
   }
 
   const mergedConf = mergeJsonConfigToConcreteContainerConfig(concreteConfig, json)
+
   return {
     ...config,
     ...mergedConf,

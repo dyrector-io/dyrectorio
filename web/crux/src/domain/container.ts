@@ -199,6 +199,7 @@ export type ContainerConfigData = {
   storageSet?: boolean
   storageId?: string
   storageConfig?: Storage
+  experimental?: Record<string, any>
 
   // dagent
   logConfig?: Log

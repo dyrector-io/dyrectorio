@@ -13,6 +13,8 @@ import (
 	"github.com/rs/zerolog/log"
 	"k8s.io/apimachinery/pkg/api/resource"
 
+	applyv1 "k8s.io/client-go/applyconfigurations/core/v1"
+
 	"github.com/dyrector-io/dyrectorio/golang/internal/config"
 	imageHelper "github.com/dyrector-io/dyrectorio/golang/internal/helper/image"
 	"github.com/dyrector-io/dyrectorio/golang/internal/util"
@@ -163,7 +165,7 @@ type ContainerConfig struct {
 	Metrics            *Metrics                    `json:"metrics,omitempty"`
 	DockerLabels       map[string]string           `json:"dockerLabels"`
 	ResourceConfig     ResourceConfig              `json:"resourceConfig"`
-	IngressPath        string                      `json:"ingressPath"`
+	NetworkMode        string                      `json:"networkMode"`
 	Container          string                      `json:"container" binding:"required"`
 	DeploymentStrategy string                      `json:"deploymentStrategy"`
 	IngressUploadLimit string                      `json:"ingressUploadLimit"`
@@ -171,30 +173,34 @@ type ContainerConfig struct {
 	WorkingDirectory   string                      `json:"workingDirectory"`
 	IngressName        string                      `json:"ingressName"`
 	ContainerPreName   string                      `json:"containerPreName"`
-	NetworkMode        string                      `json:"networkMode"`
+	IngressPath        string                      `json:"ingressPath"`
 	RestartPolicy      container.RestartPolicyMode `json:"restartPolicy"`
 	RuntimeConfigType  RuntimeConfigType           `json:"runtimeConfigType"`
-	InitContainers     []InitContainer             `json:"initContainers,omitempty" binding:"dive"`
-	Volumes            []Volume                    `json:"volumes,omitempty" binding:"dive"`
-	Args               []string                    `json:"args"`
-	Command            []string                    `json:"command"`
+	Experimental       Experimental                `json:"experimental"`
 	Networks           []string                    `json:"networks"`
+	InitContainers     []InitContainer             `json:"initContainers,omitempty" binding:"dive"`
+	Command            []string                    `json:"command"`
+	Volumes            []Volume                    `json:"volumes,omitempty" binding:"dive"`
 	Ports              []builder.PortBinding       `json:"port" binding:"dive"`
 	PortRanges         []builder.PortRangeBinding  `json:"portRanges" binding:"dive"`
-	// These are CORS headers, providing value will enable CORS and add these headers as extra
-	CorsHeaders []string `json:"corsHeaders,omitempty"`
-	// Not all headers are proxied downstream by default, this allows the listed headers to reach backends
-	ProxyHeaders     []string `json:"proxyHeaders,omitempty"`
-	Mounts           []string `json:"mount"`
-	IngressPort      uint16   `json:"ingressPort"`
-	Replicas         uint8    `json:"replicas"`
-	Shared           bool     `json:"shared"`
-	ProxyBuffering   bool     `json:"proxyBuffering"`
-	UseLoadBalancer  bool     `json:"useLoadBalancer"`
-	Expose           bool     `json:"expose"`
-	ExposeTLS        bool     `json:"exposeTls"`
-	IngressStripPath bool     `json:"ingressPathStrip"`
-	TTY              bool     `json:"tty"`
+	CorsHeaders        []string                    `json:"corsHeaders,omitempty"`
+	ProxyHeaders       []string                    `json:"proxyHeaders,omitempty"`
+	Mounts             []string                    `json:"mount"`
+	Args               []string                    `json:"args"`
+	IngressPort        uint16                      `json:"ingressPort"`
+	Shared             bool                        `json:"shared"`
+	ProxyBuffering     bool                        `json:"proxyBuffering"`
+	UseLoadBalancer    bool                        `json:"useLoadBalancer"`
+	Expose             bool                        `json:"expose"`
+	ExposeTLS          bool                        `json:"exposeTls"`
+	IngressStripPath   bool                        `json:"ingressPathStrip"`
+	TTY                bool                        `json:"tty"`
+	Replicas           uint8                       `json:"replicas"`
+}
+
+type Experimental struct {
+	NodeSelector map[string]string                       `json:"nodeSelector"`
+	Tolerations  []*applyv1.TolerationApplyConfiguration `json:"tolerations" binding:"dive"`
 }
 
 type Metrics struct {
