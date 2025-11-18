@@ -44,6 +44,22 @@ export type IncreasedVersion = Omit<Version, 'id' | 'createdAt' | 'createdBy' | 
   deployments: CopiedDeployment[]
 }
 
+export type CreateDeploymentStatement = Omit<
+  Deployment,
+  | 'id'
+  | 'nodeId'
+  | 'versionId'
+  | 'configId'
+  | 'updatedAt'
+  | 'updatedBy'
+  | 'createdAt'
+  | 'createdBy'
+  | 'deployedAt'
+  | 'deployedBy'
+> & {
+  config: Omit<ContainerConfig, 'id' | 'type' | 'updatedAt' | 'updatedBy'>
+}
+
 const copyConfig = (config: ContainerConfig | null): Omit<ContainerConfig, 'id'> | null => {
   if (!config) {
     return null

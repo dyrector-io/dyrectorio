@@ -602,6 +602,7 @@ export default class VersionService {
               instances: undefined,
               config: {
                 create: {
+                  ...data.config,
                   type: 'deployment',
                 },
               },
