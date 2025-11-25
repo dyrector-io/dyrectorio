@@ -40,7 +40,7 @@
   "dependencies": {
     "@grpc/grpc-js": "^1.9.15",
     "@grpc/proto-loader": "^0.7.8",
-    "@nestjs-modules/mailer": "^1.9.1",
+    "@nestjs-modules/mailer": "^2.0.1",
     "@nestjs/axios": "^3.0.0",
     "@nestjs/cache-manager": "^2.3.0",
     "@nestjs/cli": "^10.4.5",
@@ -70,7 +70,7 @@
     "google-protobuf": "^3.21.2",
     "handlebars": "^4.7.8",
     "nestjs-pino": "^3.3.0",
-    "nodemailer": "^6.9.9",
+    "nodemailer": "^7.0.10",
     "passport": "^0.6.0",
     "passport-jwt": "^4.0.1",
     "pg": "^8.11.2",
