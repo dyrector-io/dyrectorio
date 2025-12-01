@@ -1,5 +1,6 @@
 import { ContainerConfig, Image, Registry } from '@prisma/client'
 import { CruxInternalServerErrorException } from 'src/exception/crux-exception'
+import { naturalSortCollator } from './utils'
 
 export const DYO_ENV_LABEL_PREFIX = 'org.dyrectorio.env'
 
@@ -90,4 +91,30 @@ export const registryImageNameToContainerName = (name: string) => {
   }
 
   return name
+}
+
+export const latestVersionOfTags = (tags: string[], defaultTag: string): string => {
+  if (tags.length < 1) {
+    return defaultTag
+  }
+
+  tags = [...tags]
+  tags.sort((one, other) => naturalSortCollator.compare(other, one))
+
+  let latest: string = defaultTag
+  // eslint-disable-next-line no-restricted-syntax
+  for (const tag of tags) {
+    if (tag.length < 1) {
+      continue
+    }
+
+    if (Number.isNaN(Number.parseInt(tag[0], 10))) {
+      continue
+    }
+
+    latest = tag
+    break
+  }
+
+  return latest
 }

@@ -13,7 +13,7 @@ import useSubmit from '@app/hooks/use-submit'
 import useTeamRoutes from '@app/hooks/use-team-routes'
 import { ConfigBundle, ConfigBundleDetails } from '@app/models'
 import { ANCHOR_NEW, ListRouteOptions, TeamRoutes } from '@app/routes'
-import { withContextAuthorization } from '@app/utils'
+import { naturalSortCollator, withContextAuthorization } from '@app/utils'
 import { getCruxFromContext } from '@server/crux-api'
 import clsx from 'clsx'
 import { GetServerSidePropsContext } from 'next'
@@ -26,6 +26,7 @@ interface ConfigBundlesPageProps {
 
 const ConfigBundles = (props: ConfigBundlesPageProps) => {
   const { bundles } = props
+  bundles.sort((one, other) => naturalSortCollator.compare(one.name, other.name))
 
   const { t } = useTranslation('config-bundles')
   const routes = useTeamRoutes()
@@ -62,6 +63,7 @@ const ConfigBundles = (props: ConfigBundlesPageProps) => {
       {!creating ? null : (
         <EditConfigBundleCard className="mb-8 px-8 py-6" submit={submit} onConfigBundleEdited={onCreated} />
       )}
+
       {filters.items.length ? (
         <>
           <Filters setTextFilter={it => filters.setFilter({ text: it })} />

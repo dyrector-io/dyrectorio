@@ -20,6 +20,9 @@ export type ImageTagMessage = {
   tag: string
 }
 
+export const WS_TYPE_UPDATE_IMAGE_TAGS_TO_LATEST = 'update-image-tags-to-latest'
+export const WS_TYPE_IMAGE_TAGS_UPDATED_TO_LATEST = 'image-tags-updated-to-latest'
+
 export const WS_TYPE_IMAGES_ADDED = 'images-added'
 export type ImagesAddedMessage = {
   images: ImageDetailsDto[]

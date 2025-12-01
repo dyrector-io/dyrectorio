@@ -43,9 +43,11 @@ import {
   WS_TYPE_IMAGE,
   WS_TYPE_IMAGES_WERE_REORDERED,
   WS_TYPE_IMAGE_DELETED,
+  WS_TYPE_IMAGE_TAGS_UPDATED_TO_LATEST,
   WS_TYPE_IMAGE_TAG_UPDATED,
   WS_TYPE_ORDER_IMAGES,
   WS_TYPE_SET_IMAGE_TAG,
+  WS_TYPE_UPDATE_IMAGE_TAGS_TO_LATEST,
 } from './version.message'
 import VersionService from './version.service'
 
@@ -67,7 +69,7 @@ export default class VersionWebSocketGateway {
 
   @WsAuthorize()
   async onAuthorize(
-    @TeamSlug() teamSlug,
+    @TeamSlug() teamSlug: string,
     @VersionId() versionId: string,
     @IdentityFromSocket() identity: Identity,
   ): Promise<boolean> {
@@ -153,7 +155,7 @@ export default class VersionWebSocketGateway {
 
   @SubscribeMessage(WS_TYPE_SET_IMAGE_TAG)
   async setImageTag(
-    @TeamSlug() teamSlug,
+    @TeamSlug() teamSlug: string,
     @SocketClient() client: WsClient,
     @SocketMessage() message: ImageTagMessage,
     @IdentityFromSocket() identity: Identity,
@@ -174,6 +176,28 @@ export default class VersionWebSocketGateway {
     }
 
     subscription.sendToAllExcept(client, res)
+
+    return {
+      type: WS_TYPE_PATCH_RECEIVED,
+      data: null,
+    }
+  }
+
+  @SubscribeMessage(WS_TYPE_UPDATE_IMAGE_TAGS_TO_LATEST)
+  async setImageTagsToLatest(
+    @TeamSlug() teamSlug: string,
+    @VersionId() versionId: string,
+    @IdentityFromSocket() identity: Identity,
+    @SocketSubscription() subscription: WsSubscription,
+  ): Promise<WsMessage<null>> {
+    const data = await this.imageService.setImageTagsToLatest(teamSlug, versionId, identity)
+
+    const res: WsMessage<ImageTagMessage[]> = {
+      type: WS_TYPE_IMAGE_TAGS_UPDATED_TO_LATEST,
+      data,
+    }
+
+    subscription.sendToAll(res)
 
     return {
       type: WS_TYPE_PATCH_RECEIVED,

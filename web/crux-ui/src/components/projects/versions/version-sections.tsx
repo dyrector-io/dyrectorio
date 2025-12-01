@@ -51,7 +51,7 @@ const VersionSections = (props: VersionSectionsProps) => {
     <>
       {state.addSection === 'none' ? (
         <VersionSectionsHeading
-          versionMutable={!state.version.mutable}
+          versionMutable={state.version.mutable}
           state={state}
           actions={actions}
           saveImageOrderRef={saveImageOrderRef}
