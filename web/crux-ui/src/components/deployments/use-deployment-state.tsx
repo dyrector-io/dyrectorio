@@ -7,6 +7,7 @@ import usePersistedViewMode from '@app/hooks/use-persisted-view-mode'
 import useTeamRoutes from '@app/hooks/use-team-routes'
 import useWebSocket from '@app/hooks/use-websocket'
 import {
+  Container,
   DeploymentDetails,
   deploymentIsCopiable,
   deploymentIsDeletable,
@@ -32,6 +33,7 @@ import WebSocketClientEndpoint from '@app/websockets/websocket-client-endpoint'
 import useTranslation from 'next-translate/useTranslation'
 import { QA_DIALOG_LABEL_REVOKE_DEPLOY_TOKEN } from 'quality-assurance'
 import { useState } from 'react'
+import useNodeContainersState from '../nodes/use-node-containers-state'
 
 export type DeploymentEditState = 'details' | 'edit' | 'copy' | 'create-token'
 
@@ -47,6 +49,7 @@ export type DeploymentState = {
   node: DyoNode
   version: VersionDetails
   instances: Instance[]
+  containers: Container[] | null
   mutable: boolean
   deployable: boolean
   copiable: boolean
@@ -58,7 +61,7 @@ export type DeploymentState = {
   sock: WebSocketClientEndpoint
   showDeploymentLog: boolean
   confirmationModal: DyoConfirmationModalConfig
-  deployInstances: string[]
+  selectedInstanceIds: string[]
 }
 
 export type DeploymentActions = {
@@ -85,7 +88,8 @@ const useDeploymentState = (options: DeploymentStateOptions): [DeploymentState, 
   const [instances, setInstances] = useState<Instance[]>(deployment.instances ?? [])
   const [viewMode, setViewMode] = usePersistedViewMode({ initialViewMode: 'list', pageName: 'deployments' })
   const [confirmationModal, confirm] = useConfirmation()
-  const [deployInstances, setDeployInstances] = useState<string[]>(deployment.instances?.map(it => it.id) ?? [])
+  const [selectedInstanceIds, setDeployInstances] = useState<string[]>(deployment.instances?.map(it => it.id) ?? [])
+  const containers = useNodeContainersState(deployment)
 
   const mutable = deploymentIsMutable(deployment.status)
   const deployable = deploymentIsDeployable(deployment.status)
@@ -162,11 +166,11 @@ const useDeploymentState = (options: DeploymentStateOptions): [DeploymentState, 
   }
 
   const onInstanceSelected = (id: string, deploy: boolean) => {
-    if ((deploy && deployInstances.includes(id)) || (!deploy && !deployInstances.includes(id))) {
+    if ((deploy && selectedInstanceIds.includes(id)) || (!deploy && !selectedInstanceIds.includes(id))) {
       return
     }
 
-    setDeployInstances(deploy ? [...deployInstances, id] : [...deployInstances.filter(it => it !== id)])
+    setDeployInstances(deploy ? [...selectedInstanceIds, id] : [...selectedInstanceIds.filter(it => it !== id)])
   }
 
   const onAllInstancesToggled = (deploy: boolean) => {
@@ -180,6 +184,7 @@ const useDeploymentState = (options: DeploymentStateOptions): [DeploymentState, 
       version,
       node,
       instances,
+      containers,
       saveState,
       editState,
       mutable,
@@ -191,7 +196,7 @@ const useDeploymentState = (options: DeploymentStateOptions): [DeploymentState, 
       sock,
       showDeploymentLog,
       confirmationModal,
-      deployInstances,
+      selectedInstanceIds,
     },
     {
       setEditState,

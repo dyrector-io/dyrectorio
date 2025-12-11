@@ -30,21 +30,16 @@ export default class CachedPublicHubApiClient extends HubApiClient implements Re
   }
 
   async tags(image: string): Promise<RegistryImageWithTags> {
-    let tags: string[] = this.hubCache.get(image)
+    let tags: RegistryImageTag[] = this.hubCache.get(image)
     if (!tags) {
       tags = await this.fetchTags(image)
 
       this.hubCache.upsert(image, tags)
     }
 
-    // NOTE(@robot9706): Docker ratelimits us so skip tag info for now
-    const tagsWithInfo: RegistryImageTag[] = tags.map(it => ({
-      name: it,
-    }))
-
     return {
       name: image,
-      tags: tagsWithInfo,
+      tags,
     }
   }
 

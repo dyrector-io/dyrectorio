@@ -104,8 +104,8 @@ const VerifyPage = (props: VerifyProps) => {
 
   const formik = useDyoFormik({
     initialValues: {
-      email: !flowEmailSent ? email ?? '' : null,
-      code: flowEmailSent ? findAttributes(ui, 'code')?.value ?? '' : null,
+      email: !flowEmailSent ? (email ?? '') : null,
+      code: flowEmailSent ? (findAttributes(ui, 'code')?.value ?? '') : null,
     },
     validationSchema: !flowEmailSent ? verifyEmailSchema : verifyCodeSchema,
     t,

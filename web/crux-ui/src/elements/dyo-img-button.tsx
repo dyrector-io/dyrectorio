@@ -33,7 +33,7 @@ const DyoImgButton = (props: DyoImgButtonProps) => {
 
   const defaultColor = outlined ? (secondary ? 'ring-warning-orange' : 'ring-dyo-turquoise') : null
   const disabledColor = outlined ? 'ring-light-grey' : null
-  const color = disabled ? disabledColor : colorClassName ?? defaultColor
+  const color = disabled ? disabledColor : (colorClassName ?? defaultColor)
 
   const ring = outlined ? 'ring-2' : null
 

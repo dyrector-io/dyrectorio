@@ -1,3 +1,4 @@
+/* eslint-disable func-names */
 import { RegistryType } from '@app/models'
 import * as yup from 'yup'
 

@@ -218,6 +218,8 @@ const DyoTable = <T,>(props: React.PropsWithChildren<DyoTableProps<T>>) => {
     }
 
     setData(sorted)
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [propData, sort])
 
   const pageItems =
@@ -238,10 +240,10 @@ const DyoTable = <T,>(props: React.PropsWithChildren<DyoTableProps<T>>) => {
                 columns.length === 1
                   ? 'rounded-t-lg px-6'
                   : index === 0
-                  ? 'rounded-tl-lg pl-6'
-                  : index === columns.length - 1
-                  ? 'rounded-tr-lg pr-6'
-                  : null
+                    ? 'rounded-tl-lg pl-6'
+                    : index === columns.length - 1
+                      ? 'rounded-tr-lg pr-6'
+                      : null
               const cursorClass = it.sortable ? 'cursor-pointer' : null
 
               return (

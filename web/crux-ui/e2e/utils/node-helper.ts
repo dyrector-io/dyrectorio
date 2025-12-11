@@ -143,10 +143,10 @@ const getInstallScriptExecSettings = (): ExecOptions => ({
         env: { ...process.env },
       }
     : process.platform === 'win32'
-    ? null
-    : {
-        env: { ...process.env, ROOTLESS: 'true', PERSISTENCE_FOLDER: `${__dirname}/dagent` },
-      }),
+      ? null
+      : {
+          env: { ...process.env, ROOTLESS: 'true', PERSISTENCE_FOLDER: `${__dirname}/dagent` },
+        }),
 })
 
 export const storeCmdOutput = (storage: string[]) => (err: Error, stdOut: string, stdErr: string) => {

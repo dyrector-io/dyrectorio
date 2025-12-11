@@ -67,8 +67,8 @@ export const DyoInput = forwardRef((props: DyoInputProps, ref: ForwardedRef<HTML
               disabled
                 ? 'text-bright-muted ring-light-grey-muted cursor-not-allowed'
                 : error
-                ? 'text-bright ring-error-red'
-                : 'text-bright ring-light-grey',
+                  ? 'text-bright ring-error-red'
+                  : 'text-bright ring-light-grey',
             )}
           />
 

@@ -45,30 +45,30 @@ const DyoButton = (props: DyoButtonProps) => {
   const onClick = href
     ? null
     : !propsOnClick
-    ? sendQAEvent
-    : ev => {
-        propsOnClick(ev)
-        sendQAEvent()
-      }
+      ? sendQAEvent
+      : ev => {
+          propsOnClick(ev)
+          sendQAEvent()
+        }
 
   const defaultColor = danger
     ? outlined
       ? 'ring-error-red'
       : 'bg-error-red'
     : secondary
-    ? outlined
-      ? 'ring-warning-orange'
-      : 'bg-warning-orange'
-    : outlined
-    ? 'ring-dyo-turquoise'
-    : 'bg-dyo-turquoise'
+      ? outlined
+        ? 'ring-warning-orange'
+        : 'bg-warning-orange'
+      : outlined
+        ? 'ring-dyo-turquoise'
+        : 'bg-dyo-turquoise'
   const disabledColor = outlined ? 'ring-light-grey-muted' : 'bg-light-grey-muted'
 
-  const color = text ? 'bg-transparent' : disabled ? disabledColor : colorClassName ?? defaultColor
+  const color = text ? 'bg-transparent' : disabled ? disabledColor : (colorClassName ?? defaultColor)
 
   const defaultTextColor = text || outlined ? (secondary ? 'text-warning-orange' : 'text-dyo-turquoise') : 'text-white'
 
-  const textColor = disabled ? 'text-light' : textColorClassName ?? defaultTextColor
+  const textColor = disabled ? 'text-light' : (textColorClassName ?? defaultTextColor)
 
   const ring = outlined && !text ? 'ring-2' : null
   const border = underlined ? 'border-b-2 border-dyo-turquoise' : null

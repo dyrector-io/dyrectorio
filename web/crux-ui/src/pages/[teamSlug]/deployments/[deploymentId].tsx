@@ -72,14 +72,14 @@ const DeploymentDetailsPage = (props: DeploymentDetailsPageProps) => {
       return
     }
 
-    if (state.deployInstances.length < 1) {
+    if (state.selectedInstanceIds.length < 1) {
       toast.error(t('noInstancesSelected'))
       return
     }
 
     await deploy({
       deployment,
-      selectedInstanceIds: state.deployInstances,
+      selectedInstanceIds: state.selectedInstanceIds,
     })
   }
 

@@ -6,8 +6,8 @@ import { waitSocketRef, wsPatchSent } from './websocket'
 import { PatchConfigMessage, WS_TYPE_PATCH_CONFIG } from '@app/models'
 
 const matchPatchEnvironment = (expected: Record<string, string>) => (message: PatchConfigMessage) =>
-  Object.entries(expected).every(
-    ([key, value]) => message.config?.environment?.find(it => it.key === key && it.value === value),
+  Object.entries(expected).every(([key, value]) =>
+    message.config?.environment?.find(it => it.key === key && it.value === value),
   )
 
 export const createConfigBundle = async (page: Page, name: string, data: Record<string, string>): Promise<string> => {
