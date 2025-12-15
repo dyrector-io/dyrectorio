@@ -36,6 +36,11 @@ const ConfigBundleDetailsPage = (props: ConfigBundleDetailsPageProps) => {
 
   const submit = useSubmit()
 
+  const onConfigBundleEdited = (bundle: ConfigBundleDetails) => {
+    setConfigBundle(bundle)
+    setEditing(false)
+  }
+
   const onDelete = async () => {
     const res = await fetch(routes.configBundle.api.details(configBundle.id), {
       method: 'DELETE',
@@ -78,7 +83,11 @@ const ConfigBundleDetailsPage = (props: ConfigBundleDetailsPageProps) => {
 
       <div className="flex flex-col gap-4">
         {editing ? (
-          <EditConfigBundleCard submit={submit} configBundle={configBundle} onConfigBundleEdited={setConfigBundle} />
+          <EditConfigBundleCard
+            submit={submit}
+            configBundle={configBundle}
+            onConfigBundleEdited={onConfigBundleEdited}
+          />
         ) : (
           <ConfigBundleCard configBundle={detailsToConfigBundle(configBundle)} />
         )}

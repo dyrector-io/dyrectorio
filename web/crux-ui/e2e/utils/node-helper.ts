@@ -68,6 +68,8 @@ export const deployWithDagent = async (
     await page.waitForSelector('h2:text-is("Projects")')
   }
 
+  await page.locator('button:has-text("Deployments")').click()
+
   await page.locator('button:has-text("Add deployment")').click()
 
   await page.waitForSelector(`button:has-text("${DAGENT_NODE}")`)

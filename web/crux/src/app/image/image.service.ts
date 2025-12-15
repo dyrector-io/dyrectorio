@@ -5,12 +5,13 @@ import { Identity } from '@ory/kratos-client'
 import { Prisma } from '@prisma/client'
 import { UniqueKeyValue, UniqueSecretKey } from 'src/domain/container'
 import { IMAGE_EVENT_ADD, IMAGE_EVENT_DELETE, ImageDeletedEvent, ImagesAddedEvent } from 'src/domain/domain-events'
-import { EnvironmentRule, parseDyrectorioEnvRules } from 'src/domain/image'
+import { EnvironmentRule, latestVersionOfTags, parseDyrectorioEnvRules } from 'src/domain/image'
 import PrismaService from 'src/services/prisma.service'
 import { v4 as uuid } from 'uuid'
 import ContainerConfigService from '../container/container-config.service'
 import RegistryClientProvider from '../registry/registry-client.provider'
 import TeamRepository from '../team/team.repository'
+import { ImageTagMessage } from '../version/version.message'
 import { AddImagesDto, ImageDetailsDto, PatchImageDto } from './image.dto'
 import ImageMapper from './image.mapper'
 
@@ -59,7 +60,6 @@ export default class ImageService {
   }
 
   async addImagesToVersion(
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     teamSlug: string,
     versionId: string,
     request: AddImagesDto[],
@@ -284,6 +284,61 @@ export default class ImageService {
         updatedBy: identity.id,
       },
     })
+  }
+
+  async setImageTagsToLatest(teamSlug: string, versionId: string, identity: Identity): Promise<ImageTagMessage[]> {
+    const images = await this.prisma.image.findMany({
+      where: {
+        versionId,
+      },
+    })
+
+    const teamId = await this.teamRepository.getTeamIdBySlug(teamSlug)
+
+    const imageToLatestTag: Map<string, string> = new Map()
+    await Promise.all(
+      images.map(async image => {
+        const registry = await this.registryClients.getByRegistryId(teamId, image.registryId)
+
+        if (!imageToLatestTag.has(image.name)) {
+          imageToLatestTag.set(image.name, image.tag)
+
+          const tags = await registry.client.tags(image.name)
+          const tagNames = tags.tags.map(it => it.name)
+          if (tagNames.length < 0) {
+            return
+          }
+
+          const latest = latestVersionOfTags(tagNames, image.tag)
+          imageToLatestTag.set(image.name, latest)
+        }
+      }),
+    )
+
+    const updates = await Promise.all(
+      images.map(async image => {
+        const newTag = imageToLatestTag.get(image.name)
+
+        await this.prisma.image.update({
+          where: {
+            id: image.id,
+          },
+          data: {
+            tag: newTag,
+            updatedBy: identity.id,
+          },
+        })
+
+        const result: ImageTagMessage = {
+          imageId: image.id,
+          tag: newTag,
+        }
+
+        return result
+      }),
+    )
+
+    return updates
   }
 
   async deleteImage(imageId: string): Promise<void> {

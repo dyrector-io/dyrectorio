@@ -119,6 +119,8 @@ export const addDeploymentToVersionlessProject = async (
   await page.goto(TEAM_ROUTES.project.details(projectId))
   await page.waitForSelector('h2:text-is("Projects")')
 
+  await page.locator('button:has-text("Deployments")').click()
+
   await page.locator('button:has-text("Add deployment")').click()
   await expect(page.locator('h4:has-text("Add deployment")')).toHaveCount(1)
 
@@ -152,6 +154,8 @@ export const addDeploymentToVersion = async (
 ): Promise<{ id: string; url: string }> => {
   await page.goto(TEAM_ROUTES.project.versions(projectId).details(versionId))
   await page.waitForSelector('h2:text-is("Versions")')
+
+  await page.locator('button:has-text("Deployments")').click()
 
   await page.locator('button:has-text("Add deployment")').click()
   await expect(page.locator('h4:has-text("Add deployment")')).toHaveCount(1)
