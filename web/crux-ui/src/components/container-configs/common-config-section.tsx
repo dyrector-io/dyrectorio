@@ -36,7 +36,7 @@ import {
   portRangeToString,
   stringResettable,
 } from '@app/models'
-import { fetcher, toNumber } from '@app/utils'
+import { fetcher, nullify, toNumber } from '@app/utils'
 import {
   ContainerConfigValidationErrors,
   findErrorFor,
@@ -66,6 +66,7 @@ type CommonConfigSectionProps = {
   secretInfos?: Map<string, SecretInfo>
   publicKey?: string
   baseConfig: ContainerConfigData | null
+  showCraneConfig: boolean
 }
 
 const CommonConfigSection = (props: CommonConfigSectionProps) => {
@@ -86,6 +87,7 @@ const CommonConfigSection = (props: CommonConfigSectionProps) => {
     resettableConfig,
     config,
     baseConfig,
+    showCraneConfig,
   } = props
 
   const { data: storages } = useSWR<StorageOption[]>(routes.storage.api.options(), fetcher)
@@ -680,6 +682,123 @@ const CommonConfigSection = (props: CommonConfigSectionProps) => {
           </div>
         )}
 
+        {/* resourceConfig */}
+        {filterContains('resourceConfig', selectedFilters) && (
+          <div>
+            <ConfigSectionLabel
+              disabled={disabled || !resettableConfig.resourceConfig}
+              onResetSection={() => onResetSection('resourceConfig')}
+              error={conflictErrors?.resourceConfig}
+            >
+              {t('common.resourceConfig').toUpperCase()}
+            </ConfigSectionLabel>
+
+            <div className="flex flex-row gap-16 m-2">
+              <div className="flex flex-col">
+                <DyoLabel className="font-semibold">{t('common.limits')}</DyoLabel>
+
+                <MultiInput
+                  id="common.limits.cpu"
+                  label={t('common.cpu')}
+                  containerClassName="max-w-lg mb-3"
+                  labelClassName="my-auto mr-4 w-40"
+                  className="w-full"
+                  inline
+                  grow
+                  value={config.resourceConfig?.limits?.cpu ?? ''}
+                  placeholder={t('common.placeholders.cpuUsageExample')}
+                  onPatch={it =>
+                    onChange({
+                      resourceConfig: {
+                        ...config.resourceConfig,
+                        limits: nullify({ ...config.resourceConfig?.limits, cpu: it }),
+                      },
+                    })
+                  }
+                  editorOptions={editorOptions}
+                  message={findErrorFor(fieldErrors, 'resourceConfig.limits.cpu')}
+                  disabled={disabled}
+                />
+
+                <MultiInput
+                  id="common.limits.memory"
+                  label={t('common.memory')}
+                  containerClassName="max-w-lg mb-3"
+                  labelClassName="my-auto mr-4 w-40"
+                  className="w-full"
+                  inline
+                  grow
+                  value={config.resourceConfig?.limits?.memory ?? ''}
+                  placeholder={t('common.placeholders.memoryUsageExample')}
+                  onPatch={it =>
+                    onChange({
+                      resourceConfig: {
+                        ...config.resourceConfig,
+                        limits: nullify({ ...config.resourceConfig?.limits, memory: it }),
+                      },
+                    })
+                  }
+                  editorOptions={editorOptions}
+                  message={findErrorFor(fieldErrors, 'resourceConfig.limits.memory')}
+                  disabled={disabled}
+                />
+              </div>
+
+              {showCraneConfig && (
+                <div className="flex flex-col">
+                  <DyoLabel className="font-semibold">{t('common.requestsK8s')}</DyoLabel>
+
+                  <MultiInput
+                    id="common.requests.cpu"
+                    label={t('common.cpu')}
+                    containerClassName="max-w-lg mb-3"
+                    labelClassName="my-auto mr-4 w-40"
+                    className="w-full"
+                    inline
+                    grow
+                    value={config.resourceConfig?.requests?.cpu ?? ''}
+                    placeholder={t('common.placeholders.cpuUsageExample')}
+                    onPatch={it =>
+                      onChange({
+                        resourceConfig: {
+                          ...config.resourceConfig,
+                          requests: nullify({ ...config.resourceConfig?.requests, cpu: it }),
+                        },
+                      })
+                    }
+                    editorOptions={editorOptions}
+                    message={findErrorFor(fieldErrors, 'resourceConfig.requests.cpu')}
+                    disabled={disabled}
+                  />
+
+                  <MultiInput
+                    id="common.requests.memory"
+                    label={t('common.memory')}
+                    containerClassName="max-w-lg mb-3"
+                    labelClassName="my-auto mr-4 w-40"
+                    className="w-full"
+                    inline
+                    grow
+                    value={config.resourceConfig?.requests?.memory ?? ''}
+                    placeholder={t('common.placeholders.memoryUsageExample')}
+                    onPatch={it =>
+                      onChange({
+                        resourceConfig: {
+                          ...config.resourceConfig,
+                          requests: nullify({ ...config.resourceConfig?.requests, memory: it }),
+                        },
+                      })
+                    }
+                    editorOptions={editorOptions}
+                    message={findErrorFor(fieldErrors, 'resourceConfig.requests.memory')}
+                    disabled={disabled}
+                  />
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
         {/* secrets */}
         {filterContains('secrets', selectedFilters) && (
           <div>
@@ -891,18 +1010,20 @@ const CommonConfigSection = (props: CommonConfigSectionProps) => {
                       invalid={matchError(error, 'path')}
                     />
 
-                    <MultiInput
-                      id={`common.volumes-${item.id}-class`}
-                      label={t('common.class')}
-                      labelClassName="my-auto w-32"
-                      grow
-                      inline
-                      value={item.class ?? ''}
-                      onPatch={it => onPatch({ class: it })}
-                      editorOptions={editorOptions}
-                      disabled={disabled}
-                      invalid={matchError(error, 'class')}
-                    />
+                    {showCraneConfig && (
+                      <MultiInput
+                        id={`common.volumes-${item.id}-class`}
+                        label={t('common.class')}
+                        labelClassName="my-auto w-32"
+                        grow
+                        inline
+                        value={item.class ?? ''}
+                        onPatch={it => onPatch({ class: it })}
+                        editorOptions={editorOptions}
+                        disabled={disabled}
+                        invalid={matchError(error, 'class')}
+                      />
+                    )}
                   </div>
 
                   <div className="flex flex-row gap-4">

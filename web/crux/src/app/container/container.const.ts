@@ -14,6 +14,7 @@ export const COMMON_CONFIG_PROPERTIES = [
   'args',
   'initContainers',
   'storage',
+  'experimental',
 ] as const
 
 export const CRANE_CONFIG_PROPERTIES = [

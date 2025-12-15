@@ -63,6 +63,7 @@ export const GLOBAL_CONTAINER = '_'
 export const ANCHOR_NEW = '#new'
 export const ANCHOR_EDIT = '#edit'
 export const ANCHOR_TRIGGER = '#trigger'
+export const ANCHOR_CONTAINERS = '#containers'
 
 export type AnchorUrlParams = Record<string, string | boolean> & {
   anchor?: string | undefined
@@ -72,16 +73,20 @@ export type ListRouteOptions = {
   new?: boolean
 }
 
-type DetailsRouteOptions = {
-  edit?: boolean
-}
-
 const appendAnchorWhenDeclared = (url: string, anchor: string, anchorProp?: boolean) => {
   if (anchorProp) {
     return `${url}${anchor}`
   }
 
   return url
+}
+
+const appendSectionAnchor = (url: string, section?: string) => {
+  if (!section) {
+    return url
+  }
+
+  return `${url}#${section}`
 }
 
 const appendUrlParams = (url: string, params?: AnchorUrlParams): string => {
@@ -251,6 +256,11 @@ class NodeApi {
     `${this.container(id, container)}/${operation}`
 }
 
+type NodeDetailsRouteOptions = {
+  section?: 'edit' | 'containers'
+  prefix?: string
+}
+
 class NodeRoutes {
   private readonly root: string
 
@@ -274,8 +284,13 @@ class NodeRoutes {
 
   list = (options?: ListRouteOptions) => appendAnchorWhenDeclared(this.root, ANCHOR_NEW, options?.new)
 
-  details = (id: string, options?: DetailsRouteOptions) =>
-    appendAnchorWhenDeclared(`${this.root}/${id}`, ANCHOR_EDIT, options?.edit)
+  details = (id: string, options?: NodeDetailsRouteOptions) => {
+    const url = appendSectionAnchor(`${this.root}/${id}`, options?.section)
+
+    const params = options?.prefix ? { prefix: options.prefix } : {}
+
+    return appendUrlParams(url, params)
+  }
 
   inspect = (id: string, prefix?: string) => `${this.details(id)}?prefix=${prefix}`
 

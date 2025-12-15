@@ -27,7 +27,7 @@ export type UpdateNodeMessage = {
 export type ContainerOperation = 'start' | 'stop' | 'restart'
 
 // containers state
-export const WS_TYPE_WATCH_CONTAINERS_STATE = 'watch-container-state'
+export const WS_TYPE_WATCH_CONTAINERS_STATE = 'watch-containers-state'
 export type WatchContainersStateMessage = {
   prefix: string
 }
@@ -57,6 +57,7 @@ export type ContainerLogMessage = {
   log: string
 }
 
+export const WS_TYPE_DELETE_CONTAINER = 'delete-container'
 export type DeleteContainerMessage = {
   container: ContainerIdentifierDto
 }

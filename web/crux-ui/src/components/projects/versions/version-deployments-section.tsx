@@ -17,6 +17,7 @@ import useWebSocket from '@app/hooks/use-websocket'
 import {
   DEPLOYMENT_STATUS_VALUES,
   DeploymentByVersion,
+  DeploymentDetails,
   DeploymentStatus,
   DyoNode,
   NODE_STATUS_VALUES,
@@ -120,7 +121,15 @@ const VersionDeploymentsSection = (props: VersionDeploymentsSectionProps) => {
       return
     }
 
-    await deploy({ deploymentId: deployment.id })
+    const res = await fetch(routes.deployment.api.details(deployment.id))
+    if (!res.ok) {
+      await handleApiError(res)
+      return
+    }
+
+    const deploymentDetails = (await res.json()) as DeploymentDetails
+
+    await deploy({ deployment: deploymentDetails })
   }
 
   const onDeleteDeployment = async (deployment: DeploymentByVersion) => {

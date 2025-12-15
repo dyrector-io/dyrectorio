@@ -128,6 +128,16 @@ const FilteredDeploymentList = (props: FilteredDeploymentListProps) => {
                       </DyoLink>
                     </div>
 
+                    <div className="inline-block mr-2">
+                      <DyoLink
+                        href={routes.node.details(it.node.id, { section: 'containers', prefix: it.prefix })}
+                        reloadDocument
+                        qaLabel="deployment-list-inspect-icon"
+                      >
+                        <DyoIcon src="/inspect.svg" alt={t('common:containers')} size="md" />
+                      </DyoLink>
+                    </div>
+
                     <DyoIcon
                       src="/note.svg"
                       alt={t('common:note')}

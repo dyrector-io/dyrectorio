@@ -33,6 +33,7 @@ export type ContainerTargetStates = { [key: string]: ContainerState } // contain
 
 export type NodeContainersFilter = TextFilter & {
   showAll: boolean
+  prefix?: string
 }
 
 export type NodeDetailsState = {
@@ -41,6 +42,7 @@ export type NodeDetailsState = {
   confirmationModal: DyoConfirmationModalConfig
   containerTargetStates: ContainerTargetStates
   containerFilters: FilterConfig<Container, NodeContainersFilter>
+  prefixes: string[]
 }
 
 export type NodeDetailsActions = {
@@ -53,27 +55,43 @@ export type NodeDetailsActions = {
   onDeleteContainer: (container: Container) => void
 }
 
+const prefixOf = (container: Container): string | null => {
+  if (
+    DYO_LABEL_SERVICE_CATEGORY in container.labels &&
+    container.labels[DYO_LABEL_SERVICE_CATEGORY] === DYO_SERVICE_CATEGORY_INTERNAL
+  ) {
+    return null
+  }
+
+  if (DYO_LABEL_CONTAINER_PREFIX in container.labels) {
+    return container.labels[DYO_LABEL_CONTAINER_PREFIX]
+  }
+
+  return null
+}
+
 const containerShowAllFilter = (items: Container[], filter: NodeContainersFilter) => {
   if (filter.showAll) {
     return items
   }
 
+  return items.filter(it => !!prefixOf(it))
+}
+
+const containerPrefixFilter = (items: Container[], filter: NodeContainersFilter) => {
+  if (!filter.prefix || filter.prefix === '') {
+    return items
+  }
+
   return items.filter(it => {
-    const labelKeys = Object.keys(it.labels)
-
-    if (!labelKeys.includes(DYO_LABEL_CONTAINER_PREFIX)) {
-      return false
-    }
-
-    return (
-      !labelKeys.includes(DYO_LABEL_SERVICE_CATEGORY) ||
-      it.labels[DYO_LABEL_SERVICE_CATEGORY] !== DYO_SERVICE_CATEGORY_INTERNAL
-    )
+    const prefix = prefixOf(it)
+    return prefix === filter.prefix
   })
 }
 
 export type NodeDetailsStateOptions = {
   node: NodeDetails
+  prefixFilter?: string
 }
 
 const useNodeDetailsState = (options: NodeDetailsStateOptions): [NodeDetailsState, NodeDetailsActions] => {
@@ -83,6 +101,7 @@ const useNodeDetailsState = (options: NodeDetailsStateOptions): [NodeDetailsStat
 
   const [section, setSection] = useState<NodeDetailsSection>('containers')
   const [node, setNode] = useNodeState(options.node)
+  const [prefixes, setPrefixes] = useState<string[]>([''])
   const [confirmationModal, confirm] = useConfirmation()
 
   useEffect(() => {
@@ -113,10 +132,12 @@ const useNodeDetailsState = (options: NodeDetailsStateOptions): [NodeDetailsStat
         utcDateToLocale(it.createdAt),
       ]),
       containerShowAllFilter,
+      containerPrefixFilter,
     ],
     initialFilter: {
       text: '',
       showAll: node.type === 'k8s',
+      prefix: options.prefixFilter ?? null,
     },
   })
 
@@ -151,6 +172,8 @@ const useNodeDetailsState = (options: NodeDetailsStateOptions): [NodeDetailsStat
     if (Object.keys(newTargetStates).length !== Object.keys(containerTargetStates).length) {
       setContainerTargetStates(newTargetStates)
     }
+
+    setPrefixes(['', ...Array.from(new Set(message.containers.map(it => prefixOf(it)).filter(it => !!it)))])
   })
 
   const setEditing = (editing: boolean) => setSection(editing ? 'editing' : 'containers')
@@ -212,6 +235,7 @@ const useNodeDetailsState = (options: NodeDetailsStateOptions): [NodeDetailsStat
       containerTargetStates,
       confirmationModal,
       containerFilters,
+      prefixes,
     },
     {
       onNodeEdited,

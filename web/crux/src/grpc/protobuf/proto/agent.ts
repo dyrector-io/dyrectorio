@@ -308,6 +308,7 @@ export interface CommonContainerConfig {
   user?: number | undefined
   TTY?: boolean | undefined
   workingDirectory?: string | undefined
+  resourceConfig?: ResourceConfig | undefined
   ports: Port[]
   portRanges: PortRangeBinding[]
   volumes: Volume[]
@@ -334,6 +335,7 @@ export interface DeployWorkloadRequest {
   common?: CommonContainerConfig | undefined
   dagent?: DagentContainerConfig | undefined
   crane?: CraneContainerConfig | undefined
+  experimental?: string | undefined
   registry?: string | undefined
   imageName: string
   tag: string
@@ -1226,6 +1228,7 @@ export const CommonContainerConfig = {
       user: isSet(object.user) ? Number(object.user) : undefined,
       TTY: isSet(object.TTY) ? Boolean(object.TTY) : undefined,
       workingDirectory: isSet(object.workingDirectory) ? String(object.workingDirectory) : undefined,
+      resourceConfig: isSet(object.resourceConfig) ? ResourceConfig.fromJSON(object.resourceConfig) : undefined,
       ports: Array.isArray(object?.ports) ? object.ports.map((e: any) => Port.fromJSON(e)) : [],
       portRanges: Array.isArray(object?.portRanges)
         ? object.portRanges.map((e: any) => PortRangeBinding.fromJSON(e))
@@ -1264,6 +1267,8 @@ export const CommonContainerConfig = {
     message.user !== undefined && (obj.user = Math.round(message.user))
     message.TTY !== undefined && (obj.TTY = message.TTY)
     message.workingDirectory !== undefined && (obj.workingDirectory = message.workingDirectory)
+    message.resourceConfig !== undefined &&
+      (obj.resourceConfig = message.resourceConfig ? ResourceConfig.toJSON(message.resourceConfig) : undefined)
     if (message.ports) {
       obj.ports = message.ports.map(e => (e ? Port.toJSON(e) : undefined))
     } else {
@@ -1355,6 +1360,7 @@ export const DeployWorkloadRequest = {
       common: isSet(object.common) ? CommonContainerConfig.fromJSON(object.common) : undefined,
       dagent: isSet(object.dagent) ? DagentContainerConfig.fromJSON(object.dagent) : undefined,
       crane: isSet(object.crane) ? CraneContainerConfig.fromJSON(object.crane) : undefined,
+      experimental: isSet(object.experimental) ? String(object.experimental) : undefined,
       registry: isSet(object.registry) ? String(object.registry) : undefined,
       imageName: isSet(object.imageName) ? String(object.imageName) : '',
       tag: isSet(object.tag) ? String(object.tag) : '',
@@ -1370,6 +1376,7 @@ export const DeployWorkloadRequest = {
     message.dagent !== undefined &&
       (obj.dagent = message.dagent ? DagentContainerConfig.toJSON(message.dagent) : undefined)
     message.crane !== undefined && (obj.crane = message.crane ? CraneContainerConfig.toJSON(message.crane) : undefined)
+    message.experimental !== undefined && (obj.experimental = message.experimental)
     message.registry !== undefined && (obj.registry = message.registry)
     message.imageName !== undefined && (obj.imageName = message.imageName)
     message.tag !== undefined && (obj.tag = message.tag)

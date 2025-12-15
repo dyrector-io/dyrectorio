@@ -11,7 +11,9 @@ import { BreadcrumbLink } from '@app/components/shared/breadcrumb'
 import Filters from '@app/components/shared/filters'
 import PageHeading from '@app/components/shared/page-heading'
 import { DetailsPageMenu } from '@app/components/shared/page-menu'
+import { DyoLabel } from '@app/elements/dyo-label'
 import { DyoConfirmationModal } from '@app/elements/dyo-modal'
+import DyoSelect from '@app/elements/dyo-select'
 import DyoToggle from '@app/elements/dyo-toggle'
 import { defaultApiErrorHandler } from '@app/errors'
 import useSubmit from '@app/hooks/use-submit'
@@ -41,6 +43,7 @@ const NodeDetailsPage = (props: NodeDetailsPageProps) => {
 
   const [state, actions] = useNodeDetailsState({
     node: propsNode,
+    prefixFilter: (router.query.prefix as string) ?? '',
   })
   const submit = useSubmit()
 
@@ -50,7 +53,7 @@ const NodeDetailsPage = (props: NodeDetailsPageProps) => {
 
   const setEditing = async (editing: boolean) => {
     actions.setEditing(editing)
-    await router.replace(routes.node.details(node.id, editing ? { edit: true } : null))
+    await router.replace(routes.node.details(node.id, editing ? { section: 'edit' } : null))
   }
 
   const onDelete = async () => {
@@ -74,6 +77,8 @@ const NodeDetailsPage = (props: NodeDetailsPageProps) => {
       await router.replace(routes.node.details(edited.id))
     }
   }
+
+  const prefixfilter: string = state.containerFilters.filter.prefix
 
   const pageLink: BreadcrumbLink = {
     name: t('common:nodes'),
@@ -119,11 +124,23 @@ const NodeDetailsPage = (props: NodeDetailsPageProps) => {
             <>
               <Filters setTextFilter={it => state.containerFilters.setFilter({ text: it })}>
                 <DyoToggle
+                  className="mx-4"
                   labelClassName="text-light-eased mx-4"
                   checked={state.containerFilters.filter?.showAll}
                   onCheckedChange={it => state.containerFilters.setFilter({ showAll: it })}
                   label={t('showAllContainers')}
                 />
+
+                <div className="flex flex-row gap-4 items-center mx-4">
+                  <DyoLabel>{t('common:prefix')}</DyoLabel>
+
+                  <DyoSelect
+                    className="w-40"
+                    options={state.prefixes}
+                    selected={prefixfilter ? state.prefixes.indexOf(prefixfilter) : 0}
+                    onChange={index => state.containerFilters.setFilter({ prefix: state.prefixes[index] })}
+                  />
+                </div>
               </Filters>
 
               <NodeContainersList state={state} actions={actions} />

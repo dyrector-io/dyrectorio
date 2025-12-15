@@ -21,7 +21,9 @@ import {
   WS_TYPE_CONTAINERS_STATE_LIST,
   WS_TYPE_CONTAINER_LOG,
   WS_TYPE_CONTAINER_LOG_STARTED,
+  WS_TYPE_DELETE_CONTAINER,
   WS_TYPE_SET_CONTAINER_LOG_TAKE,
+  WS_TYPE_WATCH_CONTAINERS_STATE,
   WS_TYPE_WATCH_CONTAINER_LOG,
   WatchContainerLogMessage,
   WatchContainersStateMessage,
@@ -63,7 +65,7 @@ export default class NodeContainerWebSocketGateway {
   }
 
   @AuditLogLevel('disabled')
-  @SubscribeMessage('watch-containers-state')
+  @SubscribeMessage(WS_TYPE_WATCH_CONTAINERS_STATE)
   watchContainersState(
     @NodeId() nodeId: string,
     @SocketMessage() message: WatchContainersStateMessage,
@@ -121,7 +123,7 @@ export default class NodeContainerWebSocketGateway {
     return merge(startMessages, messages)
   }
 
-  @SubscribeMessage('delete-container')
+  @SubscribeMessage(WS_TYPE_DELETE_CONTAINER)
   async deleteContainer(@NodeId() nodeId: string, @SocketMessage() message: DeleteContainerMessage): Promise<void> {
     const { container } = message
 

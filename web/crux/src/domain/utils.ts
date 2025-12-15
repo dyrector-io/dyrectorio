@@ -152,3 +152,5 @@ export const stripProtocol = (url: string) => {
   const parsed = new URL(url)
   return `${parsed.host}${parsed.pathname !== '/' ? parsed.pathname : ''}`
 }
+
+export const naturalSortCollator = new Intl.Collator(undefined, { numeric: true, sensitivity: 'base' })

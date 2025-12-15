@@ -22,7 +22,7 @@ import {
   numberResettable,
   stringResettable,
 } from '@app/models'
-import { nullify, toNumber } from '@app/utils'
+import { toNumber } from '@app/utils'
 import { ContainerConfigValidationErrors, findErrorFor } from '@app/validations'
 import useTranslation from 'next-translate/useTranslation'
 import { useEffect } from 'react'
@@ -415,121 +415,6 @@ const CraneConfigSection = (props: CraneConfigSectionProps) => {
               onResetSection={resettableConfig.proxyHeaders ? () => onResetSection('proxyHeaders') : null}
             />
             <DyoMessage grow message={findErrorFor(fieldErrors, 'proxyHeaders')} messageType="error" />
-          </div>
-        )}
-
-        {/* resourceConfig */}
-        {filterContains('resourceConfig', selectedFilters) && (
-          <div>
-            <ConfigSectionLabel
-              disabled={disabled || !resettableConfig.resourceConfig}
-              onResetSection={() => onResetSection('resourceConfig')}
-              error={conflictErrors?.resourceConfig}
-            >
-              {t('crane.resourceConfig').toUpperCase()}
-            </ConfigSectionLabel>
-
-            <div className="flex flex-row gap-16 m-2">
-              <div className="flex flex-col">
-                <DyoLabel className="font-semibold">{t('crane.limits')}</DyoLabel>
-
-                <MultiInput
-                  id="crane.limits.cpu"
-                  label={t('crane.cpu')}
-                  containerClassName="max-w-lg mb-3"
-                  labelClassName="my-auto mr-4 w-40"
-                  className="w-full"
-                  inline
-                  grow
-                  value={config.resourceConfig?.limits?.cpu ?? ''}
-                  placeholder={t('crane.placeholders.cpuUsageExample')}
-                  onPatch={it =>
-                    onChange({
-                      resourceConfig: {
-                        ...config.resourceConfig,
-                        limits: nullify({ ...config.resourceConfig?.limits, cpu: it }),
-                      },
-                    })
-                  }
-                  editorOptions={editorOptions}
-                  message={findErrorFor(fieldErrors, 'resourceConfig.limits.cpu')}
-                  disabled={disabled}
-                />
-
-                <MultiInput
-                  id="crane.limits.memory"
-                  label={t('crane.memory')}
-                  containerClassName="max-w-lg mb-3"
-                  labelClassName="my-auto mr-4 w-40"
-                  className="w-full"
-                  inline
-                  grow
-                  value={config.resourceConfig?.limits?.memory ?? ''}
-                  placeholder={t('crane.placeholders.memoryUsageExample')}
-                  onPatch={it =>
-                    onChange({
-                      resourceConfig: {
-                        ...config.resourceConfig,
-                        limits: nullify({ ...config.resourceConfig?.limits, memory: it }),
-                      },
-                    })
-                  }
-                  editorOptions={editorOptions}
-                  message={findErrorFor(fieldErrors, 'resourceConfig.limits.memory')}
-                  disabled={disabled}
-                />
-              </div>
-
-              <div className="flex flex-col">
-                <DyoLabel className="font-semibold">{t('crane.requests')}</DyoLabel>
-
-                <MultiInput
-                  id="crane.requests.cpu"
-                  label={t('crane.cpu')}
-                  containerClassName="max-w-lg mb-3"
-                  labelClassName="my-auto mr-4 w-40"
-                  className="w-full"
-                  inline
-                  grow
-                  value={config.resourceConfig?.requests?.cpu ?? ''}
-                  placeholder={t('crane.placeholders.cpuUsageExample')}
-                  onPatch={it =>
-                    onChange({
-                      resourceConfig: {
-                        ...config.resourceConfig,
-                        requests: nullify({ ...config.resourceConfig?.requests, cpu: it }),
-                      },
-                    })
-                  }
-                  editorOptions={editorOptions}
-                  message={findErrorFor(fieldErrors, 'resourceConfig.requests.cpu')}
-                  disabled={disabled}
-                />
-
-                <MultiInput
-                  id="crane.requests.memory"
-                  label={t('crane.memory')}
-                  containerClassName="max-w-lg mb-3"
-                  labelClassName="my-auto mr-4 w-40"
-                  className="w-full"
-                  inline
-                  grow
-                  value={config.resourceConfig?.requests?.memory ?? ''}
-                  placeholder={t('crane.placeholders.memoryUsageExample')}
-                  onPatch={it =>
-                    onChange({
-                      resourceConfig: {
-                        ...config.resourceConfig,
-                        requests: nullify({ ...config.resourceConfig?.requests, memory: it }),
-                      },
-                    })
-                  }
-                  editorOptions={editorOptions}
-                  message={findErrorFor(fieldErrors, 'resourceConfig.requests.memory')}
-                  disabled={disabled}
-                />
-              </div>
-            </div>
           </div>
         )}
 

@@ -79,7 +79,7 @@ const DeploymentDetailsPage = (props: DeploymentDetailsPageProps) => {
 
     await deploy({
       deployment,
-      deployInstances: state.deployInstances,
+      selectedInstanceIds: state.deployInstances,
     })
   }
 

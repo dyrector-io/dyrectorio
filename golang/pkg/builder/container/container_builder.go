@@ -48,6 +48,8 @@ type Builder interface {
 	WithCmd(cmd []string) Builder
 	WithShell(shell []string) Builder
 	WithUser(uid *int64) Builder
+	WithMemoryLimit(mlimit int64) Builder
+	WithCPULimit(climit int64) Builder
 	WithLogWriter(logger dogger.LogWriter) Builder
 	WithoutConflict() Builder
 	WithPullDisplayFunc(imageHelper.PullDisplayFn) Builder
@@ -67,33 +69,35 @@ type DockerContainerBuilder struct {
 	logger           dogger.LogWriter
 	client           client.APIClient
 	ctx              context.Context
+	pullDisplayFn    imageHelper.PullDisplayFn
 	user             *int64
 	networkMap       map[string]string
 	labels           map[string]string
-	pullDisplayFn    imageHelper.PullDisplayFn
 	containerID      *string
 	logConfig        *container.LogConfig
 	sysctls          map[string]string
+	restartPolicy    container.RestartPolicyMode
+	networkMode      string
 	workingDirectory string
 	containerName    string
 	imageWithTag     string
 	registryAuth     string
-	networkMode      string
-	restartPolicy    container.RestartPolicyMode
 	hooksPostStart   []LifecycleFunc
+	mountList        []mount.Mount
+	networks         []string
 	portList         []PortBinding
 	hooksPreCreate   []LifecycleFunc
 	entrypoint       []string
 	cmd              []string
 	shell            []string
 	hooksPostCreate  []LifecycleFunc
-	mountList        []mount.Mount
+	extraHosts       []string
 	portRanges       []PortRangeBinding
 	hooksPreStart    []LifecycleFunc
 	envList          []string
 	networkAliases   []string
-	extraHosts       []string
-	networks         []string
+	cpuLimit         int64
+	memoryLimit      int64
 	imagePriority    imageHelper.PullPriority
 	tty              bool
 	withoutConflict  bool
@@ -258,6 +262,18 @@ func (dc *DockerContainerBuilder) WithUser(user *int64) Builder {
 	return dc
 }
 
+// Set the memory hard limit
+func (dc *DockerContainerBuilder) WithMemoryLimit(mlimit int64) Builder {
+	dc.memoryLimit = mlimit
+	return dc
+}
+
+// set hard cpu limit
+func (dc *DockerContainerBuilder) WithCPULimit(climit int64) Builder {
+	dc.cpuLimit = climit
+	return dc
+}
+
 // Sets the logger which logs messages releated to the builder (and not the container).
 func (dc *DockerContainerBuilder) WithLogWriter(logger dogger.LogWriter) Builder {
 	dc.logger = logger
@@ -323,6 +339,10 @@ func builderToDockerConfig(dc *DockerContainerBuilder) (hostConfig *container.Ho
 		AutoRemove:   dc.remove,
 		ExtraHosts:   dc.extraHosts,
 		Sysctls:      dc.sysctls,
+		Resources: container.Resources{
+			Memory:   dc.memoryLimit,
+			NanoCPUs: dc.cpuLimit,
+		},
 	}
 
 	containerConfig = &container.Config{

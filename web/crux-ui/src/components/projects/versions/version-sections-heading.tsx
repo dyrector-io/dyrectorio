@@ -53,22 +53,28 @@ const VersionSectionsHeading = (props: VersionSectionsHeadingProps) => {
           </DyoButton>
 
           <div className="flex flex-row ml-auto">
-            {versionMutable ? null : (
-              <DyoButton text className="pl-10 pr-4" onClick={() => actions.setSection('reorder')}>
-                {t('reorderImages')}
+            {state.section === 'images' ? (
+              <>
+                {versionMutable && (
+                  <>
+                    <DyoButton text className="pl-10 pr-4" onClick={() => actions.updateTagsToLatest()}>
+                      {t('updateTags')}
+                    </DyoButton>
+
+                    <DyoButton text className="px-4" onClick={() => actions.setSection('reorder')}>
+                      {t('reorderImages')}
+                    </DyoButton>
+
+                    <DyoButton onClick={() => actions.selectAddSection('image')}>{t('addImage')}</DyoButton>
+                  </>
+                )}
+
+                <ViewModeToggle viewMode={state.viewMode} onViewModeChanged={actions.selectViewMode} />
+              </>
+            ) : (
+              <DyoButton onClick={() => actions.selectAddSection('deployment')}>
+                {t('deployments:addDeployment')}
               </DyoButton>
-            )}
-
-            {versionMutable ? null : (
-              <DyoButton onClick={() => actions.selectAddSection('image')}>{t('addImage')}</DyoButton>
-            )}
-
-            <DyoButton onClick={() => actions.selectAddSection('deployment')}>
-              {t('deployments:addDeployment')}
-            </DyoButton>
-
-            {state.section === 'images' && (
-              <ViewModeToggle viewMode={state.viewMode} onViewModeChanged={actions.selectViewMode} />
             )}
           </div>
         </>

@@ -80,7 +80,7 @@ const NodesPage = (props: NodesPageProps) => {
   const onNodeEdited = async (node: DyoNode) => {
     await mutate(routes.node.api.list(), null)
 
-    await router.replace(routes.node.details(node.id, { edit: true }))
+    await router.replace(routes.node.details(node.id, { section: 'edit' }))
   }
 
   const onRouteOptionsChange = async (routeOptions: ListRouteOptions) => {

@@ -28,6 +28,7 @@ import {
   WS_TYPE_IMAGE,
   WS_TYPE_IMAGE_DELETED,
   WS_TYPE_IMAGE_TAG_UPDATED,
+  WS_TYPE_IMAGE_TAGS_UPDATED_TO_LATEST,
   WS_TYPE_IMAGES_ADDED,
   WS_TYPE_IMAGES_WERE_REORDERED,
   WS_TYPE_ORDER_IMAGES,
@@ -36,6 +37,7 @@ import {
   WS_TYPE_REGISTRY_FETCH_IMAGE_TAGS,
   WS_TYPE_REGISTRY_IMAGE_TAGS,
   WS_TYPE_SET_IMAGE_TAG,
+  WS_TYPE_UPDATE_IMAGE_TAGS_TO_LATEST,
 } from '@app/models'
 import WebSocketClientEndpoint from '@app/websockets/websocket-client-endpoint'
 import useTranslation from 'next-translate/useTranslation'
@@ -80,6 +82,7 @@ export type VersionActions = {
   selectViewMode: (mode: ViewMode) => void
   fetchImageTags: (image: VersionImage) => void
   selectTagForImage: (image: VersionImage, tag: string) => void
+  updateTagsToLatest: () => void
   updateImageConfig: (image: VersionImage, config: Partial<ContainerConfigData>) => void
   copyDeployment: (deploymentId: string) => Promise<any>
   onDeploymentDeleted: (deploymentId: string) => void
@@ -220,6 +223,20 @@ export const useVersionState = (options: VersionStateOptions): [VerionState, Ver
     setVersion({ ...version, images: newImages })
   })
 
+  versionSock.on(WS_TYPE_IMAGE_TAGS_UPDATED_TO_LATEST, (message: ImageTagMessage[]) => {
+    const newImages = [...version.images]
+    message.forEach(tagUpdate => {
+      const index = newImages.findIndex(it => it.id === tagUpdate.imageId)
+      if (index < 0) {
+        return
+      }
+
+      newImages[index].tag = tagUpdate.tag
+    })
+
+    setVersion({ ...version, images: newImages })
+  })
+
   versionSock.on(WS_TYPE_IMAGE_DELETED, (message: DeleteImageMessage) =>
     setVersion({ ...version, images: version.images.filter(it => it.id !== message.imageId) }),
   )
@@ -303,6 +320,8 @@ export const useVersionState = (options: VersionStateOptions): [VerionState, Ver
     } as ImageTagMessage)
   }
 
+  const updateTagsToLatest = () => versionSock.send(WS_TYPE_UPDATE_IMAGE_TAGS_TO_LATEST, {})
+
   const updateImageConfig = (image: VersionImage, config: Partial<ContainerConfigData>) => {
     setSaveState('saving')
 
@@ -357,6 +376,7 @@ export const useVersionState = (options: VersionStateOptions): [VerionState, Ver
       selectViewMode,
       selectTagForImage,
       fetchImageTags,
+      updateTagsToLatest,
       updateImageConfig,
       copyDeployment,
       onDeploymentDeleted,

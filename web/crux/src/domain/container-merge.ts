@@ -157,6 +157,21 @@ const mergeVolumes = (strong: Volume[], weak: Volume[]): Volume[] => {
   return [...strong, ...missing]
 }
 
+const mergeObject = (strong: object, weak: object) => {
+  if (!strong) {
+    return weak ?? null
+  }
+
+  if (!weak) {
+    return strong
+  }
+
+  return {
+    ...weak,
+    ...strong,
+  }
+}
+
 export const mapSecretKeyToSecretKeyValue = (secret: UniqueSecretKey): UniqueSecretKeyValue => ({
   ...secret,
   value: '',
@@ -225,6 +240,7 @@ const squashConfigs = (strong: ContainerConfigData, weak: ContainerConfigData): 
   networks: strong.networks ?? weak.networks,
   dockerLabels: strong.dockerLabels ?? weak.dockerLabels,
   expectedState: strong.expectedState ?? weak.expectedState,
+  experimental: mergeObject(strong.experimental, weak.experimental),
 })
 
 const mergeConfigs = (strong: ContainerConfigData, weak: ContainerConfigData): ContainerConfigData => ({
@@ -266,6 +282,7 @@ const mergeConfigs = (strong: ContainerConfigData, weak: ContainerConfigData): C
   networks: mergeUniqueKeys(strong.networks, weak.networks),
   dockerLabels: mergeUniqueKeyValues(strong.dockerLabels, weak.dockerLabels),
   expectedState: strong.expectedState ?? weak.expectedState ?? null,
+  experimental: mergeObject(strong.experimental, weak.experimental),
 })
 
 export const mergeConfigList = (configs: ContainerConfigData[]): ContainerConfigData =>
@@ -338,4 +355,5 @@ export const mergeInstanceConfigWithDeploymentConfig = (
   networks: mergeUniqueKeys(instance.networks, deployment.networks),
   dockerLabels: mergeUniqueKeyValues(instance.dockerLabels, deployment.dockerLabels),
   expectedState: instance.expectedState ?? deployment.expectedState ?? null,
+  experimental: mergeObject(instance.experimental, deployment.experimental),
 })

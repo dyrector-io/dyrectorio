@@ -2,11 +2,10 @@ import { DyoCard } from '@app/elements/dyo-card'
 import DyoIcon from '@app/elements/dyo-icon'
 import DyoLink from '@app/elements/dyo-link'
 import DyoModal, { DyoConfirmationModal } from '@app/elements/dyo-modal'
-import DyoTable, { DyoColumn, sortDate, sortNumber, sortString } from '@app/elements/dyo-table'
+import DyoTable, { DyoColumn, sortNumber, sortString } from '@app/elements/dyo-table'
 import useConfirmation from '@app/hooks/use-confirmation'
 import useTeamRoutes from '@app/hooks/use-team-routes'
-import { DeleteImageMessage, containerNameOfImage, VersionImage, WS_TYPE_DELETE_IMAGE } from '@app/models'
-import { utcDateToLocale } from '@app/utils'
+import { DeleteImageMessage, VersionImage, WS_TYPE_DELETE_IMAGE, containerNameOfImage } from '@app/models'
 import useTranslation from 'next-translate/useTranslation'
 import { QA_DIALOG_LABEL_DELETE_IMAGE, QA_MODAL_LABEL_IMAGE_TAGS } from 'quality-assurance'
 import { useState } from 'react'
@@ -80,7 +79,7 @@ const VersionViewList = (props: VersionViewListProps) => {
           />
           <DyoColumn
             header={t('imageTag')}
-            className="w-2/12"
+            className="w-4/12"
             sortable
             sortField={(it: VersionImage) => (it.tag ? `${it.name}:${it.tag}` : it.name)}
             sort={sortString}
@@ -90,15 +89,6 @@ const VersionViewList = (props: VersionViewListProps) => {
                 {it.tag ? `:${it.tag}` : null}
               </a>
             )}
-          />
-          <DyoColumn
-            header={t('common:createdAt')}
-            className="w-3/12"
-            sortable
-            sortField="createdAt"
-            sort={sortDate}
-            suppressHydrationWarning
-            body={(it: VersionImage) => (it.createdAt ? utcDateToLocale(it.createdAt) : t('common:new'))}
           />
           <DyoColumn
             header={t('common:actions')}

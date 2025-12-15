@@ -49,7 +49,7 @@ import DomainNotificationService from 'src/services/domain.notification.service'
 import PrismaService from 'src/services/prisma.service'
 import GrpcNodeConnection from 'src/shared/grpc-node-connection'
 import AgentMetrics from 'src/shared/metrics/agent.metrics'
-import { getAgentVersionFromPackage, getPackageVersion } from 'src/shared/package'
+import { getAgentVersionFromPackage, getCommitHash, getPackageVersion } from 'src/shared/package'
 import { AGENT_SUPPORTED_MINIMUM_VERSION } from '../../shared/const'
 import DeployService from '../deploy/deploy.service'
 import { DagentTraefikOptionsDto, NodeConnectionStatus, NodeScriptTypeDto } from '../node/node.dto'
@@ -451,9 +451,21 @@ export default class AgentService {
       return false
     }
 
-    const packageVersion = coerce(getPackageVersion(this.configService))
+    const packageString = getPackageVersion(this.configService)
+    const packageVersion = coerce(packageString)
 
-    return agentVersion.compare(packageVersion) === 0
+    if (agentVersion.compare(packageVersion) !== 0) {
+      return false
+    }
+
+    const versionHash = getCommitHash(version)
+    const packageHash = getCommitHash(packageString, versionHash?.length)
+
+    if (!packageHash || !versionHash) {
+      return true
+    }
+
+    return packageHash === versionHash
   }
 
   generateConnectionTokenFor(nodeId: string, startedBy: string): AgentTokenReplacement {

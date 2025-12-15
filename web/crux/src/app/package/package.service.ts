@@ -178,6 +178,9 @@ class PackageService {
                       take: 1,
                     },
                   },
+                  orderBy: {
+                    createdAt: 'asc',
+                  },
                 },
               },
             },

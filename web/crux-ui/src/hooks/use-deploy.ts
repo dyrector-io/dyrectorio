@@ -29,9 +29,8 @@ export type UseDeployOptions = {
 }
 
 export type DeployOptions = {
-  deploymentId?: string
-  deployment?: DeploymentDetails
-  deployInstances?: string[]
+  deployment: DeploymentDetails
+  selectedInstanceIds?: string[]
   ignoreProtected?: boolean
 }
 
@@ -51,46 +50,43 @@ export const useDeploy = (opts: UseDeployOptions): UseDeployAction => {
   const { t: tContainer } = useTranslation('container')
 
   const deploy = async (options: DeployOptions) => {
-    const { deploymentId: optionsDeploymentId, deployment, deployInstances, ignoreProtected } = options
-    const deploymentId = optionsDeploymentId ?? deployment?.id
+    const { deployment, selectedInstanceIds, ignoreProtected } = options
 
-    if (deployment) {
-      const selectedInstances = deployInstances
-        ? deployment.instances.filter(it => deployInstances.includes(it.id))
-        : deployment.instances
+    const selectedInstances = selectedInstanceIds
+      ? deployment.instances.filter(it => selectedInstanceIds.includes(it.id))
+      : deployment.instances
 
-      const target: DeploymentDetails = {
-        ...deployment,
-        instances: selectedInstances.map(it => ({
-          ...it,
-          config: {
-            ...it.config,
-            ...mergeConfigsWithConcreteConfig([it.image.config], it.config),
-          },
-        })),
-      }
+    const target: DeploymentDetails = {
+      ...deployment,
+      instances: selectedInstances.map(it => ({
+        ...it,
+        config: {
+          ...it.config,
+          ...mergeConfigsWithConcreteConfig([it.image.config], it.config),
+        },
+      })),
+    }
 
-      const error = getValidationError(startDeploymentSchema, target)
-      if (error) {
-        console.error(error.message, error)
+    const validationError = getValidationError(startDeploymentSchema, target)
+    if (validationError) {
+      console.error(validationError.message, validationError)
 
-        const translatedError = yupErrorTranslate(error, tContainer)
-        const intanceIndex = validationErrorToInstance(error.path)
+      const translatedError = yupErrorTranslate(validationError, tContainer)
+      const intanceIndex = validationErrorToInstance(validationError.path)
 
-        toast.error(
-          tContainer('errors:validationFailedForInstanceMessage', {
-            ...translatedError,
-            path:
-              intanceIndex !== null
-                ? selectedInstances[intanceIndex].config.name ?? selectedInstances[intanceIndex].image.config.name
-                : translatedError.path,
-          }),
-          {
-            className: toastClassName,
-          },
-        )
-        return
-      }
+      toast.error(
+        tContainer('errors:validationFailedForInstanceMessage', {
+          ...translatedError,
+          path:
+            intanceIndex !== null
+              ? selectedInstances[intanceIndex].config.name ?? selectedInstances[intanceIndex].image.config.name
+              : translatedError.path,
+        }),
+        {
+          className: toastClassName,
+        },
+      )
+      return
     }
 
     if (deploymentShouldBeConfirmed(deployment.status)) {
@@ -109,16 +105,16 @@ export const useDeploy = (opts: UseDeployOptions): UseDeployAction => {
 
     const res = await sendForm(
       'POST',
-      teamRoutes.deployment.api.start(deploymentId, ignoreProtected),
-      deployInstances
+      teamRoutes.deployment.api.start(deployment.id, ignoreProtected),
+      selectedInstanceIds
         ? ({
-            instances: deployInstances,
+            instances: selectedInstanceIds,
           } as StartDeployment)
         : null,
     )
 
     if (res.ok) {
-      await router.push(teamRoutes.deployment.deploy(deploymentId))
+      await router.push(teamRoutes.deployment.deploy(deployment.id))
       return
     }
 

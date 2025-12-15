@@ -218,6 +218,7 @@ message CommonContainerConfig {
   optional int64 user = 106;
   optional bool TTY = 107;
   optional string workingDirectory = 108;
+  optional common.ResourceConfig resourceConfig = 109;
 
   repeated Port ports = 1000;
   repeated PortRangeBinding portRanges = 1001;
@@ -236,12 +237,13 @@ message DeployWorkloadRequest {
   optional CommonContainerConfig common = 2;
   optional DagentContainerConfig dagent = 3;
   optional CraneContainerConfig crane = 4;
+  optional string experimental = 5;
 
-  optional string registry = 5;
-  string imageName = 6;
-  string tag = 7;
+  optional string registry = 6;
+  string imageName = 7;
+  string tag = 8;
 
-  optional RegistryAuth registryAuth = 8;
+  optional RegistryAuth registryAuth = 9;
 }
 
 message ContainerStateRequest {

@@ -325,6 +325,7 @@ export const concreteContainerConfigSchema = yup.object().shape({
   labels: markerRule.optional().nullable(),
   metrics: metricsRule.optional().nullable(),
   replicas: yup.number().optional().nullable().min(1),
+  experimental: yup.object().optional().nullable(),
 })
 
 // TODO(@robot9706): Fix labels & config bundles conflicting

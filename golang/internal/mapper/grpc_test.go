@@ -210,6 +210,11 @@ func testDeployRequest() *agent.DeployWorkloadRequest {
 	upLimit := "5Mi"
 	strategy := common.ExposeStrategy_EXPOSE_WITH_TLS
 	b := true
+	cpuReq := "100m"
+	memReq := "64Mi"
+	cpuLim := "250m"
+	memLim := "512Mi"
+
 	return &agent.DeployWorkloadRequest{
 		Id:        "testID",
 		ImageName: "test-image",
@@ -225,6 +230,16 @@ func testDeployRequest() *agent.DeployWorkloadRequest {
 			Environment: map[string]string{"ENV1": "VAL1", "ENV2": "VAL2"},
 			Secrets:     map[string]string{"secret1": "value1"},
 			TTY:         &b,
+			ResourceConfig: &common.ResourceConfig{
+				Requests: &common.Resource{
+					Cpu:    &cpuReq,
+					Memory: &memReq,
+				},
+				Limits: &common.Resource{
+					Cpu:    &cpuLim,
+					Memory: &memLim,
+				},
+			},
 			Ports: []*agent.Port{
 				{
 					Internal: 1234,
@@ -325,10 +340,6 @@ func testDagentConfig() *agent.DagentContainerConfig {
 
 func testCraneConfig() *agent.CraneContainerConfig {
 	b := true
-	cpuReq := "100m"
-	memReq := "64Mi"
-	cpuLim := "250m"
-	memLim := "512Mi"
 
 	lProbe := "/test-liveness"
 	rProbe := "/test-readiness"
@@ -347,16 +358,6 @@ func testCraneConfig() *agent.CraneContainerConfig {
 			Deployment: map[string]string{"annot1": "value1"},
 			Service:    map[string]string{"annot2": "value2"},
 			Ingress:    map[string]string{"annot3": "value3"},
-		},
-		ResourceConfig: &common.ResourceConfig{
-			Requests: &common.Resource{
-				Cpu:    &cpuReq,
-				Memory: &memReq,
-			},
-			Limits: &common.Resource{
-				Cpu:    &cpuLim,
-				Memory: &memLim,
-			},
 		},
 		HealthCheckConfig: &common.HealthCheckConfig{
 			LivenessProbe: &common.Probe{
