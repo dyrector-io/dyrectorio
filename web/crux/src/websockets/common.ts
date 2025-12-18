@@ -72,7 +72,7 @@ export type WsClient = WebSocket & {
 }
 
 export type WsTransform = (data: any | Promise<any> | Observable<any>) => Observable<any>
-export type WsCallback<T = WsMessage> = (message: T) => Observable<any>
+export type WsCallback<T = WsMessage> = (message: T) => Observable<any> | Promise<any>
 
 export const WsAuthorize = () => SubscribeMessage(WS_TYPE_AUTHORIZE)
 export const WsSubscribe = () => SubscribeMessage(WS_TYPE_SUBSCRIBE)

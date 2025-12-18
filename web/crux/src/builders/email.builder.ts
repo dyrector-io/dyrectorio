@@ -1,6 +1,6 @@
-import { ISendMailOptions } from '@nestjs-modules/mailer'
 import { Injectable } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
+import { SendMailOptions } from 'nodemailer'
 import { KratosInvitation } from 'src/domain/identity'
 import NotificationTemplateBuilder from './notification.template.builder'
 
@@ -27,10 +27,10 @@ export default class EmailBuilder {
     this.host = configService.get<string>('CRUX_UI_URL')
   }
 
-  buildInviteEmail(to: string, options: InviteTemplateOptions): ISendMailOptions {
+  buildInviteEmail(to: string, options: InviteTemplateOptions): SendMailOptions {
     const inviteTemplate = this.getInviteTemplate(options)
 
-    const emailItem: ISendMailOptions = {
+    const emailItem: SendMailOptions = {
       to,
       subject: inviteTemplate.subject,
       text: inviteTemplate.text,

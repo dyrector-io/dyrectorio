@@ -1,4 +1,4 @@
-import { ExecutionContext, Injectable, Logger } from '@nestjs/common'
+import { ExecutionContext, Injectable } from '@nestjs/common'
 import { Identity } from '@ory/kratos-client'
 import { RegistryTypeEnum } from '@prisma/client'
 import { IdentityTraits, emailOfIdentity, invitationExpired, nameOfIdentity } from 'src/domain/identity'
@@ -29,8 +29,6 @@ const teamSlugFromCreateDto = (context: ExecutionContext) => {
 
 @Injectable()
 export default class TeamService {
-  private readonly logger = new Logger(TeamService.name)
-
   constructor(
     private teamRepository: TeamRepository,
     private prisma: PrismaService,

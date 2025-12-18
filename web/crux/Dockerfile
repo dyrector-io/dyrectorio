@@ -1,9 +1,9 @@
 # Stage 1
-FROM docker.io/library/node:20-alpine3.17 AS BUILDER
+FROM docker.io/library/node:24-alpine3.22 AS BUILDER
 
 WORKDIR /app
 
-RUN apk --update add openssl1.1-compat
+RUN apk --update add openssl
 
 COPY ./package.json ./package-lock.json ./.npm ./tsconfig.build.json ./tsconfig.json ./
 RUN npm ci --arch=x64 --platform=linuxmusl --cache .npm --prefer-offline --no-fund
@@ -17,12 +17,12 @@ RUN npm run build && \
     npm prune --production
 
 # Stage 2
-FROM docker.io/library/node:20-alpine3.17 AS RUNNER
+FROM docker.io/library/node:24-alpine3.22 AS RUNNER
 
 ENV NODE_ENV production
 ENV TZ UTC
 
-RUN apk --update add tzdata openssl1.1-compat ca-certificates
+RUN apk --update add tzdata openssl ca-certificates
 
 WORKDIR /app
 
