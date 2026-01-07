@@ -1,10 +1,10 @@
 import { Status } from '@grpc/grpc-js/build/src/constants'
-import { HandlerType, Http2ServerCallStream, ServerReadableStream } from '@grpc/grpc-js/build/src/server-call'
+import { HandlerType, ServerReadableStream } from '@grpc/grpc-js/build/src/server-call'
 import { ArgumentsHost, Catch, HttpException, Logger, RpcExceptionFilter } from '@nestjs/common'
 import { RpcException } from '@nestjs/microservices'
 import { Observable, of, throwError } from 'rxjs'
 import { CruxInternalServerErrorException } from 'src/exception/crux-exception'
-import { GrpcException } from 'src/exception/grpc-exception'
+import { GrpcErrorObject, GrpcException } from 'src/exception/grpc-exception'
 
 @Catch()
 export default class GrpcExceptionFilter implements RpcExceptionFilter {
@@ -51,6 +51,7 @@ export default class GrpcExceptionFilter implements RpcExceptionFilter {
       typeof exception.getError() === 'object'
         ? (exception.getError() as GrpcErrorObject)
         : {
+            name: 'unknown',
             code: Status.UNKNOWN,
             message: exception.getError() as string,
           }
@@ -65,21 +66,12 @@ export default class GrpcExceptionFilter implements RpcExceptionFilter {
   }
 
   private sendErrorToClientStream(error: GrpcErrorObject, host: ArgumentsHost): Observable<any> {
-    const call = host.getArgByIndex(2)
+    const call = host.getArgByIndex(2) as ServerReadableStream<any, any>
 
-    const streamCall = call.call as Http2ServerCallStream<any, any>
-    streamCall.sendError(error)
-
-    const readstream = call as ServerReadableStream<any, any>
-    readstream.destroy()
+    call.destroy(error)
 
     return of({})
   }
-}
-
-type GrpcErrorObject = {
-  code: Status
-  message: string
 }
 
 type GrpcCall = {

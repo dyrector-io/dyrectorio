@@ -441,7 +441,7 @@ func Init(grpcContext context.Context,
 	}
 
 	if appConfig.FallbackJwtToken == nil {
-		return nil
+		return errors.Join(err, fmt.Errorf("connection failed, no fallback token found"))
 	}
 
 	log.Warn().Msg("Connection failed, trying fallback token")
