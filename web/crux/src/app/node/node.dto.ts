@@ -5,6 +5,7 @@ import {
   IsDate,
   IsEmail,
   IsIn,
+  IsInt,
   IsObject,
   IsOptional,
   IsPositive,
@@ -253,10 +254,11 @@ export class NodeAuditLogDto {
   data?: object
 }
 
-export class NodeAuditLogListDto extends PaginatedList<NodeAuditLogDto> {
-  @Type(() => NodeAuditLogDto)
+export class NodeAuditLogListDto implements PaginatedList<NodeAuditLogDto> {
+  @ValidateNested({ each: true })
   items: NodeAuditLogDto[]
 
+  @IsInt()
   total: number
 }
 

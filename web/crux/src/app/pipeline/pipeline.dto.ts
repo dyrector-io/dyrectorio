@@ -1,6 +1,6 @@
 import { ApiProperty, OmitType } from '@nestjs/swagger'
 import { Type } from 'class-transformer'
-import { IsDate, IsIn, IsOptional, IsPositive, IsString, IsUUID, ValidateNested } from 'class-validator'
+import { IsDate, IsIn, IsInt, IsOptional, IsPositive, IsString, IsUUID, ValidateNested } from 'class-validator'
 import {
   AZURE_DEV_OPS_RUN_RESULT_VALUES,
   AZURE_DEV_OPS_RUN_STATE_VALUES,
@@ -59,10 +59,11 @@ export class PipelineRunDto {
   status: PipelineRunStatusDto
 }
 
-export class PaginatedPipelineRunListDto extends PaginatedList<PipelineRunDto> {
-  @Type(() => PipelineRunDto)
+export class PaginatedPipelineRunListDto implements PaginatedList<PipelineRunDto> {
+  @ValidateNested({ each: true })
   items: PipelineRunDto[]
 
+  @IsInt()
   total: number
 }
 

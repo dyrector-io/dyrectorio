@@ -6,7 +6,7 @@ import FixedLengthLinkedList from 'src/shared/fixed-length-linked-list'
 import AgentTunnel from './agent-tunnel'
 
 export default class ContainerLogStream {
-  private readonly cache: FixedLengthLinkedList<ContainerLogMessage> = new FixedLengthLinkedList(this.tail)
+  private readonly cache: FixedLengthLinkedList<ContainerLogMessage>
 
   private logStartedStream: Subject<ContainerLogStartedMessage> = new Subject()
 
@@ -17,7 +17,9 @@ export default class ContainerLogStream {
     private readonly container: ContainerIdentifier,
     private tail: number,
     private readonly onFree: VoidFunction,
-  ) {}
+  ) {
+    this.cache = new FixedLengthLinkedList(this.tail)
+  }
 
   watch(): [Observable<ContainerLogMessage>, Observable<ContainerLogStartedMessage>] {
     if (!this.currentTunel) {

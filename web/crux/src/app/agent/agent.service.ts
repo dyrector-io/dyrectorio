@@ -222,6 +222,8 @@ export default class AgentService {
         return EMPTY
       }),
       finalize(async () => {
+        this.logger.verbose(`Deployment finished - ${deploymentId}`)
+
         const status = agent.onDeploymentFinished(deployment)
         await this.deployService.finishDeployment(agent.id, deployment, status)
 

@@ -312,7 +312,7 @@ export class InstanceSecretsDto extends DeploymentSecretsDto {
   container: ContainerIdentifierDto
 }
 
-export class DeploymentLogListDto extends PaginatedList<DeploymentEventDto> {
+export class DeploymentLogListDto implements PaginatedList<DeploymentEventDto> {
   @ValidateNested({ each: true })
   items: DeploymentEventDto[]
 
@@ -334,9 +334,10 @@ export class StartDeploymentDto {
   instances?: string[]
 }
 
-export class DeploymentListDto extends PaginatedList<DeploymentDto> {
-  @Type(() => DeploymentDto)
+export class DeploymentListDto implements PaginatedList<DeploymentDto> {
+  @ValidateNested({ each: true })
   items: DeploymentDto[]
 
+  @IsInt()
   total: number
 }

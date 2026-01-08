@@ -82,7 +82,7 @@ export class AuditLogDto {
   data?: object
 }
 
-export class AuditLogListDto extends PaginatedList<AuditLogDto> {
+export class AuditLogListDto implements PaginatedList<AuditLogDto> {
   @Type(() => AuditLogDto)
   items: AuditLogDto[]
 
