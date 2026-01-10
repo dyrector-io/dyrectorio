@@ -36,6 +36,7 @@ type CommonConfiguration struct {
 	DefaultLimitsCPU     string `yaml:"defaultLimitsCPU"         env:"DEFAULT_LIMITS_CPU"          env-default:"100m"`
 	//nolint:lll
 	ImportContainerImage     string        `yaml:"importContainerImage"     env:"IMPORT_CONTAINER_IMAGE"      env-default:"rclone/rclone:1.57.0"`
+	VaultURL                 string        `yaml:"VaultURL"`
 	ReadHeaderTimeout        time.Duration `yaml:"readHeaderTimeout"        env:"READ_HEADER_TIMEOUT"         env-default:"15s"`
 	GrpcKeepalive            time.Duration `yaml:"grpcKeepalive"            env:"GRPC_KEEPALIVE"              env-default:"30s"`
 	DefaultTimeout           time.Duration `yaml:"defaultTimeout"           env:"DEFAULT_TIMEOUT"             env-default:"5s"`
@@ -49,3 +50,7 @@ const (
 	ConnectionTokenFileName = "token.jwt"
 	NonceBlacklistFileName  = "token-nonce.blacklist"
 )
+
+type VaultCredentials struct {
+	VaultURL string
+}

@@ -1,6 +1,7 @@
 {
     "version": "0.2.0",
     "configurations": [
+    
         {
             "type": "node",
             "request": "launch",
@@ -58,9 +59,9 @@
             "type": "go",
             "request": "launch",
             "buildFlags": "",
-            "env": {
-                "KUBECONFIG": "${workspaceFolder}/golang/k3d-auth.yaml"
-            },
+            // "env": {
+            //     "KUBECONFIG": "${workspaceFolder}/golang/k3d-auth.yaml"
+            // },
             "mode": "debug",
             "program": "${workspaceFolder}/golang/cmd/crane",
             "cwd": "${workspaceFolder}/golang/cmd/crane"
