@@ -1,5 +1,10 @@
 import { ConcreteContainerConfigData, ContainerConfigData } from './container'
-import { mergeConfigsWithConcreteConfig, mergeInstanceConfigWithDeploymentConfig } from './container-merge'
+import {
+  mapSecretKeyToSecretKeyValue,
+  mergeConfigsWithConcreteConfig,
+  mergeInstanceConfigWithDeploymentConfig,
+  mergeInstanceConfigWithImageConfig,
+} from './container-merge'
 
 describe('container-merge', () => {
   const fullConfig: ContainerConfigData = {
@@ -846,7 +851,57 @@ describe('container-merge', () => {
 
       expect(merged).toEqual(expected)
     })
+  })
 
+  describe('mergeInstanceConfigWithImageConfig', () => {
+    it('should remove overridden image config values, when overriding', () => {
+      const image: ContainerConfigData = {
+        ...fullConfig,
+      }
+
+      const instance: ConcreteContainerConfigData = {
+        ...fullConcreteConfig,
+      }
+
+      const merged = mergeInstanceConfigWithImageConfig(instance, image)
+
+      const expected: ConcreteContainerConfigData = {
+        ...fullConcreteConfig,
+        secrets: [
+          {
+            id: 'secret2',
+            key: 'secret2',
+            required: true,
+            encrypted: false,
+            value: '',
+            publicKey: null,
+          },
+          ...fullConcreteConfig.secrets,
+        ],
+      }
+
+      expect(merged).toEqual(expected)
+    })
+
+    it('should keep image config values, when not overriding', () => {
+      const image: ContainerConfigData = {
+        ...fullConfig,
+      }
+
+      const instance: ConcreteContainerConfigData = {}
+
+      const merged = mergeInstanceConfigWithImageConfig(instance, image)
+
+      const expected: ConcreteContainerConfigData = {
+        ...fullConfig,
+        secrets: fullConfig.secrets.map(it => mapSecretKeyToSecretKeyValue(it)),
+      }
+
+      expect(merged).toEqual(expected)
+    })
+  })
+
+  describe('mergeInstanceConfigWithDeploymentConfig', () => {
     it('should mix the instance config with the deployment config', () => {
       const instance: ConcreteContainerConfigData = {
         ...fullConcreteConfig,

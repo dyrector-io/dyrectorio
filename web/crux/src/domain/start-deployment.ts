@@ -8,8 +8,8 @@ import {
 } from './container'
 import {
   mergeConfigsWithConcreteConfig,
-  mergeDeploymentConfigWithImageConfig,
   mergeInstanceConfigWithDeploymentConfig,
+  mergeInstanceConfigWithImageConfig,
 } from './container-merge'
 import { DeploymentWithConfig } from './deployment'
 import { ImageWithRegistry } from './image'
@@ -115,11 +115,11 @@ export const instanceConfigOf = (
   deployment: DeployableDeployment,
   instance: DeployableInstance,
 ): ConcreteContainerConfigData => {
-  // first we merge the deployment config with the image config to resolve secrets globally
-  const mergedDeploymentConfig = mergeDeploymentConfigWithImageConfig(deployment.config, instance.image.config)
+  // first we merge and override the instance config with the image config to have a concrete config intended by the user
+  const mergedInstanceConfig = mergeInstanceConfigWithImageConfig(instance.config, instance.image.config)
 
-  // then we merge and override the rest with the instance config
-  const result = mergeInstanceConfigWithDeploymentConfig(instance.config, mergedDeploymentConfig)
+  // then we merge the deployment config with the instance config to add additional config values and resolve the rest of the secrets
+  const result = mergeInstanceConfigWithDeploymentConfig(mergedInstanceConfig, deployment.config)
 
   // set defaults
   if (!result.name) {

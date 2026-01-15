@@ -304,12 +304,12 @@ export const mergeConfigsWithConcreteConfig = (
   }
 }
 
-export const mergeDeploymentConfigWithImageConfig = (
-  deployment: ConcreteContainerConfigData,
+export const mergeInstanceConfigWithImageConfig = (
+  instance: ConcreteContainerConfigData,
   image: ContainerConfigData,
 ): ConcreteContainerConfigData => ({
-  ...mergeConfigs(deployment, image),
-  secrets: mergeSecrets(deployment.secrets, image.secrets),
+  ...squashConfigs(instance, image),
+  secrets: mergeSecrets(instance.secrets, image.secrets),
 })
 
 export const mergeInstanceConfigWithDeploymentConfig = (
@@ -319,7 +319,6 @@ export const mergeInstanceConfigWithDeploymentConfig = (
   // common
   name: instance.name ?? deployment.name ?? null,
   environment: mergeUniqueKeyValues(instance.environment, deployment.environment),
-  secrets: mergeUniqueKeyValues(instance.secrets, deployment.secrets),
   user: mergeNumber(instance.user, deployment.user),
   workingDirectory: instance.workingDirectory ?? deployment.workingDirectory ?? null,
   tty: mergeBoolean(instance.tty, deployment.tty),
@@ -356,4 +355,5 @@ export const mergeInstanceConfigWithDeploymentConfig = (
   dockerLabels: mergeUniqueKeyValues(instance.dockerLabels, deployment.dockerLabels),
   expectedState: instance.expectedState ?? deployment.expectedState ?? null,
   experimental: mergeObject(instance.experimental, deployment.experimental),
+  secrets: mergeUniqueKeyValues(instance.secrets, deployment.secrets),
 })
