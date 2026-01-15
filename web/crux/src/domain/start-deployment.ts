@@ -69,7 +69,7 @@ export const collectInvalidSecrets = (
 
       return {
         ...secret,
-        value: '',
+        value: null,
         encrypted: false,
         publicKey,
       }

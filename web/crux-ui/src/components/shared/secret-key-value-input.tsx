@@ -152,7 +152,7 @@ const clearItem =
       return state
     }
 
-    item.value = ''
+    item.value = null
     item.encrypted = false
     item.publicKey = null
 
@@ -268,6 +268,15 @@ const SecretKeyValueInput = (props: SecretKeyValueInputProps) => {
       [...newItems].map(async (it): Promise<UniqueSecretKeyValue> => {
         let { value } = it
         let encryptedWithPublicKey = it.publicKey
+
+        if (!it.value) {
+          return {
+            ...it,
+            value: null,
+            encrypted: false,
+            publicKey: publicKey ?? null,
+          }
+        }
 
         if (!it.encrypted) {
           if (!publicKey) {
