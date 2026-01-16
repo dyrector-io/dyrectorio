@@ -126,6 +126,13 @@ export const instanceConfigOf = (
     result.name = containerNameOfInstance(instance)
   }
 
+  // set empty secret values to null string
+  result.secrets?.forEach(it => {
+    if (!it.value) {
+      it.value = ''
+    }
+  })
+
   return result
 }
 
@@ -167,17 +174,25 @@ export const mergePrefixNeighborSecrets = (
       })
     })
 
-  currentSecrets.forEach(it => {
-    result.set(it.key, {
-      value: it.value,
-      deployedAt: null,
+  if (currentSecrets) {
+    currentSecrets.forEach(it => {
+      result.set(it.key, {
+        value: it.value,
+        deployedAt: null,
+      })
     })
-  })
+  }
 
-  const entries = [...result.entries()].map(entry => {
-    const [key, candidate] = entry
-    return [key, candidate.value]
-  })
+  const entries = [...result.entries()]
+    .filter(entry => {
+      const [, candidate] = entry
+      const { value } = candidate
+      return !!value
+    })
+    .map(entry => {
+      const [key, candidate] = entry
+      return [key, candidate.value]
+    })
 
   return Object.fromEntries(entries)
 }

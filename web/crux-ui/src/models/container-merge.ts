@@ -144,14 +144,17 @@ const mergeObject = (strong: object, weak: object) => {
 
 export const mapSecretKeyToSecretKeyValue = (secret: UniqueSecretKey): UniqueSecretKeyValue => ({
   ...secret,
-  value: '',
+  value: null,
   encrypted: false,
   publicKey: null,
 })
 
-export const mergeSecrets = (strong: UniqueSecretKeyValue[], weak: UniqueSecretKey[]): UniqueSecretKeyValue[] => {
+export const mergeSecrets = (
+  strong: UniqueSecretKeyValue[],
+  weak: UniqueSecretKey[],
+): UniqueSecretKeyValue[] | null => {
   if (!weak) {
-    return strong ?? []
+    return strong ?? null
   }
 
   if (!strong) {

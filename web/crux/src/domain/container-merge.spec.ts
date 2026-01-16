@@ -6,6 +6,46 @@ import {
   mergeInstanceConfigWithImageConfig,
 } from './container-merge'
 
+const emptyConfig: ConcreteContainerConfigData = {
+  annotations: null,
+  args: null,
+  capabilities: [],
+  commands: null,
+  configContainer: null,
+  corsHeaders: null,
+  deploymentStrategy: null,
+  dockerLabels: null,
+  environment: null,
+  expectedState: null,
+  experimental: null,
+  expose: null,
+  extraLBAnnotations: null,
+  healthCheckConfig: null,
+  initContainers: null,
+  labels: null,
+  logConfig: null,
+  metrics: null,
+  name: null,
+  networkMode: null,
+  networks: null,
+  portRanges: null,
+  ports: null,
+  proxyBuffering: null,
+  proxyHeaders: null,
+  resourceConfig: null,
+  restartPolicy: null,
+  routing: null,
+  secrets: null,
+  storageConfig: null,
+  storageId: null,
+  storageSet: false,
+  tty: null,
+  useLoadBalancer: null,
+  user: null,
+  volumes: null,
+  workingDirectory: null,
+}
+
 describe('container-merge', () => {
   const fullConfig: ContainerConfigData = {
     name: 'img',
@@ -755,7 +795,7 @@ describe('container-merge', () => {
             key: 'secret2',
             required: true,
             encrypted: false,
-            value: '',
+            value: null,
             publicKey: null,
           },
           ...fullConcreteConfig.secrets,
@@ -776,7 +816,7 @@ describe('container-merge', () => {
             key: 'secret1',
             required: false,
             encrypted: false,
-            value: '',
+            value: null,
             publicKey: null,
           },
           {
@@ -784,7 +824,7 @@ describe('container-merge', () => {
             key: 'secret2',
             required: true,
             encrypted: false,
-            value: '',
+            value: null,
             publicKey: null,
           },
         ],
@@ -833,7 +873,7 @@ describe('container-merge', () => {
             key: 'secret1',
             required: false,
             encrypted: false,
-            value: '',
+            value: null,
             publicKey: null,
           },
           {
@@ -841,13 +881,60 @@ describe('container-merge', () => {
             key: 'secret2',
             required: true,
             encrypted: false,
-            value: '',
+            value: null,
             publicKey: null,
           },
         ],
       }
 
       const merged = mergeConfigsWithConcreteConfig([fullConfig], concrete)
+
+      expect(merged).toEqual(expected)
+    })
+
+    it('should use the original secrets, when there are no overriden secrets', () => {
+      const base: ContainerConfigData = {
+        secrets: [
+          {
+            id: 'required',
+            key: 'required',
+            required: true,
+          },
+          {
+            id: 'non-required',
+            key: 'non-required',
+            required: false,
+          },
+        ],
+      }
+
+      const concrete: ConcreteContainerConfigData = {
+        secrets: null,
+      }
+
+      const merged = mergeConfigsWithConcreteConfig([base], concrete)
+
+      const expected: ConcreteContainerConfigData = {
+        ...emptyConfig,
+        secrets: [
+          {
+            id: 'required',
+            key: 'required',
+            value: null,
+            required: true,
+            encrypted: false,
+            publicKey: null,
+          },
+          {
+            id: 'non-required',
+            key: 'non-required',
+            value: null,
+            required: false,
+            encrypted: false,
+            publicKey: null,
+          },
+        ],
+      }
 
       expect(merged).toEqual(expected)
     })
@@ -873,7 +960,7 @@ describe('container-merge', () => {
             key: 'secret2',
             required: true,
             encrypted: false,
-            value: '',
+            value: null,
             publicKey: null,
           },
           ...fullConcreteConfig.secrets,
