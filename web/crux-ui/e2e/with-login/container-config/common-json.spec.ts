@@ -13,7 +13,7 @@ import {
   wsPatchMatchPortRange,
   wsPatchMatchPorts,
   wsPatchMatchRouting,
-  wsPatchMatchSecret,
+  wsPatchMatchSomeRequiredSecret,
   wsPatchMatchStorage,
   wsPatchMatchTTY,
   wsPatchMatchUser,
@@ -248,7 +248,7 @@ test.describe('Image common config from JSON', () => {
     const json = JSON.parse(await jsonEditor.inputValue())
     json.secrets = [{ key: secret, required: true }]
 
-    const wsSent = wsPatchSent(ws, wsRoute, WS_TYPE_PATCH_CONFIG, wsPatchMatchSecret(secret, true))
+    const wsSent = wsPatchSent(ws, wsRoute, WS_TYPE_PATCH_CONFIG, wsPatchMatchSomeRequiredSecret(secret, true))
     await jsonEditor.fill(JSON.stringify(json))
     await wsSent
 

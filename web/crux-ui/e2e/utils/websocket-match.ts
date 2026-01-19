@@ -38,18 +38,20 @@ export const wsPatchMatchEverySecret =
     return secretKeys.every(it => payloadSecretKeys.includes(it))
   }
 
-export const wsPatchMatchNonNullSecretValues =
-  (secretKeys: string[]) =>
+export const wsPatchMatchSecrets =
+  (secrets: Record<string, string | null>) =>
   (payload: any): boolean => {
     const payloadSecrets: UniqueSecretKeyValue[] = payload.config?.secrets ?? []
 
-    return (
-      secretKeys.every(secKey => payloadSecrets.find(it => it.key === secKey)) &&
-      payloadSecrets.every(it => typeof it.value === 'string')
-    )
+    return Object.entries(secrets).some(entry => {
+      const [key, value] = entry
+
+      const payloadSecret = payloadSecrets.find(it => it.key === key)
+      return payloadSecret && payloadSecret.value === value
+    })
   }
 
-export const wsPatchMatchSecret = (secret: string, required: boolean) => (payload: any) =>
+export const wsPatchMatchSomeRequiredSecret = (secret: string, required: boolean) => (payload: any) =>
   payload.config?.secrets?.some(it => it.key === secret && it.required === required)
 
 export const wsPatchMatchCommand = (command: string) => (payload: any) =>

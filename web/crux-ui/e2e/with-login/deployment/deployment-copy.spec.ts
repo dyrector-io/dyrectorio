@@ -1,6 +1,6 @@
 import { WS_TYPE_PATCH_CONFIG } from '@app/models'
 import { Page, expect } from '@playwright/test'
-import { wsPatchMatchEverySecret, wsPatchMatchNonNullSecretValues } from 'e2e/utils/websocket-match'
+import { wsPatchMatchEverySecret, wsPatchMatchSecrets } from 'e2e/utils/websocket-match'
 import { DAGENT_NODE, NGINX_TEST_IMAGE_WITH_TAG, TEAM_ROUTES, waitForURLExcept } from '../../utils/common'
 import { createNode } from '../../utils/nodes'
 import {
@@ -55,7 +55,13 @@ test.describe('Deployment Copy', () => {
   let originalDeploymentId: string
   const secretKeys = ['secretOne', 'secretTwo']
   const newSecretKey = 'new-secret'
-  const newSecretKeyList = [...secretKeys, newSecretKey]
+  const newSecretValue = 'new-secret-value'
+
+  const mergedSecrets = {
+    secretOne: null,
+    secretTwo: null,
+    'new-secret': newSecretValue,
+  }
 
   // NOTE(@robot9706): beforeAll runs on each worker, so if tests are running in parallel beforeAll executes multiple times
   test.describe.configure({ mode: 'serial' })
@@ -85,8 +91,6 @@ test.describe('Deployment Copy', () => {
 
     const originalConfigId = await openInstanceConfigByDeploymentTable(page, 'nginx')
 
-    const newSecretValue = 'new-secret-value'
-
     const newSecretKeyInput = page.locator('input[placeholder="Key"][value=""]:below(label:has-text("SECRETS"))')
     await newSecretKeyInput.fill(newSecretKey)
 
@@ -96,7 +100,7 @@ test.describe('Deployment Copy', () => {
     await newSecretValueInput.fill(newSecretValue)
 
     const wsRoute = TEAM_ROUTES.containerConfig.detailsSocket(originalConfigId)
-    const wsSent = wsPatchSent(ws, wsRoute, WS_TYPE_PATCH_CONFIG, wsPatchMatchNonNullSecretValues(newSecretKeyList))
+    const wsSent = wsPatchSent(ws, wsRoute, WS_TYPE_PATCH_CONFIG, wsPatchMatchSecrets(mergedSecrets))
     await page.locator(`button:has-text("Save"):below(input[value="${newSecretValue}"])`).click()
     await wsSent
 
