@@ -1,7 +1,7 @@
 services:
   traefik:
     container_name: traefik
-    image: docker.io/library/traefik:2.9
+    image: docker.io/library/traefik:2.11
     command:
       - --providers.docker=true
       - --providers.docker.exposedbydefault=false
