@@ -58,7 +58,7 @@ export-full:
 	$(eval BUNDLEVER=$(or $(version),latest))
 	mv .env .env_bak || true
 	echo "DYO_VERSION=$(BUNDLEVER)" > .env
-	crane pull --platform=linux/amd64 docker.io/library/traefik:2.9 offline/traefik.tar
+	crane pull --platform=linux/amd64 docker.io/library/traefik:2.11 offline/traefik.tar
 	crane pull --platform=linux/amd64 docker.io/oryd/mailslurper:smtps-latest offline/mailslurper.tar
 	crane pull --platform=linux/amd64 ghcr.io/dyrector-io/dyrectorio/multi-database:1.0.4 offline/multidatabase.tar
 	crane pull --platform=linux/amd64 ghcr.io/dyrector-io/dyrectorio/web/kratos:latest offline/kratos.tar
