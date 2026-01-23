@@ -17,7 +17,7 @@ const createProject = (name: string, testMatch: string | RegExp | (string | RegE
   name,
   testMatch,
   // If running in DEBUG mode only depend on 'global-setup' so any test can run without running the whole project structure
-  dependencies: DEBUG || IGNORE_DEPS ? ['global-setup'] : deps ?? ['global-setup'],
+  dependencies: DEBUG || IGNORE_DEPS ? ['global-setup'] : (deps ?? ['global-setup']),
   use: {
     ...devices['Desktop Chromium'],
     storageState: STORAGE_STATE,

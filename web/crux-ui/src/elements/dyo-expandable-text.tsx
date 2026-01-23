@@ -43,7 +43,7 @@ const DyoExpandableText = (props: DyoExpandableTextProps) => {
           className,
           lineClamp[propsLineClamp - 1],
           'break-words whitespace-pre-line',
-          overflow ? null : marginClassName ?? 'mb-8',
+          overflow ? null : (marginClassName ?? 'mb-8'),
         )}
       >
         {text}

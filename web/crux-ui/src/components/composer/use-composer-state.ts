@@ -106,8 +106,8 @@ const applyEnvironments = (
     const envFile: string[] = !service.env_file
       ? []
       : typeof service.env_file === 'string'
-      ? [service.env_file]
-      : service.env_file
+        ? [service.env_file]
+        : service.env_file
     let dotEnvs = envs.filter(it => envFile.includes(it.name))
 
     // add explicit envs to environment

@@ -51,19 +51,19 @@ export const DyoList = <T,>(props: DyoListProps<T>) => {
   const data: Array<string[]> | Array<React.ReactNode[]> = !props
     ? []
     : isArrayOfStringArrays(propsData)
-    ? (propsData as any as string[][])
-    : propsData.map((it, index) => itemBuilder(it, index))
+      ? (propsData as any as string[][])
+      : propsData.map((it, index) => itemBuilder(it, index))
 
   const headerClassNames: string[] = headers
     ? typeof headerClassName === 'string'
       ? headers.map(() => headerClassName as string)
-      : headerClassName ?? headers.map(() => null)
+      : (headerClassName ?? headers.map(() => null))
     : []
 
   const itemClassNames: string[] = data[0]
     ? typeof itemClassName === 'string'
       ? data[0].map(() => itemClassName as string)
-      : itemClassName ?? data[0].map(() => null)
+      : (itemClassName ?? data[0].map(() => null))
     : []
 
   return (
@@ -81,7 +81,7 @@ export const DyoList = <T,>(props: DyoListProps<T>) => {
                   className={clsx(
                     'table-cell text-left align-middle',
                     headerClassNames[index] ?? 'text-bright font-bold h-8 mb-4 ml-2 mr-auto',
-                    columnWidths ? columnWidths[index] ?? '' : '',
+                    columnWidths ? (columnWidths[index] ?? '') : '',
                   )}
                 >
                   {headerBuilder ? headerBuilder(header, index) : header}

@@ -408,27 +408,43 @@ export default class VersionService {
 
   async setDefaultVersion(projectId: string, versionId: string): Promise<void> {
     await this.prisma.$transaction(async prisma => {
+      const currentDefault = await prisma.version.findFirst({
+        where: {
+          projectId,
+          default: true,
+        },
+        select: {
+          id: true,
+          updatedAt: true,
+        },
+      })
+
+      const version = await prisma.version.findUnique({
+        where: {
+          id: versionId,
+        },
+        select: {
+          updatedAt: true,
+        },
+      })
+
+      await prisma.version.update({
+        where: {
+          id: currentDefault.id,
+        },
+        data: {
+          default: false,
+          updatedAt: currentDefault.updatedAt, // keep the original updatedAt
+        },
+      })
+
       await prisma.version.update({
         where: {
           id: versionId,
         },
         data: {
           default: true,
-        },
-        select: {
-          projectId: true,
-        },
-      })
-
-      await prisma.version.updateMany({
-        where: {
-          NOT: {
-            id: versionId,
-          },
-          projectId,
-        },
-        data: {
-          default: false,
+          updatedAt: version.updatedAt, // keep the original updatedAt
         },
       })
     })

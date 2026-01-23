@@ -6,7 +6,6 @@ import { NodeConnectionStatus } from 'src/app/node/node.dto'
 import { AgentToken } from 'src/domain/agent-token'
 import { CruxBadRequestException } from 'src/exception/crux-exception'
 
-const nestjsClientStreamEndCallWorkaround = () => {}
 export default class GrpcNodeConnection {
   public static META_NODE_TOKEN = 'dyo-node-token'
 
@@ -40,14 +39,6 @@ export default class GrpcNodeConnection {
     public readonly metadata: Metadata,
     private call: NodeGrpcCall,
   ) {
-    if (call.call.handler.type === 'clientStream' && !call.end) {
-      // TODO(@m8vago): nestjs tries to call end() on a ServerReadableStream, when the client
-      // cancels the call, but ServerReadableStream does not have one.
-      // We should open an issue to them probably.
-
-      call.end = nestjsClientStreamEndCallWorkaround
-    }
-
     this.signedToken = this.getStringMetadataOrThrow(GrpcNodeConnection.META_NODE_TOKEN)
 
     const xRealIp = this.getFirstItemOfStringArrayMetadata('x-real-ip')
@@ -56,7 +47,7 @@ export default class GrpcNodeConnection {
     this.address = xRealIp ?? xForwarderFor ?? call.getPeer()
 
     call.connection = this
-    call.on('close', () => this.onClose())
+    call.on('end', () => this.onClose())
   }
 
   verify(jwtService: JwtService): boolean {
@@ -109,7 +100,6 @@ export default class GrpcNodeConnection {
   private onClose() {
     this.statusChannel.next('unreachable')
 
-    this.call.removeAllListeners()
     this.statusChannel.complete()
     this.call.connection = null
   }
@@ -131,5 +121,4 @@ export type NodeGrpcCall = ServerSurfaceCall & {
       type: HandlerType
     }
   }
-  end?: VoidFunction
 }

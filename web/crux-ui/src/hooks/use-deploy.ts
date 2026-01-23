@@ -79,7 +79,7 @@ export const useDeploy = (opts: UseDeployOptions): UseDeployAction => {
           ...translatedError,
           path:
             intanceIndex !== null
-              ? selectedInstances[intanceIndex].config.name ?? selectedInstances[intanceIndex].image.config.name
+              ? (selectedInstances[intanceIndex].config.name ?? selectedInstances[intanceIndex].image.config.name)
               : translatedError.path,
         }),
         {
@@ -176,8 +176,8 @@ export const useDeploy = (opts: UseDeployOptions): UseDeployAction => {
             t('errors:validationFailedForInstance', {
               path:
                 intanceIndex !== null
-                  ? deployment.instances[intanceIndex].config.name ??
-                    deployment.instances[intanceIndex].image.config.name
+                  ? (deployment.instances[intanceIndex].config.name ??
+                    deployment.instances[intanceIndex].image.config.name)
                   : property,
             }),
             {

@@ -6,6 +6,7 @@
   "imageNameAndTag": "Image name and tag",
   "containerName": "Container name",
   "tag": "Tag",
+  "newTag:": "New Tag",
   "filterMinChars": "Minimum filter length is {{length}} character",
   "availableTags": "Available tags",
   "environment": "Environment",

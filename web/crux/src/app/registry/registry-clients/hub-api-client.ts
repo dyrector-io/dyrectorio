@@ -1,5 +1,6 @@
 import { Cache } from 'cache-manager'
 import { getRegistryApiException } from 'src/exception/registry-exception'
+import { RegistryImageTag } from '../registry.message'
 import { RegistryImageTagInfo } from './registry-api-client'
 import V2HttpApiClient from './v2-http-api-client'
 
@@ -29,12 +30,15 @@ export default abstract class HubApiClient {
     return result.map(it => it.name)
   }
 
-  protected async fetchTags(image: string): Promise<string[]> {
+  protected async fetchTags(image: string): Promise<RegistryImageTag[]> {
     const endpoint = `${image}/tags?page_size=100`
 
     const result = await this.fetchPaginatedEndpoint(endpoint)
 
-    return result.map(it => it.name)
+    return result.map(it => ({
+      name: it.name,
+      created: it.tag_last_pushed ?? null,
+    }))
   }
 
   protected async fetch(endpoint: string, init?: RequestInit): Promise<Response> {

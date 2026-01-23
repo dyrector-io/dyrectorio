@@ -117,7 +117,7 @@ func (p *PVC) ApplyVolume(client typedv1.PersistentVolumeClaimInterface,
 
 	claimSpec := corev1.PersistentVolumeClaimSpec().
 		WithAccessModes(volumeType).
-		WithResources(corev1.ResourceRequirements().WithRequests(coreV1.ResourceList{
+		WithResources(corev1.VolumeResourceRequirements().WithRequests(coreV1.ResourceList{
 			coreV1.ResourceStorage: size,
 		}))
 

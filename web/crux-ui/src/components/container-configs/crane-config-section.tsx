@@ -69,6 +69,8 @@ const CraneConfigSection = (props: CraneConfigSectionProps) => {
         },
       })
     }
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [config])
 
   return !filterEmpty([...CRANE_CONFIG_FILTER_VALUES], selectedFilters) ? null : (

@@ -1,5 +1,5 @@
 # stage 1, build app
-FROM docker.io/library/node:20-alpine3.17 AS BUILDER
+FROM docker.io/library/node:24-alpine3.22 AS BUILDER
 WORKDIR /app
 
 ENV NEXT_TELEMETRY_DISABLED 1
@@ -11,7 +11,7 @@ COPY . .
 RUN npm run build
 
 # stage 2, run the app
-FROM docker.io/library/node:20-alpine3.17 AS RUNNER
+FROM docker.io/library/node:24-alpine3.22 AS RUNNER
 WORKDIR /app
 
 ENV NODE_ENV production

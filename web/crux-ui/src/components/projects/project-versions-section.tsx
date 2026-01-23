@@ -1,5 +1,6 @@
 import { DyoHeading } from '@app/elements/dyo-heading'
 import { DyoConfirmationModal } from '@app/elements/dyo-modal'
+import { sortDate } from '@app/elements/dyo-table'
 import DyoWrap from '@app/elements/dyo-wrap'
 import useConfirmation from '@app/hooks/use-confirmation'
 import { Version } from '@app/models'
@@ -7,7 +8,19 @@ import useTranslation from 'next-translate/useTranslation'
 import { QA_DIALOG_LABEL_SET_AS_DEFAULT } from 'quality-assurance'
 import VersionCard from './versions/version-card'
 
-interface ProjectVersionsSectionProps {
+const sortVersions = (one: Version, other: Version) => {
+  if (one.default) {
+    return -1
+  }
+
+  if (other.default) {
+    return 1
+  }
+
+  return sortDate(one.audit.updatedAt, other.audit.updatedAt)
+}
+
+type ProjectVersionsSectionProps = {
   projectId: string
   versions: Version[]
   onIncrease?: (version: Version) => void
@@ -35,6 +48,8 @@ const ProjectVersionsSection = (props: ProjectVersionsSectionProps) => {
 
     onSetAsDefault(version)
   }
+
+  versions.sort(sortVersions)
 
   return versions.length ? (
     <>

@@ -1,11 +1,11 @@
 import { DyoCard } from '@app/elements/dyo-card'
 import DyoIcon from '@app/elements/dyo-icon'
 import DyoLink from '@app/elements/dyo-link'
-import DyoTable, { DyoColumn, dyoCheckboxColumn, sortDate, sortNumber, sortString } from '@app/elements/dyo-table'
+import DyoTable, { DyoColumn, dyoCheckboxColumn, sortNumber, sortString } from '@app/elements/dyo-table'
 import useTeamRoutes from '@app/hooks/use-team-routes'
-import { Instance, containerNameOfInstance } from '@app/models'
-import { utcDateToLocale } from '@app/utils'
+import { Instance, containerNameOfInstance, imageNameOf } from '@app/models'
 import useTranslation from 'next-translate/useTranslation'
+import { useCallback } from 'react'
 import { DeploymentActions, DeploymentState } from './use-deployment-state'
 
 export interface DeploymentViewListProps {
@@ -18,7 +18,33 @@ const DeploymentViewList = (props: DeploymentViewListProps) => {
   const routes = useTeamRoutes()
 
   const { state, actions } = props
-  const { instances, deployInstances } = state
+  const { instances, containers, selectedInstanceIds: deployInstances } = state
+
+  const containerForInstance = useCallback(
+    (instance: Instance) => {
+      if (!containers) {
+        return null
+      }
+
+      const containerName = containerNameOfInstance(instance)
+      return containers.find(it => it.id.name === containerName) ?? null
+    },
+    [containers],
+  )
+
+  const imageNameTagOf: (instance: Instance) => [string, string] = useCallback(
+    (instance: Instance) => {
+      const { image } = instance
+
+      const container = containerForInstance(instance)
+      if (!container || container.imageTag === image.tag) {
+        return [imageNameOf(image), null]
+      }
+
+      return [`${image.name}:${container.imageTag}`, image.tag]
+    },
+    [containerForInstance],
+  )
 
   return (
     <DyoCard className="relative mt-4">
@@ -56,21 +82,30 @@ const DeploymentViewList = (props: DeploymentViewListProps) => {
         />
         <DyoColumn
           header={t('imageTag')}
-          className="w-2/12"
+          className="w-3/12"
           sortable
-          sortField={(it: Instance) => (it.image.tag ? `${it.image.name}:${it.image.tag}` : it.image.name)}
+          sortField={(it: Instance) => {
+            const [imageNameTag, newTag] = imageNameTagOf(it)
+            return `${imageNameTag} -> ${newTag}`
+          }}
           sort={sortString}
-          body={(it: Instance) => (it.image.tag ? `${it.image.name}:${it.image.tag}` : it.image.name)}
+          body={(it: Instance) => {
+            const [imageNameTag, newTag] = imageNameTagOf(it)
+            return (
+              <div className="flex flex-row">
+                <span>{imageNameTag}</span>
+
+                {newTag && (
+                  <>
+                    <DyoIcon className="mx-1" src="/arrow_right.svg" alt={t('newTag')} size="md" />
+                    <span className="text-dyo-turquoise ml">{newTag}</span>
+                  </>
+                )}
+              </div>
+            )
+          }}
         />
-        <DyoColumn
-          header={t('common:createdAt')}
-          className="w-4/12"
-          sortable
-          sortField="image.createdAt"
-          sort={sortDate}
-          suppressHydrationWarning
-          body={(it: Instance) => (it.image.createdAt ? utcDateToLocale(it.image.createdAt) : t('common:new'))}
-        />
+
         <DyoColumn
           header={t('common:actions')}
           className="w-40 text-center"

@@ -3,6 +3,11 @@ import { HttpException, HttpStatus } from '@nestjs/common'
 import { RpcException } from '@nestjs/microservices'
 import { CruxExceptionOptions } from './crux-exception'
 
+export type GrpcErrorObject = Error & {
+  code: Status
+  message: string
+}
+
 export type GrpcExceptionOptions = Pick<CruxExceptionOptions, 'message'> & {
   details?: Omit<CruxExceptionOptions, 'message'>
 }
@@ -12,10 +17,11 @@ export class GrpcException extends RpcException {
     super(GrpcException.convertHttpException(httpException))
   }
 
-  private static convertHttpException(exception: HttpException) {
+  private static convertHttpException(exception: HttpException): GrpcErrorObject {
     const res = exception.getResponse() as string | CruxExceptionOptions
 
     return {
+      name: exception.name,
       code: GrpcException.httpStatusToGrpc(exception.getStatus()),
       message: JSON.stringify(GrpcException.formatMessage(res)),
     }

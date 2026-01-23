@@ -49,7 +49,7 @@ export default class DeployStartValidationInterceptor implements NestInterceptor
               },
             },
           },
-          where: !dto.instances
+          where: !dto?.instances
             ? undefined
             : {
                 id: {

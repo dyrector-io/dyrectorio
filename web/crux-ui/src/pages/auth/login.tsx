@@ -186,7 +186,9 @@ const LoginPage = (props: LoginPageProps) => {
               message={findMessage(ui, 'password')}
             />
 
-            {ui.messages?.map((it, index) => <DyoMessage key={`error-${index}`} message={it?.text} />)}
+            {ui.messages?.map((it, index) => (
+              <DyoMessage key={`error-${index}`} message={it?.text} />
+            ))}
 
             <DyoButton className="mt-8" type="submit">
               {t('common:logIn')}

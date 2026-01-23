@@ -1,6 +1,6 @@
 import { Cache } from 'cache-manager'
 import { CruxUnauthorizedException } from 'src/exception/crux-exception'
-import { RegistryImageTag, RegistryImageWithTags } from '../registry.message'
+import { RegistryImageWithTags } from '../registry.message'
 import HubApiClient, { DOCKER_HUB_REGISTRY_URL } from './hub-api-client'
 import { RegistryApiClient } from './registry-api-client'
 import V2HttpApiClient from './v2-http-api-client'
@@ -60,14 +60,9 @@ export default class PrivateHubApiClient extends HubApiClient implements Registr
   async tags(image: string): Promise<RegistryImageWithTags> {
     const tags = await super.fetchTags(image)
 
-    // NOTE(@robot9706): Docker ratelimits us so skip tag info for now
-    const tagsWithInfo: RegistryImageTag[] = tags.map(it => ({
-      name: it,
-    }))
-
     return {
       name: image,
-      tags: tagsWithInfo,
+      tags,
     }
   }
 

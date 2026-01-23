@@ -13,7 +13,7 @@ import {
   wsPatchMatchPortRange,
   wsPatchMatchPorts,
   wsPatchMatchRouting,
-  wsPatchMatchSecret,
+  wsPatchMatchSomeRequiredSecret,
   wsPatchMatchStorage,
   wsPatchMatchTTY,
   wsPatchMatchUser,
@@ -207,7 +207,7 @@ test.describe('Image common config from editor', () => {
     const secret = 'secretName'
     const secretInput = page.locator('input[placeholder="Secrets"] >> visible=true').nth(0)
 
-    const wsSent = wsPatchSent(ws, wsRoute, WS_TYPE_PATCH_CONFIG, wsPatchMatchSecret(secret, true))
+    const wsSent = wsPatchSent(ws, wsRoute, WS_TYPE_PATCH_CONFIG, wsPatchMatchSomeRequiredSecret(secret, true))
     await secretInput.fill(secret)
 
     await page.getByRole('switch', { checked: false }).locator(':right-of(:text("Required"))').click()
