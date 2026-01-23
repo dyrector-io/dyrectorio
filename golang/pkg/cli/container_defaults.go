@@ -298,7 +298,7 @@ func GetTraefik(state *State, args *ArgsFlags) containerbuilder.Builder {
 	}
 
 	traefik := baseContainer(state.Ctx, args).
-		WithImage("docker.io/library/traefik:v2.9").
+		WithImage("docker.io/library/traefik:v2.11").
 		WithName(state.Containers.Traefik.Name).
 		WithRestartPolicy(container.RestartPolicyAlways).
 		WithNetworks([]string{state.SettingsFile.Network}).
