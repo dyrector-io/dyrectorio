@@ -39,31 +39,6 @@ endif
 
 GOPARAMS:= CGO_ENABLED=0 $(GRPC_DEBUG_FLAGS)
 
-# cli start fully containerized stack, stable branch
-.PHONY: up
-up:
-	cd cmd/dyo && \
-	go run . up
-
-# cli stop
-.PHONY: down
-down:
-	cd cmd/dyo && \
-	go run . down
-
-# target `upd` is for development purposes it defaults to the latest images
-# and expects crux and crux-ui to run locally
-# for host name overrides you can define: --host localhost,yourdomain.com
-.PHONY: upd
-upd:
-	cd cmd/dyo && \
-	go run . --disable-crux --disable-crux-ui --image-tag latest --prefix dyo-latest --host localhost up
-
-.PHONY: downd
-downd:
-	cd cmd/dyo && \
-	go run . --prefix dyo-latest down
-
 .PHONY: go-crane
 go-crane:
 	air --build.cmd "" --build.bin "cd cmd/crane && ${GRPC_DEBUG_FLAGS} go run ."

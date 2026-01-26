@@ -1,31 +1,6 @@
 SHELL = /bin/sh
 GO_PACKAGE = github.com/dyrector-io/dyrectorio/protobuf/go
 
-# Shortcut to start stack, fully containerized, stable build
-.PHONY: up
-up:
-	cd golang && \
-	make up
-
-.PHONY: down
-down:
-	cd golang && \
-	make down
-
-# Shortcut to start stack with local development config
-.PHONY: upd
-upd:
-	cd golang && \
-	make upd
-
-.PHONY: downd
-downd:
-	cd golang && \
-	make downd
-
-.PHONY: dwd
-dwd: downd
-
 # Shortcut for CLI
 .PHONY: cli
 cli:

@@ -52,460 +52,460 @@ jobs:
         working-directory: ${{ env.WORKFLOWS_WORKING_DIRECTORY }}
         run: sh -x pr_title_validation.sh '${{ github.event.pull_request.title }}'
   # Validate the YAML documents
-  yaml_lint:
-    runs-on: ubuntu-22.04
-    container:
-      # yamlfmt resides here because alpine doesn't provide yamlfmt package
-      image: ghcr.io/dyrector-io/dyrectorio/builder-images/golang:4
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v3
-      - name: Run YAML linting
-        run: yamlfmt -lint .
-  gather_changes:
-    runs-on: ubuntu-22.04
-    needs: [conventional_commits, yaml_lint]
-    outputs:
-      agents: ${{ steps.filter.outputs.agents }}
-      crux: ${{ steps.filter.outputs.crux }}
-      cruxui: ${{ steps.filter.outputs.cruxui }}
-      kratos: ${{ steps.filter.outputs.kratos }}
-      tag: ${{ steps.settag.outputs.tag }}
-      extratag: ${{ steps.settag.outputs.extratag }}
-      version: ${{ steps.settag.outputs.version }}
-      minorversion: ${{ steps.settag.outputs.minorversion }}
-      release: ${{ steps.release.outputs.release }}
-    steps:
-      - uses: actions/checkout@v3
-      - uses: dorny/paths-filter@v2
-        id: filter
-        with:
-          filters: |
-            agents:
-              - '${{ env.GOLANG_WORKING_DIRECTORY }}/**'
-              - '.github/workflows/product_builder.yaml'
-            crux:
-              - '${{ env.CRUX_WORKING_DIRECTORY }}/**'
-              - '.github/workflows/product_builder.yaml'
-            cruxui:
-              - '${{ env.CRUX_UI_WORKING_DIRECTORY }}/**'
-              - '.github/workflows/product_builder.yaml'
-            kratos:
-              - '${{ env.KRATOS_WORKING_DIRECTORY }}/**'
-              - '.github/workflows/product_builder.yaml'
-      - name: Setting a buildtag
-        id: settag
-        working-directory: ${{ env.WORKFLOWS_WORKING_DIRECTORY }}
-        run: |
-          echo REF_NAME ${{ github.ref_name }}
-          echo REF_TYPE ${{ github.ref_type }}
-          echo REF_HASH ${{ github.sha }}
-          echo REF_BASE ${{ github.base_ref }}
-          ./pipeline_set_output_tag.sh ${{ github.ref_type }} ${{ github.ref_name }} ${{ github.sha }} ${{ github.base_ref }}
-        # if tag isn't the version set in package.json, job will fail
-      - name: Check tag version correctness
-        if: github.ref_type == 'tag'
-        working-directory: ${{ env.WORKFLOWS_WORKING_DIRECTORY }}
-        run: |
-          ./check_version.sh ${{ steps.settag.outputs.version }} ../../${{ env.CRUX_WORKING_DIRECTORY }}/package.json
-          ./check_version.sh ${{ steps.settag.outputs.version }} ../../${{ env.CRUX_UI_WORKING_DIRECTORY }}/package.json
-          ./check_version.sh ${{ steps.settag.outputs.version }} ../../${{ env.GOLANG_WORKING_DIRECTORY }}/internal/version/version.go
-      - name: Release
-        id: release
-        if: ${{ github.ref_type == 'tag' || github.ref_name == 'develop' || github.ref_name == 'main' }}
-        run: |
-          echo "release=true" >> $GITHUB_OUTPUT
-  # agents scope
-  go_lint:
-    runs-on: ubuntu-22.04
-    needs: gather_changes
-    if: ${{ (needs.gather_changes.outputs.agents == 'true') || (github.ref_type == 'tag') || (needs.gather_changes.outputs.release == 'true') }}
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v3
-      - name: Run golangci-lint
-        uses: golangci/golangci-lint-action@v7
-        with:
-          version: ${{ env.GOLANGCI_LINT_VERSION }}
-          working-directory: ${{ github.workspace }}
-          args: --path-prefix=golang
-  go_security:
-    runs-on: ubuntu-22.04
-    needs: gather_changes
-    container:
-      image: ghcr.io/dyrector-io/dyrectorio/builder-images/golang:4
-    defaults:
-      run:
-        working-directory: ${{ env.GOLANG_WORKING_DIRECTORY }}
-    if: ${{ (needs.gather_changes.outputs.agents == 'true') || (github.ref_type == 'tag')  || (needs.gather_changes.outputs.release == 'true') }}
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v3
-      - name: Setup Golang caches
-        uses: actions/cache/restore@v3
-        with:
-          path: /go
-          key: ${{ runner.os }}-golang-${{ hashFiles('go.sum') }}
-      # fixes: fatal: unsafe repository
-      - name: Adding workspace
-        run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
-      - name: Load go mod
-        run: go mod tidy
-      - name: Run gosec
-        run: make security
-  go_integration:
-    runs-on: ubuntu-22.04
-    needs: gather_changes
-    container:
-      image: ghcr.io/dyrector-io/dyrectorio/builder-images/golang:4
-    defaults:
-      run:
-        working-directory: ${{ env.GOLANG_WORKING_DIRECTORY }}
-    if: ${{ (needs.gather_changes.outputs.agents == 'true') || (github.ref_type == 'tag')  || (needs.gather_changes.outputs.release == 'true') }}
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v3
-      - name: Setup Golang caches
-        uses: actions/cache/restore@v3
-        with:
-          path: /go
-          key: ${{ runner.os }}-golang-${{ hashFiles('go.sum') }}
-      # fixes: fatal: unsafe repository
-      - name: Adding workspace
-        run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
-      - name: Load go mod
-        run: go mod tidy
-      - name: Init k3d
-        run: make k3d-init
-      - name: Run integration tests
-        run: |
-          make k3d-config && \
-          export KUBECONFIG="$(pwd)/k3d-auth.yaml" && \
-          make test-integration
-      - name: Upload integration test results
-        uses: actions/upload-artifact@v4
-        with:
-          name: golang-integration-coverage
-          path: ${{ env.GOLANG_WORKING_DIRECTORY }}/**.cov
-  go_test:
-    runs-on: ubuntu-22.04
-    needs: gather_changes
-    container:
-      image: ghcr.io/dyrector-io/dyrectorio/builder-images/golang:4
-    defaults:
-      run:
-        working-directory: ${{ env.GOLANG_WORKING_DIRECTORY }}
-    if: ${{ (needs.gather_changes.outputs.agents == 'true') || (github.ref_type == 'tag')  || (needs.gather_changes.outputs.release == 'true') }}
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v3
-      - name: Setup Golang caches
-        uses: actions/cache/restore@v3
-        with:
-          path: /go
-          key: ${{ runner.os }}-golang-${{ hashFiles('go.sum') }}
-      - name: Load go mod
-        run: go mod tidy
-      # fixes: fatal: unsafe repository
-      - name: Adding workspace
-        run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
-      - name: Run unit tests with coverage
-        run: make test-unit-with-coverage
-      - name: Upload unit test results
-        uses: actions/upload-artifact@v4
-        with:
-          name: golang-unit-coverage
-          path: ${{ env.GOLANG_WORKING_DIRECTORY }}/**.cov
-  go_coverage_upload:
-    runs-on: ubuntu-22.04
-    needs:
-      - go_security
-      - go_lint
-      - go_test
-      - go_integration
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-go@v4
-      - name: Install coverage merger
-        run: go install go.shabbyrobe.org/gocovmerge/cmd/gocovmerge@latest
-      - name: Download integration test results from artifacts
-        uses: actions/download-artifact@v4
-        with:
-          name: golang-integration-coverage
-      - name: Download unit test results from artifacts
-        uses: actions/download-artifact@v4
-        with:
-          name: golang-unit-coverage
-      - name: Merge coverage
-        run: gocovmerge ./builder.cov ./cli.cov ./crane.cov ./dagent.cov ./internal.cov ./unit.cov  > ./merged.cov
-      - name: Upload coverage reports to Codecov with GitHub Action
-        uses: codecov/codecov-action@v5
-        with:
-          file: ./merged.cov
-          name: golang-coverage
-  go_build:
-    runs-on: ubuntu-22.04
-    needs:
-      - go_security
-      - go_lint
-      - go_test
-      - go_integration
-      - gather_changes
-    container:
-      image: ghcr.io/dyrector-io/dyrectorio/builder-images/golang:4
-    defaults:
-      run:
-        working-directory: ${{ env.GOLANG_WORKING_DIRECTORY }}
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v3
-      - name: Setup Golang caches
-        uses: actions/cache/restore@v3
-        with:
-          path: /go
-          key: ${{ runner.os }}-golang-${{ hashFiles('go.sum') }}
-      # fixes: fatal: unsafe repository
-      - name: Adding workspace
-        run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
-      - name: Load go mod
-        run: go mod tidy
-      - name: Compile CLI
-        run: make compile-cli
-      - name: Compile agents
-        run: make compile-agents
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@v2
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v2
-      - name: Setup binfmt
-        run: make binfmt
-      - name: Build CLI & agents
-        run: |
-          make build-cli
-          make build-agents
-        env:
-          VERSION: ${{ needs.gather_changes.outputs.version }}
-          image_version: ${{ needs.gather_changes.outputs.tag }}
-      - name: Docker save
-        run: |
-          docker save ${GITHUB_REGISTRY}/${CRANE_IMAGE_NAME}:${{ needs.gather_changes.outputs.tag }} | zstd > crane.zstd
-          docker save ${GITHUB_REGISTRY}/${DAGENT_IMAGE_NAME}:${{ needs.gather_changes.outputs.tag }} | zstd > dagent.zstd
-          docker save ${GITHUB_REGISTRY}/${CLI_IMAGE_NAME}:${{ needs.gather_changes.outputs.tag }} | zstd > cli.zstd
-      - name: artifact upload
-        uses: actions/upload-artifact@v4
-        with:
-          name: crane
-          path: ${{ env.GOLANG_WORKING_DIRECTORY }}/crane.zstd
-      - name: artifact upload
-        uses: actions/upload-artifact@v4
-        with:
-          name: dagent
-          path: ${{ env.GOLANG_WORKING_DIRECTORY }}/dagent.zstd
-      - name: artifact upload
-        uses: actions/upload-artifact@v4
-        with:
-          name: cli
-          path: ${{ env.GOLANG_WORKING_DIRECTORY }}/cli.zstd
-      - name: Save Golang caches
-        uses: actions/cache/save@v3
-        with:
-          path: /go
-          key: ${{ runner.os }}-golang-${{ hashFiles('go.sum') }}
-  # crux scope
-  crux_lint:
-    runs-on: ubuntu-22.04
-    needs: gather_changes
-    defaults:
-      run:
-        working-directory: ${{ env.CRUX_WORKING_DIRECTORY }}
-    container:
-      image: ghcr.io/dyrector-io/dyrectorio/builder-images/nodejs:1
-    if: ${{ (needs.gather_changes.outputs.crux == 'true') || (github.ref_type == 'tag')  || (needs.gather_changes.outputs.release == 'true') }}
-    steps:
-      - name: Checkout the repository
-        uses: actions/checkout@v3
-      - name: Setup NPM caches
-        uses: actions/cache/restore@v3
-        with:
-          path: ${{ env.CRUX_WORKING_DIRECTORY }}/.npm/**
-          key: ${{ runner.os }}-crux-${{ hashFiles('web/crux/package-lock.json') }}
-      - name: Install dependencies
-        run: npm ci --arch=x64 --platform=linuxmusl --cache .npm --prefer-offline --no-fund
-      - name: Linting the code
-        run: npm run lint
-      - name: Save NPM caches
-        uses: actions/cache/save@v3
-        with:
-          path: ${{ env.CRUX_WORKING_DIRECTORY }}/.npm/**
-          key: ${{ runner.os }}-crux-${{ hashFiles('web/crux/package-lock.json') }}
-  crux_test:
-    runs-on: ubuntu-22.04
-    needs: gather_changes
-    defaults:
-      run:
-        working-directory: ${{ env.CRUX_WORKING_DIRECTORY }}
-    container:
-      image: ghcr.io/dyrector-io/dyrectorio/builder-images/nodejs:1
-    if: ${{ (needs.gather_changes.outputs.crux == 'true') || (github.ref_type == 'tag')  || (needs.gather_changes.outputs.release == 'true') }}
-    steps:
-      - name: Checkout the repository
-        uses: actions/checkout@v3
-      - name: Setup NPM caches
-        uses: actions/cache/restore@v3
-        with:
-          path: ${{ env.CRUX_WORKING_DIRECTORY }}/.npm/**
-          key: ${{ runner.os }}-crux-${{ hashFiles('web/crux/package-lock.json') }}
-      - name: Install dependencies
-        run: npm ci --arch=x64 --platform=linuxmusl --cache .npm --prefer-offline --no-fund
-      - name: Generate prisma
-        run: |
-          npx prisma generate
-      - name: Running unit tests with coverage
-        run: npm run test:cov
-      - name: Save NPM caches
-        uses: actions/cache/save@v3
-        with:
-          path: ${{ env.CRUX_WORKING_DIRECTORY }}/.npm/**
-          key: ${{ runner.os }}-crux-${{ hashFiles('web/crux/package-lock.json') }}
-      - name: Upload coverage reports to Codecov
-        uses: codecov/codecov-action@v3
-        with:
-          files: ${{ env.CRUX_WORKING_DIRECTORY }}/coverage/cobertura-coverage.xml
-          name: crux-coverage
-  crux_build:
-    runs-on: ubuntu-22.04
-    needs: [crux_test, crux_lint, gather_changes]
-    container:
-      image: ghcr.io/dyrector-io/dyrectorio/builder-images/nodejs:1
-    defaults:
-      run:
-        working-directory: ${{ env.CRUX_WORKING_DIRECTORY }}
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v3
-      # fixes: fatal: unsafe repository
-      - name: Adding workspace
-        run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
-      - name: Setup NPM caches
-        uses: actions/cache/restore@v3
-        with:
-          path: ${{ env.CRUX_WORKING_DIRECTORY }}/.npm/**
-          key: ${{ runner.os }}-crux-${{ hashFiles('web/crux/package-lock.json') }}
-      - name: Update package version
-        if: (github.ref_name != 'main' || github.ref_type != 'tag')
-        working-directory: ${{ env.WORKFLOWS_WORKING_DIRECTORY }}
-        run: ./update-package-version.sh ../../${{ env.CRUX_WORKING_DIRECTORY }}/package.json ${{ github.sha }}
-      - name: Docker build
-        run: docker build -t ${GITHUB_REGISTRY}/${CRUX_IMAGE_NAME}:${{ needs.gather_changes.outputs.tag }} .
-      - name: Docker save
-        run: docker save ${GITHUB_REGISTRY}/${CRUX_IMAGE_NAME}:${{ needs.gather_changes.outputs.tag }} | zstd > crux.zstd
-      - name: artifact upload
-        uses: actions/upload-artifact@v4
-        with:
-          name: crux
-          path: ${{ env.CRUX_WORKING_DIRECTORY }}/crux.zstd
-  # crux-ui scope
-  crux-ui_lint:
-    runs-on: ubuntu-22.04
-    needs: gather_changes
-    container:
-      image: ghcr.io/dyrector-io/dyrectorio/builder-images/nodejs:1
-    defaults:
-      run:
-        working-directory: ${{ env.CRUX_UI_WORKING_DIRECTORY }}
-    if: ${{ (needs.gather_changes.outputs.cruxui == 'true') || (github.ref_type == 'tag')  || (needs.gather_changes.outputs.release == 'true') }}
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v3
-      - name: Setup NPM caches
-        uses: actions/cache/restore@v3
-        with:
-          path: ${{ env.CRUX_UI_WORKING_DIRECTORY }}/.npm/**
-          key: ${{ runner.os }}-cruxui-${{ hashFiles('web/crux-ui/package-lock.json') }}
-      - name: Install dependencies
-        run: npm ci --arch=x64 --platform=linuxmusl --cache .npm --prefer-offline --no-fund
-      - name: Lint
-        run: npm run lint
-  crux-ui_unit_test:
-    runs-on: ubuntu-22.04
-    needs: gather_changes
-    defaults:
-      run:
-        working-directory: ${{ env.CRUX_UI_WORKING_DIRECTORY }}
-    container:
-      image: ghcr.io/dyrector-io/dyrectorio/builder-images/nodejs:1
-    if: ${{ (needs.gather_changes.outputs.cruxui == 'true') || (github.ref_type == 'tag')  || (needs.gather_changes.outputs.release == 'true') }}
-    steps:
-      - name: Checkout the repository
-        uses: actions/checkout@v3
-      - name: Setup NPM caches
-        uses: actions/cache/restore@v3
-        with:
-          path: ${{ env.CRUX_UI_WORKING_DIRECTORY }}/.npm/**
-          key: ${{ runner.os }}-cruxui-${{ hashFiles('web/crux-ui/package-lock.json') }}
-      - name: Install dependencies
-        run: npm ci --arch=x64 --platform=linuxmusl --cache .npm --prefer-offline --no-fund
-      - name: Running unit tests
-        run: npm run test
-      - name: Save NPM caches
-        uses: actions/cache/save@v3
-        with:
-          path: ${{ env.CRUX_UI_WORKING_DIRECTORY }}/.npm/**
-          key: ${{ runner.os }}-cruxui-${{ hashFiles('web/crux-ui/package-lock.json') }}
-  crux-ui_build:
-    runs-on: ubuntu-22.04
-    needs: [crux-ui_lint, crux-ui_unit_test, gather_changes]
-    container:
-      image: ghcr.io/dyrector-io/dyrectorio/builder-images/nodejs:1
-    defaults:
-      run:
-        working-directory: ${{ env.CRUX_UI_WORKING_DIRECTORY }}
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v3
-      # fixes: fatal: unsafe repository
-      - name: Adding workspace
-        run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
-      - name: Setup NPM caches
-        uses: actions/cache/restore@v3
-        with:
-          path: ${{ env.CRUX_UI_WORKING_DIRECTORY }}/.npm/**
-          key: ${{ runner.os }}-cruxui-${{ hashFiles('web/crux-ui/package-lock.json') }}
-      - name: Update package version
-        if: (github.ref_name != 'main' || github.ref_type != 'tag')
-        working-directory: ${{ env.WORKFLOWS_WORKING_DIRECTORY }}
-        run: ./update-package-version.sh ../../${{ env.CRUX_UI_WORKING_DIRECTORY }}/package.json ${{ github.sha }}
-      - name: Docker build
-        run: docker build -t ${GITHUB_REGISTRY}/${CRUX_UI_IMAGE_NAME}:${{ needs.gather_changes.outputs.tag }} .
-      - name: Docker save
-        run: docker save ${GITHUB_REGISTRY}/${CRUX_UI_IMAGE_NAME}:${{ needs.gather_changes.outputs.tag }} | zstd > crux-ui.zstd
-      - name: artifact upload
-        uses: actions/upload-artifact@v4
-        with:
-          name: crux-ui
-          path: ${{ env.CRUX_UI_WORKING_DIRECTORY }}/crux-ui.zstd
-  # kratos scope
-  kratos_build:
-    runs-on: ubuntu-22.04
-    needs: gather_changes
-    container:
-      image: ghcr.io/dyrector-io/dyrectorio/builder-images/signer:2
-    defaults:
-      run:
-        working-directory: ${{ env.KRATOS_WORKING_DIRECTORY }}
-    if: ${{ (needs.gather_changes.outputs.kratos == 'true') || (github.ref_type == 'tag')  || (needs.gather_changes.outputs.release == 'true') }}
-    steps:
-      - name: Checkout the repository
-        uses: actions/checkout@v3
-      - name: Docker build
-        run: docker build -t ${GITHUB_REGISTRY}/${KRATOS_IMAGE_NAME}:${{ needs.gather_changes.outputs.tag }} .
-      - name: Docker save
-        run: docker save ${GITHUB_REGISTRY}/${KRATOS_IMAGE_NAME}:${{ needs.gather_changes.outputs.tag }} | zstd > kratos.zstd
-      - name: artifact upload
-        uses: actions/upload-artifact@v4
-        with:
-          name: kratos
-          path: ${{ env.KRATOS_WORKING_DIRECTORY }}/kratos.zstd
+  # yaml_lint:
+  #   runs-on: ubuntu-22.04
+  #   container:
+  #     # yamlfmt resides here because alpine doesn't provide yamlfmt package
+  #     image: ghcr.io/dyrector-io/dyrectorio/builder-images/golang:4
+  #   steps:
+  #     - name: Checkout
+  #       uses: actions/checkout@v3
+  #     - name: Run YAML linting
+  #       run: yamlfmt -lint .
+  # gather_changes:
+  #   runs-on: ubuntu-22.04
+  #   needs: [conventional_commits, yaml_lint]
+  #   outputs:
+  #     agents: ${{ steps.filter.outputs.agents }}
+  #     crux: ${{ steps.filter.outputs.crux }}
+  #     cruxui: ${{ steps.filter.outputs.cruxui }}
+  #     kratos: ${{ steps.filter.outputs.kratos }}
+  #     tag: ${{ steps.settag.outputs.tag }}
+  #     extratag: ${{ steps.settag.outputs.extratag }}
+  #     version: ${{ steps.settag.outputs.version }}
+  #     minorversion: ${{ steps.settag.outputs.minorversion }}
+  #     release: ${{ steps.release.outputs.release }}
+  #   steps:
+  #     - uses: actions/checkout@v3
+  #     - uses: dorny/paths-filter@v2
+  #       id: filter
+  #       with:
+  #         filters: |
+  #           agents:
+  #             - '${{ env.GOLANG_WORKING_DIRECTORY }}/**'
+  #             - '.github/workflows/product_builder.yaml'
+  #           crux:
+  #             - '${{ env.CRUX_WORKING_DIRECTORY }}/**'
+  #             - '.github/workflows/product_builder.yaml'
+  #           cruxui:
+  #             - '${{ env.CRUX_UI_WORKING_DIRECTORY }}/**'
+  #             - '.github/workflows/product_builder.yaml'
+  #           kratos:
+  #             - '${{ env.KRATOS_WORKING_DIRECTORY }}/**'
+  #             - '.github/workflows/product_builder.yaml'
+  #     - name: Setting a buildtag
+  #       id: settag
+  #       working-directory: ${{ env.WORKFLOWS_WORKING_DIRECTORY }}
+  #       run: |
+  #         echo REF_NAME ${{ github.ref_name }}
+  #         echo REF_TYPE ${{ github.ref_type }}
+  #         echo REF_HASH ${{ github.sha }}
+  #         echo REF_BASE ${{ github.base_ref }}
+  #         ./pipeline_set_output_tag.sh ${{ github.ref_type }} ${{ github.ref_name }} ${{ github.sha }} ${{ github.base_ref }}
+  #       # if tag isn't the version set in package.json, job will fail
+  #     - name: Check tag version correctness
+  #       if: github.ref_type == 'tag'
+  #       working-directory: ${{ env.WORKFLOWS_WORKING_DIRECTORY }}
+  #       run: |
+  #         ./check_version.sh ${{ steps.settag.outputs.version }} ../../${{ env.CRUX_WORKING_DIRECTORY }}/package.json
+  #         ./check_version.sh ${{ steps.settag.outputs.version }} ../../${{ env.CRUX_UI_WORKING_DIRECTORY }}/package.json
+  #         ./check_version.sh ${{ steps.settag.outputs.version }} ../../${{ env.GOLANG_WORKING_DIRECTORY }}/internal/version/version.go
+  #     - name: Release
+  #       id: release
+  #       if: ${{ github.ref_type == 'tag' || github.ref_name == 'develop' || github.ref_name == 'main' }}
+  #       run: |
+  #         echo "release=true" >> $GITHUB_OUTPUT
+  # # agents scope
+  # go_lint:
+  #   runs-on: ubuntu-22.04
+  #   needs: gather_changes
+  #   if: ${{ (needs.gather_changes.outputs.agents == 'true') || (github.ref_type == 'tag') || (needs.gather_changes.outputs.release == 'true') }}
+  #   steps:
+  #     - name: Checkout
+  #       uses: actions/checkout@v3
+  #     - name: Run golangci-lint
+  #       uses: golangci/golangci-lint-action@v7
+  #       with:
+  #         version: ${{ env.GOLANGCI_LINT_VERSION }}
+  #         working-directory: ${{ github.workspace }}
+  #         args: --path-prefix=golang
+  # go_security:
+  #   runs-on: ubuntu-22.04
+  #   needs: gather_changes
+  #   container:
+  #     image: ghcr.io/dyrector-io/dyrectorio/builder-images/golang:4
+  #   defaults:
+  #     run:
+  #       working-directory: ${{ env.GOLANG_WORKING_DIRECTORY }}
+  #   if: ${{ (needs.gather_changes.outputs.agents == 'true') || (github.ref_type == 'tag')  || (needs.gather_changes.outputs.release == 'true') }}
+  #   steps:
+  #     - name: Checkout
+  #       uses: actions/checkout@v3
+  #     - name: Setup Golang caches
+  #       uses: actions/cache/restore@v3
+  #       with:
+  #         path: /go
+  #         key: ${{ runner.os }}-golang-${{ hashFiles('go.sum') }}
+  #     # fixes: fatal: unsafe repository
+  #     - name: Adding workspace
+  #       run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
+  #     - name: Load go mod
+  #       run: go mod tidy
+  #     - name: Run gosec
+  #       run: make security
+  # go_integration:
+  #   runs-on: ubuntu-22.04
+  #   needs: gather_changes
+  #   container:
+  #     image: ghcr.io/dyrector-io/dyrectorio/builder-images/golang:4
+  #   defaults:
+  #     run:
+  #       working-directory: ${{ env.GOLANG_WORKING_DIRECTORY }}
+  #   if: ${{ (needs.gather_changes.outputs.agents == 'true') || (github.ref_type == 'tag')  || (needs.gather_changes.outputs.release == 'true') }}
+  #   steps:
+  #     - name: Checkout
+  #       uses: actions/checkout@v3
+  #     - name: Setup Golang caches
+  #       uses: actions/cache/restore@v3
+  #       with:
+  #         path: /go
+  #         key: ${{ runner.os }}-golang-${{ hashFiles('go.sum') }}
+  #     # fixes: fatal: unsafe repository
+  #     - name: Adding workspace
+  #       run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
+  #     - name: Load go mod
+  #       run: go mod tidy
+  #     - name: Init k3d
+  #       run: make k3d-init
+  #     - name: Run integration tests
+  #       run: |
+  #         make k3d-config && \
+  #         export KUBECONFIG="$(pwd)/k3d-auth.yaml" && \
+  #         make test-integration
+  #     - name: Upload integration test results
+  #       uses: actions/upload-artifact@v4
+  #       with:
+  #         name: golang-integration-coverage
+  #         path: ${{ env.GOLANG_WORKING_DIRECTORY }}/**.cov
+  # go_test:
+  #   runs-on: ubuntu-22.04
+  #   needs: gather_changes
+  #   container:
+  #     image: ghcr.io/dyrector-io/dyrectorio/builder-images/golang:4
+  #   defaults:
+  #     run:
+  #       working-directory: ${{ env.GOLANG_WORKING_DIRECTORY }}
+  #   if: ${{ (needs.gather_changes.outputs.agents == 'true') || (github.ref_type == 'tag')  || (needs.gather_changes.outputs.release == 'true') }}
+  #   steps:
+  #     - name: Checkout
+  #       uses: actions/checkout@v3
+  #     - name: Setup Golang caches
+  #       uses: actions/cache/restore@v3
+  #       with:
+  #         path: /go
+  #         key: ${{ runner.os }}-golang-${{ hashFiles('go.sum') }}
+  #     - name: Load go mod
+  #       run: go mod tidy
+  #     # fixes: fatal: unsafe repository
+  #     - name: Adding workspace
+  #       run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
+  #     - name: Run unit tests with coverage
+  #       run: make test-unit-with-coverage
+  #     - name: Upload unit test results
+  #       uses: actions/upload-artifact@v4
+  #       with:
+  #         name: golang-unit-coverage
+  #         path: ${{ env.GOLANG_WORKING_DIRECTORY }}/**.cov
+  # go_coverage_upload:
+  #   runs-on: ubuntu-22.04
+  #   needs:
+  #     - go_security
+  #     - go_lint
+  #     - go_test
+  #     - go_integration
+  #   steps:
+  #     - uses: actions/checkout@v4
+  #     - uses: actions/setup-go@v4
+  #     - name: Install coverage merger
+  #       run: go install go.shabbyrobe.org/gocovmerge/cmd/gocovmerge@latest
+  #     - name: Download integration test results from artifacts
+  #       uses: actions/download-artifact@v4
+  #       with:
+  #         name: golang-integration-coverage
+  #     - name: Download unit test results from artifacts
+  #       uses: actions/download-artifact@v4
+  #       with:
+  #         name: golang-unit-coverage
+  #     - name: Merge coverage
+  #       run: gocovmerge ./builder.cov ./cli.cov ./crane.cov ./dagent.cov ./internal.cov ./unit.cov  > ./merged.cov
+  #     - name: Upload coverage reports to Codecov with GitHub Action
+  #       uses: codecov/codecov-action@v5
+  #       with:
+  #         file: ./merged.cov
+  #         name: golang-coverage
+  # go_build:
+  #   runs-on: ubuntu-22.04
+  #   needs:
+  #     - go_security
+  #     - go_lint
+  #     - go_test
+  #     - go_integration
+  #     - gather_changes
+  #   container:
+  #     image: ghcr.io/dyrector-io/dyrectorio/builder-images/golang:4
+  #   defaults:
+  #     run:
+  #       working-directory: ${{ env.GOLANG_WORKING_DIRECTORY }}
+  #   steps:
+  #     - name: Checkout
+  #       uses: actions/checkout@v3
+  #     - name: Setup Golang caches
+  #       uses: actions/cache/restore@v3
+  #       with:
+  #         path: /go
+  #         key: ${{ runner.os }}-golang-${{ hashFiles('go.sum') }}
+  #     # fixes: fatal: unsafe repository
+  #     - name: Adding workspace
+  #       run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
+  #     - name: Load go mod
+  #       run: go mod tidy
+  #     - name: Compile CLI
+  #       run: make compile-cli
+  #     - name: Compile agents
+  #       run: make compile-agents
+  #     - name: Set up QEMU
+  #       uses: docker/setup-qemu-action@v2
+  #     - name: Set up Docker Buildx
+  #       uses: docker/setup-buildx-action@v2
+  #     - name: Setup binfmt
+  #       run: make binfmt
+  #     - name: Build CLI & agents
+  #       run: |
+  #         make build-cli
+  #         make build-agents
+  #       env:
+  #         VERSION: ${{ needs.gather_changes.outputs.version }}
+  #         image_version: ${{ needs.gather_changes.outputs.tag }}
+  #     - name: Docker save
+  #       run: |
+  #         docker save ${GITHUB_REGISTRY}/${CRANE_IMAGE_NAME}:${{ needs.gather_changes.outputs.tag }} | zstd > crane.zstd
+  #         docker save ${GITHUB_REGISTRY}/${DAGENT_IMAGE_NAME}:${{ needs.gather_changes.outputs.tag }} | zstd > dagent.zstd
+  #         docker save ${GITHUB_REGISTRY}/${CLI_IMAGE_NAME}:${{ needs.gather_changes.outputs.tag }} | zstd > cli.zstd
+  #     - name: artifact upload
+  #       uses: actions/upload-artifact@v4
+  #       with:
+  #         name: crane
+  #         path: ${{ env.GOLANG_WORKING_DIRECTORY }}/crane.zstd
+  #     - name: artifact upload
+  #       uses: actions/upload-artifact@v4
+  #       with:
+  #         name: dagent
+  #         path: ${{ env.GOLANG_WORKING_DIRECTORY }}/dagent.zstd
+  #     - name: artifact upload
+  #       uses: actions/upload-artifact@v4
+  #       with:
+  #         name: cli
+  #         path: ${{ env.GOLANG_WORKING_DIRECTORY }}/cli.zstd
+  #     - name: Save Golang caches
+  #       uses: actions/cache/save@v3
+  #       with:
+  #         path: /go
+  #         key: ${{ runner.os }}-golang-${{ hashFiles('go.sum') }}
+  # # crux scope
+  # crux_lint:
+  #   runs-on: ubuntu-22.04
+  #   needs: gather_changes
+  #   defaults:
+  #     run:
+  #       working-directory: ${{ env.CRUX_WORKING_DIRECTORY }}
+  #   container:
+  #     image: ghcr.io/dyrector-io/dyrectorio/builder-images/nodejs:1
+  #   if: ${{ (needs.gather_changes.outputs.crux == 'true') || (github.ref_type == 'tag')  || (needs.gather_changes.outputs.release == 'true') }}
+  #   steps:
+  #     - name: Checkout the repository
+  #       uses: actions/checkout@v3
+  #     - name: Setup NPM caches
+  #       uses: actions/cache/restore@v3
+  #       with:
+  #         path: ${{ env.CRUX_WORKING_DIRECTORY }}/.npm/**
+  #         key: ${{ runner.os }}-crux-${{ hashFiles('web/crux/package-lock.json') }}
+  #     - name: Install dependencies
+  #       run: npm ci --arch=x64 --platform=linuxmusl --cache .npm --prefer-offline --no-fund
+  #     - name: Linting the code
+  #       run: npm run lint
+  #     - name: Save NPM caches
+  #       uses: actions/cache/save@v3
+  #       with:
+  #         path: ${{ env.CRUX_WORKING_DIRECTORY }}/.npm/**
+  #         key: ${{ runner.os }}-crux-${{ hashFiles('web/crux/package-lock.json') }}
+  # crux_test:
+  #   runs-on: ubuntu-22.04
+  #   needs: gather_changes
+  #   defaults:
+  #     run:
+  #       working-directory: ${{ env.CRUX_WORKING_DIRECTORY }}
+  #   container:
+  #     image: ghcr.io/dyrector-io/dyrectorio/builder-images/nodejs:1
+  #   if: ${{ (needs.gather_changes.outputs.crux == 'true') || (github.ref_type == 'tag')  || (needs.gather_changes.outputs.release == 'true') }}
+  #   steps:
+  #     - name: Checkout the repository
+  #       uses: actions/checkout@v3
+  #     - name: Setup NPM caches
+  #       uses: actions/cache/restore@v3
+  #       with:
+  #         path: ${{ env.CRUX_WORKING_DIRECTORY }}/.npm/**
+  #         key: ${{ runner.os }}-crux-${{ hashFiles('web/crux/package-lock.json') }}
+  #     - name: Install dependencies
+  #       run: npm ci --arch=x64 --platform=linuxmusl --cache .npm --prefer-offline --no-fund
+  #     - name: Generate prisma
+  #       run: |
+  #         npx prisma generate
+  #     - name: Running unit tests with coverage
+  #       run: npm run test:cov
+  #     - name: Save NPM caches
+  #       uses: actions/cache/save@v3
+  #       with:
+  #         path: ${{ env.CRUX_WORKING_DIRECTORY }}/.npm/**
+  #         key: ${{ runner.os }}-crux-${{ hashFiles('web/crux/package-lock.json') }}
+  #     - name: Upload coverage reports to Codecov
+  #       uses: codecov/codecov-action@v3
+  #       with:
+  #         files: ${{ env.CRUX_WORKING_DIRECTORY }}/coverage/cobertura-coverage.xml
+  #         name: crux-coverage
+  # crux_build:
+  #   runs-on: ubuntu-22.04
+  #   needs: [crux_test, crux_lint, gather_changes]
+  #   container:
+  #     image: ghcr.io/dyrector-io/dyrectorio/builder-images/nodejs:1
+  #   defaults:
+  #     run:
+  #       working-directory: ${{ env.CRUX_WORKING_DIRECTORY }}
+  #   steps:
+  #     - name: Checkout
+  #       uses: actions/checkout@v3
+  #     # fixes: fatal: unsafe repository
+  #     - name: Adding workspace
+  #       run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
+  #     - name: Setup NPM caches
+  #       uses: actions/cache/restore@v3
+  #       with:
+  #         path: ${{ env.CRUX_WORKING_DIRECTORY }}/.npm/**
+  #         key: ${{ runner.os }}-crux-${{ hashFiles('web/crux/package-lock.json') }}
+  #     - name: Update package version
+  #       if: (github.ref_name != 'main' || github.ref_type != 'tag')
+  #       working-directory: ${{ env.WORKFLOWS_WORKING_DIRECTORY }}
+  #       run: ./update-package-version.sh ../../${{ env.CRUX_WORKING_DIRECTORY }}/package.json ${{ github.sha }}
+  #     - name: Docker build
+  #       run: docker build -t ${GITHUB_REGISTRY}/${CRUX_IMAGE_NAME}:${{ needs.gather_changes.outputs.tag }} .
+  #     - name: Docker save
+  #       run: docker save ${GITHUB_REGISTRY}/${CRUX_IMAGE_NAME}:${{ needs.gather_changes.outputs.tag }} | zstd > crux.zstd
+  #     - name: artifact upload
+  #       uses: actions/upload-artifact@v4
+  #       with:
+  #         name: crux
+  #         path: ${{ env.CRUX_WORKING_DIRECTORY }}/crux.zstd
+  # # crux-ui scope
+  # crux-ui_lint:
+  #   runs-on: ubuntu-22.04
+  #   needs: gather_changes
+  #   container:
+  #     image: ghcr.io/dyrector-io/dyrectorio/builder-images/nodejs:1
+  #   defaults:
+  #     run:
+  #       working-directory: ${{ env.CRUX_UI_WORKING_DIRECTORY }}
+  #   if: ${{ (needs.gather_changes.outputs.cruxui == 'true') || (github.ref_type == 'tag')  || (needs.gather_changes.outputs.release == 'true') }}
+  #   steps:
+  #     - name: Checkout
+  #       uses: actions/checkout@v3
+  #     - name: Setup NPM caches
+  #       uses: actions/cache/restore@v3
+  #       with:
+  #         path: ${{ env.CRUX_UI_WORKING_DIRECTORY }}/.npm/**
+  #         key: ${{ runner.os }}-cruxui-${{ hashFiles('web/crux-ui/package-lock.json') }}
+  #     - name: Install dependencies
+  #       run: npm ci --arch=x64 --platform=linuxmusl --cache .npm --prefer-offline --no-fund
+  #     - name: Lint
+  #       run: npm run lint
+  # crux-ui_unit_test:
+  #   runs-on: ubuntu-22.04
+  #   needs: gather_changes
+  #   defaults:
+  #     run:
+  #       working-directory: ${{ env.CRUX_UI_WORKING_DIRECTORY }}
+  #   container:
+  #     image: ghcr.io/dyrector-io/dyrectorio/builder-images/nodejs:1
+  #   if: ${{ (needs.gather_changes.outputs.cruxui == 'true') || (github.ref_type == 'tag')  || (needs.gather_changes.outputs.release == 'true') }}
+  #   steps:
+  #     - name: Checkout the repository
+  #       uses: actions/checkout@v3
+  #     - name: Setup NPM caches
+  #       uses: actions/cache/restore@v3
+  #       with:
+  #         path: ${{ env.CRUX_UI_WORKING_DIRECTORY }}/.npm/**
+  #         key: ${{ runner.os }}-cruxui-${{ hashFiles('web/crux-ui/package-lock.json') }}
+  #     - name: Install dependencies
+  #       run: npm ci --arch=x64 --platform=linuxmusl --cache .npm --prefer-offline --no-fund
+  #     - name: Running unit tests
+  #       run: npm run test
+  #     - name: Save NPM caches
+  #       uses: actions/cache/save@v3
+  #       with:
+  #         path: ${{ env.CRUX_UI_WORKING_DIRECTORY }}/.npm/**
+  #         key: ${{ runner.os }}-cruxui-${{ hashFiles('web/crux-ui/package-lock.json') }}
+  # crux-ui_build:
+  #   runs-on: ubuntu-22.04
+  #   needs: [crux-ui_lint, crux-ui_unit_test, gather_changes]
+  #   container:
+  #     image: ghcr.io/dyrector-io/dyrectorio/builder-images/nodejs:1
+  #   defaults:
+  #     run:
+  #       working-directory: ${{ env.CRUX_UI_WORKING_DIRECTORY }}
+  #   steps:
+  #     - name: Checkout
+  #       uses: actions/checkout@v3
+  #     # fixes: fatal: unsafe repository
+  #     - name: Adding workspace
+  #       run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
+  #     - name: Setup NPM caches
+  #       uses: actions/cache/restore@v3
+  #       with:
+  #         path: ${{ env.CRUX_UI_WORKING_DIRECTORY }}/.npm/**
+  #         key: ${{ runner.os }}-cruxui-${{ hashFiles('web/crux-ui/package-lock.json') }}
+  #     - name: Update package version
+  #       if: (github.ref_name != 'main' || github.ref_type != 'tag')
+  #       working-directory: ${{ env.WORKFLOWS_WORKING_DIRECTORY }}
+  #       run: ./update-package-version.sh ../../${{ env.CRUX_UI_WORKING_DIRECTORY }}/package.json ${{ github.sha }}
+  #     - name: Docker build
+  #       run: docker build -t ${GITHUB_REGISTRY}/${CRUX_UI_IMAGE_NAME}:${{ needs.gather_changes.outputs.tag }} .
+  #     - name: Docker save
+  #       run: docker save ${GITHUB_REGISTRY}/${CRUX_UI_IMAGE_NAME}:${{ needs.gather_changes.outputs.tag }} | zstd > crux-ui.zstd
+  #     - name: artifact upload
+  #       uses: actions/upload-artifact@v4
+  #       with:
+  #         name: crux-ui
+  #         path: ${{ env.CRUX_UI_WORKING_DIRECTORY }}/crux-ui.zstd
+  # # kratos scope
+  # kratos_build:
+  #   runs-on: ubuntu-22.04
+  #   needs: gather_changes
+  #   container:
+  #     image: ghcr.io/dyrector-io/dyrectorio/builder-images/signer:2
+  #   defaults:
+  #     run:
+  #       working-directory: ${{ env.KRATOS_WORKING_DIRECTORY }}
+  #   if: ${{ (needs.gather_changes.outputs.kratos == 'true') || (github.ref_type == 'tag')  || (needs.gather_changes.outputs.release == 'true') }}
+  #   steps:
+  #     - name: Checkout the repository
+  #       uses: actions/checkout@v3
+  #     - name: Docker build
+  #       run: docker build -t ${GITHUB_REGISTRY}/${KRATOS_IMAGE_NAME}:${{ needs.gather_changes.outputs.tag }} .
+  #     - name: Docker save
+  #       run: docker save ${GITHUB_REGISTRY}/${KRATOS_IMAGE_NAME}:${{ needs.gather_changes.outputs.tag }} | zstd > kratos.zstd
+  #     - name: artifact upload
+  #       uses: actions/upload-artifact@v4
+  #       with:
+  #         name: kratos
+  #         path: ${{ env.KRATOS_WORKING_DIRECTORY }}/kratos.zstd
   # e2e scope
   e2e:
     runs-on: ubuntu-22.04
@@ -513,86 +513,89 @@ jobs:
     container:
       image: ghcr.io/dyrector-io/dyrectorio/playwright:latest
       volumes: ["/var/run/docker.sock:/var/run/docker"]
-    needs:
-      - go_build
-      - crux_build
-      - crux-ui_build
-      - kratos_build
-      - gather_changes
-      - conventional_commits
-    if: |
-      always() &&
-      (needs.go_build.result == 'success' || needs.go_build.result == 'skipped') &&
-      (needs.crux_build.result == 'success' || needs.crux_build.result == 'skipped') &&
-      (needs.crux-ui_build.result == 'success' || needs.crux-ui_build.result == 'skipped') &&
-      (needs.kratos_build.result == 'success' || needs.kratos_build.result == 'skipped') &&
-      needs.conventional_commits.result == 'success' &&
-      needs.yaml_lint.result == 'success' &&
-      needs.gather_changes.result == 'success'
+    # needs:
+    #   - go_build
+    #   - crux_build
+    #   - crux-ui_build
+    #   - kratos_build
+    #   - gather_changes
+    #   - conventional_commits
+    # if: |
+    #   always() &&
+    #   (needs.go_build.result == 'success' || needs.go_build.result == 'skipped') &&
+    #   (needs.crux_build.result == 'success' || needs.crux_build.result == 'skipped') &&
+    #   (needs.crux-ui_build.result == 'success' || needs.crux-ui_build.result == 'skipped') &&
+    #   (needs.kratos_build.result == 'success' || needs.kratos_build.result == 'skipped') &&
+    #   needs.conventional_commits.result == 'success' &&
+    #   needs.yaml_lint.result == 'success' &&
+    #   needs.gather_changes.result == 'success'
     steps:
       - name: Checkout the repository
         uses: actions/checkout@v3
       #   if: needs.gather_changes.outputs.agents == 'true'
-      - name: dagent - artifact download
-        if: ${{ (needs.gather_changes.outputs.agents == 'true') || (github.ref_type == 'tag')  || (needs.gather_changes.outputs.release == 'true') }}
-        uses: actions/download-artifact@v4
-        with:
-          name: dagent
-          path: artifacts
-      - name: agents - docker load
-        if: ${{ (needs.gather_changes.outputs.agents == 'true') || (github.ref_type == 'tag')  || (needs.gather_changes.outputs.release == 'true') }}
-        run: |
-          zstd -dc artifacts/dagent.zstd | docker load
-        # zstd -dc artifacts/crane.zstd | docker load
-      - name: crux - artifact download
-        if: ${{ (needs.gather_changes.outputs.crux == 'true') || (github.ref_type == 'tag')  || (needs.gather_changes.outputs.release == 'true') }}
-        uses: actions/download-artifact@v4
-        with:
-          name: crux
-          path: artifacts
-      - name: crux - docker load
-        if: ${{ (needs.gather_changes.outputs.crux == 'true') || (github.ref_type == 'tag')  || (needs.gather_changes.outputs.release == 'true') }}
-        run: zstd -dc artifacts/crux.zstd | docker load
-      - name: crux-ui - artifact download
-        if: ${{ (needs.gather_changes.outputs.cruxui == 'true') || (github.ref_type == 'tag')  || (needs.gather_changes.outputs.release == 'true') }}
-        uses: actions/download-artifact@v4
-        with:
-          name: crux-ui
-          path: artifacts
-      - name: crux-ui - docker load
-        if: ${{ (needs.gather_changes.outputs.cruxui == 'true') || (github.ref_type == 'tag')  || (needs.gather_changes.outputs.release == 'true') }}
-        run: zstd -dc artifacts/crux-ui.zstd | docker load
-      - name: kratos - artifact download
-        if: ${{ (needs.gather_changes.outputs.kratos == 'true') || (github.ref_type == 'tag')  || (needs.gather_changes.outputs.release == 'true') }}
-        uses: actions/download-artifact@v4
-        with:
-          name: kratos
-          path: artifacts
-      - name: kratos - docker load
-        if: ${{ (needs.gather_changes.outputs.kratos == 'true') || (github.ref_type == 'tag')  || (needs.gather_changes.outputs.release == 'true') }}
-        run: zstd -dc artifacts/kratos.zstd | docker load
-      - name: cli - artifact download
-        if: ${{ (needs.gather_changes.outputs.agents == 'true') || (github.ref_type == 'tag')  || (needs.gather_changes.outputs.release == 'true') }}
-        uses: actions/download-artifact@v4
-        with:
-          name: cli
-          path: artifacts
-      - name: cli - docker load
-        if: ${{ (needs.gather_changes.outputs.agents == 'true') || (github.ref_type == 'tag')  || (needs.gather_changes.outputs.release == 'true') }}
-        run: zstd -dc artifacts/cli.zstd | docker load
-      - name: Login to GHCR
-        uses: docker/login-action@v2
-        with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ github.token }}
-      - name: Setup dyrectorio stack using dyo-cli
+      # - name: dagent - artifact download
+      #   if: ${{ (needs.gather_changes.outputs.agents == 'true') || (github.ref_type == 'tag')  || (needs.gather_changes.outputs.release == 'true') }}
+      #   uses: actions/download-artifact@v4
+      #   with:
+      #     name: dagent
+      #     path: artifacts
+      # - name: agents - docker load
+      #   if: ${{ (needs.gather_changes.outputs.agents == 'true') || (github.ref_type == 'tag')  || (needs.gather_changes.outputs.release == 'true') }}
+      #   run: |
+      #     zstd -dc artifacts/dagent.zstd | docker load
+      #   # zstd -dc artifacts/crane.zstd | docker load
+      # - name: crux - artifact download
+      #   if: ${{ (needs.gather_changes.outputs.crux == 'true') || (github.ref_type == 'tag')  || (needs.gather_changes.outputs.release == 'true') }}
+      #   uses: actions/download-artifact@v4
+      #   with:
+      #     name: crux
+      #     path: artifacts
+      # - name: crux - docker load
+      #   if: ${{ (needs.gather_changes.outputs.crux == 'true') || (github.ref_type == 'tag')  || (needs.gather_changes.outputs.release == 'true') }}
+      #   run: zstd -dc artifacts/crux.zstd | docker load
+      # - name: crux-ui - artifact download
+      #   if: ${{ (needs.gather_changes.outputs.cruxui == 'true') || (github.ref_type == 'tag')  || (needs.gather_changes.outputs.release == 'true') }}
+      #   uses: actions/download-artifact@v4
+      #   with:
+      #     name: crux-ui
+      #     path: artifacts
+      # - name: crux-ui - docker load
+      #   if: ${{ (needs.gather_changes.outputs.cruxui == 'true') || (github.ref_type == 'tag')  || (needs.gather_changes.outputs.release == 'true') }}
+      #   run: zstd -dc artifacts/crux-ui.zstd | docker load
+      # - name: kratos - artifact download
+      #   if: ${{ (needs.gather_changes.outputs.kratos == 'true') || (github.ref_type == 'tag')  || (needs.gather_changes.outputs.release == 'true') }}
+      #   uses: actions/download-artifact@v4
+      #   with:
+      #     name: kratos
+      #     path: artifacts
+      # - name: kratos - docker load
+      #   if: ${{ (needs.gather_changes.outputs.kratos == 'true') || (github.ref_type == 'tag')  || (needs.gather_changes.outputs.release == 'true') }}
+      #   run: zstd -dc artifacts/kratos.zstd | docker load
+      - name: Setup dyrectorio stack
+        env:
+          DYO_VERSION: latest
+          ROOT_POSTGRES_PASSWORD: dyo
+          CRUX_POSTGRES_PASSWORD: crux
+          KRATOS_POSTGRES_PASSWORD: kratos
+          EXTERNAL_PROTO: http
+          DOMAIN: traefik
+          EXTERNAL_PORT: 80
+          KRATOS_SECRET: dyo1234567890dyo
+          SMTP_URI: smtps://test:test@mailslurper:1025/?skip_ssl_verify=true&legacy_ssl=true
+          FROM_EMAIL: e2e@dyrector.io
+          FROM_NAME: dyrector.io
+          CRUX_AGENT_HOST: traefik
+          NODE_ENV: production
+          CRUX_SECRET: dyo1234567890dyo
+          ENCRYPTION_SECRET_KEY: moNYQ-4P-6WV9TMO1xA0LV_3I8H2OZo6ReQGYId2sTA
+          QA_OPT_OUT: true
+          COMPOSE_FILE: docker-compose.yaml:distribution/compose/docker-compose.traefik.yaml:distribution/compose/docker-compose.mail-test.yaml:distribution/compose/docker-compose.traefik-labels.yaml:distribution/compose/docker-compose.e2e.yaml
         run: |
           export GITHUB_NETWORK=$(docker network ls -f name=github_network --format {{.Name}})
-          docker run -v /var/run/docker.sock:/var/run/docker.sock --network $GITHUB_NETWORK ${GITHUB_REGISTRY}/${CLI_IMAGE_NAME}:${{ needs.gather_changes.outputs.tag }} --image-tag ${{ needs.gather_changes.outputs.tag }} --network $GITHUB_NETWORK --prefer-local-images --expect-container-env --debug -p dyo-e2e up
+          docker compose up -d --wait
       - name: Check if containers are running and reachable
         run: |
-          curl -vfL -m 10 --retry 9 --retry-delay 0 http://dyo-e2e_traefik:8000 > /dev/null
+          curl -vfL -m 120 --retry 9 --retry-delay 0 --retry-all-errors --fail http://traefik > /dev/null
       - name: Setup NPM caches
         uses: actions/cache/restore@v3
         with:
@@ -611,11 +614,11 @@ jobs:
           # DEBUG: pw:api
           HUB_PROXY_URL: ${{ secrets.HUB_PROXY_URL }}
           HUB_PROXY_TOKEN: ${{ secrets.HUB_PROXY_TOKEN }}
-          E2E_BASE_URL: "http://dyo-e2e_traefik:8000"
-          MAILSLURPER_URL: "http://dyo-e2e_mailslurper:4437"
-          CRUX_UI_URL: "http://dyo-e2e_traefik:8000"
-          KRATOS_URL: "http://dyo-e2e_kratos:4433"
-          KRATOS_ADMIN_URL: "http://dyo-e2e_kratos:4434"
+          E2E_BASE_URL: http://traefik
+          MAILSLURPER_URL: http://mailslurper:4437
+          CRUX_UI_URL: http://traefik:8000
+          KRATOS_URL: http://traefik/kratos
+          KRATOS_ADMIN_URL: http://kratos:4434
         run: |
           npm run test:e2e
       - name: Gather logs
@@ -624,7 +627,7 @@ jobs:
         run: |
           docker ps
           mkdir -p logs
-          CONTAINERS="dyo-e2e_multidatabase dyo-e2e_crux-ui dyo-e2e_crux dyo-e2e_kratos dyo-e2e_traefik"
+          CONTAINERS="database crux-ui crux kratos traefik"
           for cont in $CONTAINERS
           do
             docker logs $cont > logs/$cont.log 2>&1
@@ -645,324 +648,324 @@ jobs:
         with:
           name: e2e-trace
           path: ${{ env.CRUX_UI_WORKING_DIRECTORY }}/e2e_results
-      - name: Teardown using cli
-        run: docker run -v /var/run/docker.sock:/var/run/docker.sock ${GITHUB_REGISTRY}/${CLI_IMAGE_NAME}:${{ needs.gather_changes.outputs.tag }} --debug down
+      - name: Teardown
+        run: docker compose down
       - name: Save NPM caches
         uses: actions/cache/save@v3
         with:
           path: ${{ env.CRUX_UI_WORKING_DIRECTORY }}/.npm/**
           key: ${{ runner.os }}-e2e_test-${{ hashFiles('web/crux-ui/package-lock.json') }}
-  # separate build push action job is needed because of buildx limitations
-  go_push:
-    permissions:
-      packages: write
-    runs-on: ubuntu-22.04
-    container:
-      image: ghcr.io/dyrector-io/dyrectorio/builder-images/golang:4
-    defaults:
-      run:
-        working-directory: ${{ env.GOLANG_WORKING_DIRECTORY }}
-    needs: [gather_changes, e2e]
-    if: |
-      always() &&
-      (github.ref_name == 'develop' || github.ref_name == 'main' || github.ref_type == 'tag') &&
-      needs.e2e.result == 'success' &&
-      needs.go_build.result == 'success' &&
-      (needs.crux_build.result == 'success' || needs.crux_build.result == 'skipped') &&
-      (needs.crux-ui_build.result == 'success' || needs.crux-ui_build.result == 'skipped') &&
-      (needs.kratos_build.result == 'success' || needs.kratos_build.result == 'skipped') &&
-      needs.conventional_commits.result == 'success' &&
-      needs.gather_changes.result == 'success'
-    environment: Workflow - Protected
-    steps:
-      - name: Login to GHCR
-        uses: docker/login-action@v2
-        with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GHCR_PAT }}
-      - name: Login to DockerHub
-        uses: docker/login-action@v2
-        with:
-          registry: docker.io
-          username: dyrectorio
-          password: ${{ secrets.DOCKERHUB_PASSWORD }}
-      - name: Checkout
-        uses: actions/checkout@v3
-      - name: Setup Golang caches
-        uses: actions/cache/restore@v3
-        with:
-          path: /go
-          key: ${{ runner.os }}-golang-${{ hashFiles('go.sum') }}
-      # fixes: fatal: unsafe repository
-      - name: Adding workspace
-        run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
-      - name: Load go mod
-        run: go mod tidy
-      - name: Compile CLI
-        run: make compile-cli
-      - name: Compile agents
-        run: make compile-agents
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@v2
-        with:
-          platforms: linux/arm64, linux/amd64
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v2
-      - name: Compile
-        run: |
-          make GOOS="linux darwin windows" GOARCHS="amd64 arm64" compile-cli
-          make GOOS="linux" GOARCHS="amd64 arm64" compile-agents
-      - name: Build images
-        run: |
-          make build-cli-push
-          make build-both-push-both
-        env:
-          VERSION: ${{ needs.gather_changes.outputs.version }}
-          image_version: ${{ needs.gather_changes.outputs.tag }}
-  # go sign does not use docker push in order to keep multi-arch images intact
-  go_retag_and_sign:
-    permissions:
-      packages: write
-    runs-on: ubuntu-22.04
-    container:
-      image: ghcr.io/dyrector-io/dyrectorio/builder-images/signer:2
-    needs: [gather_changes, go_push]
-    if: |
-      always() &&
-      (github.ref_name == 'develop' || github.ref_name == 'main' || github.ref_type == 'tag') &&
-      needs.e2e.result == 'success' &&
-      needs.go_build.result == 'success' &&
-      (needs.crux_build.result == 'success' || needs.crux_build.result == 'skipped') &&
-      (needs.crux-ui_build.result == 'success' || needs.crux-ui_build.result == 'skipped') &&
-      (needs.kratos_build.result == 'success' || needs.kratos_build.result == 'skipped') &&
-      needs.conventional_commits.result == 'success' &&
-      needs.gather_changes.result == 'success' && needs.go_push.result == 'success'
-    environment: Workflow - Protected
-    steps:
-      - name: Login to GHCR
-        uses: docker/login-action@v2
-        with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GHCR_PAT }}
-      - name: Login to DockerHub
-        uses: docker/login-action@v2
-        with:
-          registry: docker.io
-          username: dyrectorio
-          password: ${{ secrets.DOCKERHUB_PASSWORD }}
-      - name: Write signing key to disk
-        run: echo "${{ secrets.COSIGN_PRIVATE_KEY }}" > cosign.key
-      - name: Add DockerHub tag
-        run: |
-          crane cp ${GITHUB_REGISTRY}/${CRANE_IMAGE_NAME}:${{ needs.gather_changes.outputs.tag }} ${DOCKERHUB_REGISTRY}/crane:${{ needs.gather_changes.outputs.tag }}
-          crane cp ${GITHUB_REGISTRY}/${DAGENT_IMAGE_NAME}:${{ needs.gather_changes.outputs.tag }} ${DOCKERHUB_REGISTRY}/dagent:${{ needs.gather_changes.outputs.tag }}
-          crane cp ${GITHUB_REGISTRY}/${CLI_IMAGE_NAME}:${{ needs.gather_changes.outputs.tag }} ${DOCKERHUB_REGISTRY}/dyo:${{ needs.gather_changes.outputs.tag }}
-      - name: Docker tag extra
-        if: ${{ needs.gather_changes.outputs.extratag != '' }}
-        run: |
-          crane cp ${GITHUB_REGISTRY}/${CRANE_IMAGE_NAME}:${{ needs.gather_changes.outputs.tag }} ${DOCKERHUB_REGISTRY}/crane:${{ needs.gather_changes.outputs.extratag }}
-          crane cp ${GITHUB_REGISTRY}/${DAGENT_IMAGE_NAME}:${{ needs.gather_changes.outputs.tag }} ${DOCKERHUB_REGISTRY}/dagent:${{ needs.gather_changes.outputs.extratag }}
-          crane cp ${GITHUB_REGISTRY}/${CLI_IMAGE_NAME}:${{ needs.gather_changes.outputs.tag }} ${DOCKERHUB_REGISTRY}/dyo:${{ needs.gather_changes.outputs.extratag }}
-          crane cp ${GITHUB_REGISTRY}/${CRANE_IMAGE_NAME}:${{ needs.gather_changes.outputs.tag }} ${GITHUB_REGISTRY}/${CRANE_IMAGE_NAME}:${{ needs.gather_changes.outputs.extratag }}
-          crane cp ${GITHUB_REGISTRY}/${DAGENT_IMAGE_NAME}:${{ needs.gather_changes.outputs.tag }} ${GITHUB_REGISTRY}/${DAGENT_IMAGE_NAME}:${{ needs.gather_changes.outputs.extratag }}
-          crane cp ${GITHUB_REGISTRY}/${CLI_IMAGE_NAME}:${{ needs.gather_changes.outputs.tag }} ${GITHUB_REGISTRY}/${CLI_IMAGE_NAME}:${{ needs.gather_changes.outputs.extratag }}
-      - name: Add minor version tag
-        if: github.ref_type == 'tag'
-        run: |
-          crane cp ${GITHUB_REGISTRY}/${CRANE_IMAGE_NAME}:${{ needs.gather_changes.outputs.tag }} ${DOCKERHUB_REGISTRY}/crane:${{ needs.gather_changes.outputs.minorversion }}
-          crane cp ${GITHUB_REGISTRY}/${DAGENT_IMAGE_NAME}:${{ needs.gather_changes.outputs.tag }} ${DOCKERHUB_REGISTRY}/dagent:${{ needs.gather_changes.outputs.minorversion }}
-          crane cp ${GITHUB_REGISTRY}/${CLI_IMAGE_NAME}:${{ needs.gather_changes.outputs.tag }} ${DOCKERHUB_REGISTRY}/dyo:${{ needs.gather_changes.outputs.minorversion }}
-          crane cp ${GITHUB_REGISTRY}/${CRANE_IMAGE_NAME}:${{ needs.gather_changes.outputs.tag }} ${GITHUB_REGISTRY}/${CRANE_IMAGE_NAME}:${{ needs.gather_changes.outputs.minorversion }}
-          crane cp ${GITHUB_REGISTRY}/${DAGENT_IMAGE_NAME}:${{ needs.gather_changes.outputs.tag }} ${GITHUB_REGISTRY}/${DAGENT_IMAGE_NAME}:${{ needs.gather_changes.outputs.minorversion }}
-          crane cp ${GITHUB_REGISTRY}/${CLI_IMAGE_NAME}:${{ needs.gather_changes.outputs.tag }} ${GITHUB_REGISTRY}/${CLI_IMAGE_NAME}:${{ needs.gather_changes.outputs.minorversion }}
-  crux_push:
-    permissions:
-      packages: write
-    runs-on: ubuntu-22.04
-    container:
-      image: ghcr.io/dyrector-io/dyrectorio/builder-images/signer:2
-    needs: [crux_build, e2e, gather_changes]
-    if: |
-      always() &&
-      (github.ref_name == 'develop' || github.ref_name == 'main' || github.ref_type == 'tag') &&
-      needs.e2e.result == 'success' &&
-      (needs.go_build.result == 'success' || needs.go_build.result == 'skipped') &&
-      needs.crux_build.result == 'success' &&
-      (needs.crux-ui_build.result == 'success' || needs.crux-ui_build.result == 'skipped') &&
-      (needs.kratos_build.result == 'success' || needs.kratos_build.result == 'skipped') &&
-      needs.conventional_commits.result == 'success' &&
-      needs.gather_changes.result == 'success'
-    environment: Workflow - Protected
-    steps:
-      - name: artifact download
-        uses: actions/download-artifact@v4
-        with:
-          name: crux
-          path: artifacts
-      - name: Docker load
-        run: zstd -dc artifacts/crux.zstd | docker load
-      - name: Login to GHCR
-        uses: docker/login-action@v2
-        with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GHCR_PAT }}
-      - name: Login to DockerHub
-        uses: docker/login-action@v2
-        with:
-          registry: docker.io
-          username: dyrectorio
-          password: ${{ secrets.DOCKERHUB_PASSWORD }}
-      - name: Docker tag
-        run: |
-          docker tag ${GITHUB_REGISTRY}/${CRUX_IMAGE_NAME}:${{ needs.gather_changes.outputs.tag }} ${DOCKERHUB_REGISTRY}/crux:${{ needs.gather_changes.outputs.tag }}
-      - name: Docker tag extra
-        if: ${{ needs.gather_changes.outputs.extratag != '' }}
-        run: |
-          docker tag ${GITHUB_REGISTRY}/${CRUX_IMAGE_NAME}:${{ needs.gather_changes.outputs.tag }} ${GITHUB_REGISTRY}/${CRUX_IMAGE_NAME}:${{ needs.gather_changes.outputs.extratag }}
-          docker tag ${GITHUB_REGISTRY}/${CRUX_IMAGE_NAME}:${{ needs.gather_changes.outputs.tag }} ${DOCKERHUB_REGISTRY}/crux:${{ needs.gather_changes.outputs.extratag }}
-      - name: Add minor version tag
-        if: github.ref_type == 'tag'
-        run: |
-          docker tag ${GITHUB_REGISTRY}/${CRUX_IMAGE_NAME}:${{ needs.gather_changes.outputs.tag }} ${DOCKERHUB_REGISTRY}/crux:${{ needs.gather_changes.outputs.minorversion }}
-          docker tag ${GITHUB_REGISTRY}/${CRUX_IMAGE_NAME}:${{ needs.gather_changes.outputs.tag }} ${GITHUB_REGISTRY}/${CRUX_IMAGE_NAME}:${{ needs.gather_changes.outputs.minorversion }}
-      - name: Docker push all tags
-        run: |
-          docker push -a ${GITHUB_REGISTRY}/${CRUX_IMAGE_NAME}
-          docker push -a ${DOCKERHUB_REGISTRY}/crux
-      - name: Write signing key to disk
-        run: echo "${{ secrets.COSIGN_PRIVATE_KEY }}" > cosign.key
-      - name: Sign container image
-        run: |
-          cosign sign --yes --key cosign.key $(docker inspect --format='{{index .RepoDigests 0}}' ${GITHUB_REGISTRY}/${CRUX_IMAGE_NAME}:${{ needs.gather_changes.outputs.tag }} )
-          cosign sign --yes --key cosign.key $(docker inspect --format='{{index .RepoDigests 0}}' ${DOCKERHUB_REGISTRY}/crux:${{ needs.gather_changes.outputs.tag }} )
-        env:
-          COSIGN_PASSWORD: ${{ secrets.COSIGN_PASSWORD }}
-  crux-ui_push:
-    permissions:
-      packages: write
-    runs-on: ubuntu-22.04
-    container:
-      image: ghcr.io/dyrector-io/dyrectorio/builder-images/signer:2
-    needs: [crux-ui_build, e2e, gather_changes]
-    if: |
-      always() &&
-      (github.ref_name == 'develop' || github.ref_name == 'main' || github.ref_type == 'tag') &&
-      needs.e2e.result == 'success' &&
-      (needs.go_build.result == 'success' || needs.go_build.result == 'skipped') &&
-      (needs.crux_build.result == 'success' || needs.crux_build.result == 'skipped') &&
-      needs.crux-ui_build.result == 'success' &&
-      (needs.kratos_build.result == 'success' || needs.kratos_build.result == 'skipped') &&
-      needs.conventional_commits.result == 'success' &&
-      needs.gather_changes.result == 'success'
-    environment: Workflow - Protected
-    steps:
-      - name: artifact download
-        uses: actions/download-artifact@v4
-        with:
-          name: crux-ui
-          path: artifacts
-      - name: Docker load
-        run: zstd -dc artifacts/crux-ui.zstd | docker load
-      - name: Login to GHCR
-        uses: docker/login-action@v2
-        with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GHCR_PAT }}
-      - name: Login to DockerHub
-        uses: docker/login-action@v2
-        with:
-          registry: docker.io
-          username: dyrectorio
-          password: ${{ secrets.DOCKERHUB_PASSWORD }}
-      - name: Docker tag
-        run: |
-          docker tag ${GITHUB_REGISTRY}/${CRUX_UI_IMAGE_NAME}:${{ needs.gather_changes.outputs.tag }} ${DOCKERHUB_REGISTRY}/crux-ui:${{ needs.gather_changes.outputs.tag }}
-      - name: Docker tag extra
-        if: ${{ needs.gather_changes.outputs.extratag != '' }}
-        run: |
-          docker tag ${GITHUB_REGISTRY}/${CRUX_UI_IMAGE_NAME}:${{ needs.gather_changes.outputs.tag }} ${GITHUB_REGISTRY}/${CRUX_UI_IMAGE_NAME}:${{ needs.gather_changes.outputs.extratag }}
-          docker tag ${GITHUB_REGISTRY}/${CRUX_UI_IMAGE_NAME}:${{ needs.gather_changes.outputs.tag }} ${DOCKERHUB_REGISTRY}/crux-ui:${{ needs.gather_changes.outputs.extratag }}
-      - name: Add minor version tag
-        if: github.ref_type == 'tag'
-        run: |
-          docker tag ${GITHUB_REGISTRY}/${CRUX_UI_IMAGE_NAME}:${{ needs.gather_changes.outputs.tag }} ${DOCKERHUB_REGISTRY}/crux-ui:${{ needs.gather_changes.outputs.minorversion }}
-          docker tag ${GITHUB_REGISTRY}/${CRUX_UI_IMAGE_NAME}:${{ needs.gather_changes.outputs.tag }} ${GITHUB_REGISTRY}/${CRUX_UI_IMAGE_NAME}:${{ needs.gather_changes.outputs.minorversion }}
-      - name: Docker push all tags
-        run: |
-          docker push -a ${GITHUB_REGISTRY}/${CRUX_UI_IMAGE_NAME}
-          docker push -a ${DOCKERHUB_REGISTRY}/crux-ui
-      - name: Write signing key to disk
-        run: echo "${{ secrets.COSIGN_PRIVATE_KEY }}" > cosign.key
-      - name: Sign container image
-        run: |
-          cosign sign --yes --key cosign.key $(docker inspect --format='{{index .RepoDigests 0}}' ${GITHUB_REGISTRY}/${CRUX_UI_IMAGE_NAME}:${{ needs.gather_changes.outputs.tag }} )
-          cosign sign --yes --key cosign.key $(docker inspect --format='{{index .RepoDigests 0}}' ${DOCKERHUB_REGISTRY}/crux-ui:${{ needs.gather_changes.outputs.tag }} )
-        env:
-          COSIGN_PASSWORD: ${{ secrets.COSIGN_PASSWORD }}
-  kratos_push:
-    permissions:
-      packages: write
-    runs-on: ubuntu-22.04
-    container:
-      image: ghcr.io/dyrector-io/dyrectorio/builder-images/signer:2
-    needs: [kratos_build, e2e, gather_changes]
-    if: |
-      always() &&
-      (github.ref_name == 'develop' || github.ref_name == 'main' || github.ref_type == 'tag') &&
-      needs.e2e.result == 'success' &&
-      (needs.go_build.result == 'success' || needs.go_build.result == 'skipped') &&
-      (needs.crux_build.result == 'success' || needs.crux_build.result == 'skipped') &&
-      (needs.crux-ui_build.result == 'success' || needs.crux-ui_build.result == 'skipped') &&
-      needs.kratos_build.result == 'success' &&
-      needs.conventional_commits.result == 'success' &&
-      needs.gather_changes.result == 'success'
-    environment: Workflow - Protected
-    steps:
-      - name: artifact download
-        uses: actions/download-artifact@v4
-        with:
-          name: kratos
-          path: artifacts
-      - name: Docker load
-        run: zstd -dc artifacts/kratos.zstd | docker load
-      - name: Login to GHCR
-        uses: docker/login-action@v2
-        with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GHCR_PAT }}
-      - name: Login to DockerHub
-        uses: docker/login-action@v2
-        with:
-          registry: docker.io
-          username: dyrectorio
-          password: ${{ secrets.DOCKERHUB_PASSWORD }}
-      - name: Docker tag
-        run: |
-          docker tag ${GITHUB_REGISTRY}/${KRATOS_IMAGE_NAME}:${{ needs.gather_changes.outputs.tag }} ${DOCKERHUB_REGISTRY}/kratos:${{ needs.gather_changes.outputs.tag }}
-      - name: Docker tag extra
-        if: ${{ needs.gather_changes.outputs.extratag != '' }}
-        run: |
-          docker tag ${GITHUB_REGISTRY}/${KRATOS_IMAGE_NAME}:${{ needs.gather_changes.outputs.tag }} ${GITHUB_REGISTRY}/${KRATOS_IMAGE_NAME}:${{ needs.gather_changes.outputs.extratag }}
-          docker tag ${GITHUB_REGISTRY}/${KRATOS_IMAGE_NAME}:${{ needs.gather_changes.outputs.tag }} ${DOCKERHUB_REGISTRY}/kratos:${{ needs.gather_changes.outputs.extratag }}
-      - name: Add minor version tag
-        if: github.ref_type == 'tag'
-        run: |
-          docker tag ${GITHUB_REGISTRY}/${KRATOS_IMAGE_NAME}:${{ needs.gather_changes.outputs.tag }} ${DOCKERHUB_REGISTRY}/kratos:${{ needs.gather_changes.outputs.minorversion }}
-          docker tag ${GITHUB_REGISTRY}/${KRATOS_IMAGE_NAME}:${{ needs.gather_changes.outputs.tag }} ${GITHUB_REGISTRY}/${KRATOS_IMAGE_NAME}:${{ needs.gather_changes.outputs.minorversion }}
-      - name: Docker push all tags
-        run: |
-          docker push -a ${GITHUB_REGISTRY}/${KRATOS_IMAGE_NAME}
-          docker push -a ${DOCKERHUB_REGISTRY}/kratos
-      - name: Write signing key to disk
-        run: echo "${{ secrets.COSIGN_PRIVATE_KEY }}" > cosign.key
-      - name: Sign container image
-        run: |
-          cosign sign --yes --key cosign.key $(docker inspect --format='{{index .RepoDigests 0}}' ${GITHUB_REGISTRY}/${KRATOS_IMAGE_NAME}:${{ needs.gather_changes.outputs.tag }} )
-          cosign sign --yes --key cosign.key $(docker inspect --format='{{index .RepoDigests 0}}' ${DOCKERHUB_REGISTRY}/kratos:${{ needs.gather_changes.outputs.tag }} )
-        env:
-          COSIGN_PASSWORD: ${{ secrets.COSIGN_PASSWORD }}
+  # # separate build push action job is needed because of buildx limitations
+  # go_push:
+  #   permissions:
+  #     packages: write
+  #   runs-on: ubuntu-22.04
+  #   container:
+  #     image: ghcr.io/dyrector-io/dyrectorio/builder-images/golang:4
+  #   defaults:
+  #     run:
+  #       working-directory: ${{ env.GOLANG_WORKING_DIRECTORY }}
+  #   needs: [gather_changes, e2e]
+  #   if: |
+  #     always() &&
+  #     (github.ref_name == 'develop' || github.ref_name == 'main' || github.ref_type == 'tag') &&
+  #     needs.e2e.result == 'success' &&
+  #     needs.go_build.result == 'success' &&
+  #     (needs.crux_build.result == 'success' || needs.crux_build.result == 'skipped') &&
+  #     (needs.crux-ui_build.result == 'success' || needs.crux-ui_build.result == 'skipped') &&
+  #     (needs.kratos_build.result == 'success' || needs.kratos_build.result == 'skipped') &&
+  #     needs.conventional_commits.result == 'success' &&
+  #     needs.gather_changes.result == 'success'
+  #   environment: Workflow - Protected
+  #   steps:
+  #     - name: Login to GHCR
+  #       uses: docker/login-action@v2
+  #       with:
+  #         registry: ghcr.io
+  #         username: ${{ github.actor }}
+  #         password: ${{ secrets.GHCR_PAT }}
+  #     - name: Login to DockerHub
+  #       uses: docker/login-action@v2
+  #       with:
+  #         registry: docker.io
+  #         username: dyrectorio
+  #         password: ${{ secrets.DOCKERHUB_PASSWORD }}
+  #     - name: Checkout
+  #       uses: actions/checkout@v3
+  #     - name: Setup Golang caches
+  #       uses: actions/cache/restore@v3
+  #       with:
+  #         path: /go
+  #         key: ${{ runner.os }}-golang-${{ hashFiles('go.sum') }}
+  #     # fixes: fatal: unsafe repository
+  #     - name: Adding workspace
+  #       run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
+  #     - name: Load go mod
+  #       run: go mod tidy
+  #     - name: Compile CLI
+  #       run: make compile-cli
+  #     - name: Compile agents
+  #       run: make compile-agents
+  #     - name: Set up QEMU
+  #       uses: docker/setup-qemu-action@v2
+  #       with:
+  #         platforms: linux/arm64, linux/amd64
+  #     - name: Set up Docker Buildx
+  #       uses: docker/setup-buildx-action@v2
+  #     - name: Compile
+  #       run: |
+  #         make GOOS="linux darwin windows" GOARCHS="amd64 arm64" compile-cli
+  #         make GOOS="linux" GOARCHS="amd64 arm64" compile-agents
+  #     - name: Build images
+  #       run: |
+  #         make build-cli-push
+  #         make build-both-push-both
+  #       env:
+  #         VERSION: ${{ needs.gather_changes.outputs.version }}
+  #         image_version: ${{ needs.gather_changes.outputs.tag }}
+  # # go sign does not use docker push in order to keep multi-arch images intact
+  # go_retag_and_sign:
+  #   permissions:
+  #     packages: write
+  #   runs-on: ubuntu-22.04
+  #   container:
+  #     image: ghcr.io/dyrector-io/dyrectorio/builder-images/signer:2
+  #   needs: [gather_changes, go_push]
+  #   if: |
+  #     always() &&
+  #     (github.ref_name == 'develop' || github.ref_name == 'main' || github.ref_type == 'tag') &&
+  #     needs.e2e.result == 'success' &&
+  #     needs.go_build.result == 'success' &&
+  #     (needs.crux_build.result == 'success' || needs.crux_build.result == 'skipped') &&
+  #     (needs.crux-ui_build.result == 'success' || needs.crux-ui_build.result == 'skipped') &&
+  #     (needs.kratos_build.result == 'success' || needs.kratos_build.result == 'skipped') &&
+  #     needs.conventional_commits.result == 'success' &&
+  #     needs.gather_changes.result == 'success' && needs.go_push.result == 'success'
+  #   environment: Workflow - Protected
+  #   steps:
+  #     - name: Login to GHCR
+  #       uses: docker/login-action@v2
+  #       with:
+  #         registry: ghcr.io
+  #         username: ${{ github.actor }}
+  #         password: ${{ secrets.GHCR_PAT }}
+  #     - name: Login to DockerHub
+  #       uses: docker/login-action@v2
+  #       with:
+  #         registry: docker.io
+  #         username: dyrectorio
+  #         password: ${{ secrets.DOCKERHUB_PASSWORD }}
+  #     - name: Write signing key to disk
+  #       run: echo "${{ secrets.COSIGN_PRIVATE_KEY }}" > cosign.key
+  #     - name: Add DockerHub tag
+  #       run: |
+  #         crane cp ${GITHUB_REGISTRY}/${CRANE_IMAGE_NAME}:${{ needs.gather_changes.outputs.tag }} ${DOCKERHUB_REGISTRY}/crane:${{ needs.gather_changes.outputs.tag }}
+  #         crane cp ${GITHUB_REGISTRY}/${DAGENT_IMAGE_NAME}:${{ needs.gather_changes.outputs.tag }} ${DOCKERHUB_REGISTRY}/dagent:${{ needs.gather_changes.outputs.tag }}
+  #         crane cp ${GITHUB_REGISTRY}/${CLI_IMAGE_NAME}:${{ needs.gather_changes.outputs.tag }} ${DOCKERHUB_REGISTRY}/dyo:${{ needs.gather_changes.outputs.tag }}
+  #     - name: Docker tag extra
+  #       if: ${{ needs.gather_changes.outputs.extratag != '' }}
+  #       run: |
+  #         crane cp ${GITHUB_REGISTRY}/${CRANE_IMAGE_NAME}:${{ needs.gather_changes.outputs.tag }} ${DOCKERHUB_REGISTRY}/crane:${{ needs.gather_changes.outputs.extratag }}
+  #         crane cp ${GITHUB_REGISTRY}/${DAGENT_IMAGE_NAME}:${{ needs.gather_changes.outputs.tag }} ${DOCKERHUB_REGISTRY}/dagent:${{ needs.gather_changes.outputs.extratag }}
+  #         crane cp ${GITHUB_REGISTRY}/${CLI_IMAGE_NAME}:${{ needs.gather_changes.outputs.tag }} ${DOCKERHUB_REGISTRY}/dyo:${{ needs.gather_changes.outputs.extratag }}
+  #         crane cp ${GITHUB_REGISTRY}/${CRANE_IMAGE_NAME}:${{ needs.gather_changes.outputs.tag }} ${GITHUB_REGISTRY}/${CRANE_IMAGE_NAME}:${{ needs.gather_changes.outputs.extratag }}
+  #         crane cp ${GITHUB_REGISTRY}/${DAGENT_IMAGE_NAME}:${{ needs.gather_changes.outputs.tag }} ${GITHUB_REGISTRY}/${DAGENT_IMAGE_NAME}:${{ needs.gather_changes.outputs.extratag }}
+  #         crane cp ${GITHUB_REGISTRY}/${CLI_IMAGE_NAME}:${{ needs.gather_changes.outputs.tag }} ${GITHUB_REGISTRY}/${CLI_IMAGE_NAME}:${{ needs.gather_changes.outputs.extratag }}
+  #     - name: Add minor version tag
+  #       if: github.ref_type == 'tag'
+  #       run: |
+  #         crane cp ${GITHUB_REGISTRY}/${CRANE_IMAGE_NAME}:${{ needs.gather_changes.outputs.tag }} ${DOCKERHUB_REGISTRY}/crane:${{ needs.gather_changes.outputs.minorversion }}
+  #         crane cp ${GITHUB_REGISTRY}/${DAGENT_IMAGE_NAME}:${{ needs.gather_changes.outputs.tag }} ${DOCKERHUB_REGISTRY}/dagent:${{ needs.gather_changes.outputs.minorversion }}
+  #         crane cp ${GITHUB_REGISTRY}/${CLI_IMAGE_NAME}:${{ needs.gather_changes.outputs.tag }} ${DOCKERHUB_REGISTRY}/dyo:${{ needs.gather_changes.outputs.minorversion }}
+  #         crane cp ${GITHUB_REGISTRY}/${CRANE_IMAGE_NAME}:${{ needs.gather_changes.outputs.tag }} ${GITHUB_REGISTRY}/${CRANE_IMAGE_NAME}:${{ needs.gather_changes.outputs.minorversion }}
+  #         crane cp ${GITHUB_REGISTRY}/${DAGENT_IMAGE_NAME}:${{ needs.gather_changes.outputs.tag }} ${GITHUB_REGISTRY}/${DAGENT_IMAGE_NAME}:${{ needs.gather_changes.outputs.minorversion }}
+  #         crane cp ${GITHUB_REGISTRY}/${CLI_IMAGE_NAME}:${{ needs.gather_changes.outputs.tag }} ${GITHUB_REGISTRY}/${CLI_IMAGE_NAME}:${{ needs.gather_changes.outputs.minorversion }}
+  # crux_push:
+  #   permissions:
+  #     packages: write
+  #   runs-on: ubuntu-22.04
+  #   container:
+  #     image: ghcr.io/dyrector-io/dyrectorio/builder-images/signer:2
+  #   needs: [crux_build, e2e, gather_changes]
+  #   if: |
+  #     always() &&
+  #     (github.ref_name == 'develop' || github.ref_name == 'main' || github.ref_type == 'tag') &&
+  #     needs.e2e.result == 'success' &&
+  #     (needs.go_build.result == 'success' || needs.go_build.result == 'skipped') &&
+  #     needs.crux_build.result == 'success' &&
+  #     (needs.crux-ui_build.result == 'success' || needs.crux-ui_build.result == 'skipped') &&
+  #     (needs.kratos_build.result == 'success' || needs.kratos_build.result == 'skipped') &&
+  #     needs.conventional_commits.result == 'success' &&
+  #     needs.gather_changes.result == 'success'
+  #   environment: Workflow - Protected
+  #   steps:
+  #     - name: artifact download
+  #       uses: actions/download-artifact@v4
+  #       with:
+  #         name: crux
+  #         path: artifacts
+  #     - name: Docker load
+  #       run: zstd -dc artifacts/crux.zstd | docker load
+  #     - name: Login to GHCR
+  #       uses: docker/login-action@v2
+  #       with:
+  #         registry: ghcr.io
+  #         username: ${{ github.actor }}
+  #         password: ${{ secrets.GHCR_PAT }}
+  #     - name: Login to DockerHub
+  #       uses: docker/login-action@v2
+  #       with:
+  #         registry: docker.io
+  #         username: dyrectorio
+  #         password: ${{ secrets.DOCKERHUB_PASSWORD }}
+  #     - name: Docker tag
+  #       run: |
+  #         docker tag ${GITHUB_REGISTRY}/${CRUX_IMAGE_NAME}:${{ needs.gather_changes.outputs.tag }} ${DOCKERHUB_REGISTRY}/crux:${{ needs.gather_changes.outputs.tag }}
+  #     - name: Docker tag extra
+  #       if: ${{ needs.gather_changes.outputs.extratag != '' }}
+  #       run: |
+  #         docker tag ${GITHUB_REGISTRY}/${CRUX_IMAGE_NAME}:${{ needs.gather_changes.outputs.tag }} ${GITHUB_REGISTRY}/${CRUX_IMAGE_NAME}:${{ needs.gather_changes.outputs.extratag }}
+  #         docker tag ${GITHUB_REGISTRY}/${CRUX_IMAGE_NAME}:${{ needs.gather_changes.outputs.tag }} ${DOCKERHUB_REGISTRY}/crux:${{ needs.gather_changes.outputs.extratag }}
+  #     - name: Add minor version tag
+  #       if: github.ref_type == 'tag'
+  #       run: |
+  #         docker tag ${GITHUB_REGISTRY}/${CRUX_IMAGE_NAME}:${{ needs.gather_changes.outputs.tag }} ${DOCKERHUB_REGISTRY}/crux:${{ needs.gather_changes.outputs.minorversion }}
+  #         docker tag ${GITHUB_REGISTRY}/${CRUX_IMAGE_NAME}:${{ needs.gather_changes.outputs.tag }} ${GITHUB_REGISTRY}/${CRUX_IMAGE_NAME}:${{ needs.gather_changes.outputs.minorversion }}
+  #     - name: Docker push all tags
+  #       run: |
+  #         docker push -a ${GITHUB_REGISTRY}/${CRUX_IMAGE_NAME}
+  #         docker push -a ${DOCKERHUB_REGISTRY}/crux
+  #     - name: Write signing key to disk
+  #       run: echo "${{ secrets.COSIGN_PRIVATE_KEY }}" > cosign.key
+  #     - name: Sign container image
+  #       run: |
+  #         cosign sign --yes --key cosign.key $(docker inspect --format='{{index .RepoDigests 0}}' ${GITHUB_REGISTRY}/${CRUX_IMAGE_NAME}:${{ needs.gather_changes.outputs.tag }} )
+  #         cosign sign --yes --key cosign.key $(docker inspect --format='{{index .RepoDigests 0}}' ${DOCKERHUB_REGISTRY}/crux:${{ needs.gather_changes.outputs.tag }} )
+  #       env:
+  #         COSIGN_PASSWORD: ${{ secrets.COSIGN_PASSWORD }}
+  # crux-ui_push:
+  #   permissions:
+  #     packages: write
+  #   runs-on: ubuntu-22.04
+  #   container:
+  #     image: ghcr.io/dyrector-io/dyrectorio/builder-images/signer:2
+  #   needs: [crux-ui_build, e2e, gather_changes]
+  #   if: |
+  #     always() &&
+  #     (github.ref_name == 'develop' || github.ref_name == 'main' || github.ref_type == 'tag') &&
+  #     needs.e2e.result == 'success' &&
+  #     (needs.go_build.result == 'success' || needs.go_build.result == 'skipped') &&
+  #     (needs.crux_build.result == 'success' || needs.crux_build.result == 'skipped') &&
+  #     needs.crux-ui_build.result == 'success' &&
+  #     (needs.kratos_build.result == 'success' || needs.kratos_build.result == 'skipped') &&
+  #     needs.conventional_commits.result == 'success' &&
+  #     needs.gather_changes.result == 'success'
+  #   environment: Workflow - Protected
+  #   steps:
+  #     - name: artifact download
+  #       uses: actions/download-artifact@v4
+  #       with:
+  #         name: crux-ui
+  #         path: artifacts
+  #     - name: Docker load
+  #       run: zstd -dc artifacts/crux-ui.zstd | docker load
+  #     - name: Login to GHCR
+  #       uses: docker/login-action@v2
+  #       with:
+  #         registry: ghcr.io
+  #         username: ${{ github.actor }}
+  #         password: ${{ secrets.GHCR_PAT }}
+  #     - name: Login to DockerHub
+  #       uses: docker/login-action@v2
+  #       with:
+  #         registry: docker.io
+  #         username: dyrectorio
+  #         password: ${{ secrets.DOCKERHUB_PASSWORD }}
+  #     - name: Docker tag
+  #       run: |
+  #         docker tag ${GITHUB_REGISTRY}/${CRUX_UI_IMAGE_NAME}:${{ needs.gather_changes.outputs.tag }} ${DOCKERHUB_REGISTRY}/crux-ui:${{ needs.gather_changes.outputs.tag }}
+  #     - name: Docker tag extra
+  #       if: ${{ needs.gather_changes.outputs.extratag != '' }}
+  #       run: |
+  #         docker tag ${GITHUB_REGISTRY}/${CRUX_UI_IMAGE_NAME}:${{ needs.gather_changes.outputs.tag }} ${GITHUB_REGISTRY}/${CRUX_UI_IMAGE_NAME}:${{ needs.gather_changes.outputs.extratag }}
+  #         docker tag ${GITHUB_REGISTRY}/${CRUX_UI_IMAGE_NAME}:${{ needs.gather_changes.outputs.tag }} ${DOCKERHUB_REGISTRY}/crux-ui:${{ needs.gather_changes.outputs.extratag }}
+  #     - name: Add minor version tag
+  #       if: github.ref_type == 'tag'
+  #       run: |
+  #         docker tag ${GITHUB_REGISTRY}/${CRUX_UI_IMAGE_NAME}:${{ needs.gather_changes.outputs.tag }} ${DOCKERHUB_REGISTRY}/crux-ui:${{ needs.gather_changes.outputs.minorversion }}
+  #         docker tag ${GITHUB_REGISTRY}/${CRUX_UI_IMAGE_NAME}:${{ needs.gather_changes.outputs.tag }} ${GITHUB_REGISTRY}/${CRUX_UI_IMAGE_NAME}:${{ needs.gather_changes.outputs.minorversion }}
+  #     - name: Docker push all tags
+  #       run: |
+  #         docker push -a ${GITHUB_REGISTRY}/${CRUX_UI_IMAGE_NAME}
+  #         docker push -a ${DOCKERHUB_REGISTRY}/crux-ui
+  #     - name: Write signing key to disk
+  #       run: echo "${{ secrets.COSIGN_PRIVATE_KEY }}" > cosign.key
+  #     - name: Sign container image
+  #       run: |
+  #         cosign sign --yes --key cosign.key $(docker inspect --format='{{index .RepoDigests 0}}' ${GITHUB_REGISTRY}/${CRUX_UI_IMAGE_NAME}:${{ needs.gather_changes.outputs.tag }} )
+  #         cosign sign --yes --key cosign.key $(docker inspect --format='{{index .RepoDigests 0}}' ${DOCKERHUB_REGISTRY}/crux-ui:${{ needs.gather_changes.outputs.tag }} )
+  #       env:
+  #         COSIGN_PASSWORD: ${{ secrets.COSIGN_PASSWORD }}
+  # kratos_push:
+  #   permissions:
+  #     packages: write
+  #   runs-on: ubuntu-22.04
+  #   container:
+  #     image: ghcr.io/dyrector-io/dyrectorio/builder-images/signer:2
+  #   needs: [kratos_build, e2e, gather_changes]
+  #   if: |
+  #     always() &&
+  #     (github.ref_name == 'develop' || github.ref_name == 'main' || github.ref_type == 'tag') &&
+  #     needs.e2e.result == 'success' &&
+  #     (needs.go_build.result == 'success' || needs.go_build.result == 'skipped') &&
+  #     (needs.crux_build.result == 'success' || needs.crux_build.result == 'skipped') &&
+  #     (needs.crux-ui_build.result == 'success' || needs.crux-ui_build.result == 'skipped') &&
+  #     needs.kratos_build.result == 'success' &&
+  #     needs.conventional_commits.result == 'success' &&
+  #     needs.gather_changes.result == 'success'
+  #   environment: Workflow - Protected
+  #   steps:
+  #     - name: artifact download
+  #       uses: actions/download-artifact@v4
+  #       with:
+  #         name: kratos
+  #         path: artifacts
+  #     - name: Docker load
+  #       run: zstd -dc artifacts/kratos.zstd | docker load
+  #     - name: Login to GHCR
+  #       uses: docker/login-action@v2
+  #       with:
+  #         registry: ghcr.io
+  #         username: ${{ github.actor }}
+  #         password: ${{ secrets.GHCR_PAT }}
+  #     - name: Login to DockerHub
+  #       uses: docker/login-action@v2
+  #       with:
+  #         registry: docker.io
+  #         username: dyrectorio
+  #         password: ${{ secrets.DOCKERHUB_PASSWORD }}
+  #     - name: Docker tag
+  #       run: |
+  #         docker tag ${GITHUB_REGISTRY}/${KRATOS_IMAGE_NAME}:${{ needs.gather_changes.outputs.tag }} ${DOCKERHUB_REGISTRY}/kratos:${{ needs.gather_changes.outputs.tag }}
+  #     - name: Docker tag extra
+  #       if: ${{ needs.gather_changes.outputs.extratag != '' }}
+  #       run: |
+  #         docker tag ${GITHUB_REGISTRY}/${KRATOS_IMAGE_NAME}:${{ needs.gather_changes.outputs.tag }} ${GITHUB_REGISTRY}/${KRATOS_IMAGE_NAME}:${{ needs.gather_changes.outputs.extratag }}
+  #         docker tag ${GITHUB_REGISTRY}/${KRATOS_IMAGE_NAME}:${{ needs.gather_changes.outputs.tag }} ${DOCKERHUB_REGISTRY}/kratos:${{ needs.gather_changes.outputs.extratag }}
+  #     - name: Add minor version tag
+  #       if: github.ref_type == 'tag'
+  #       run: |
+  #         docker tag ${GITHUB_REGISTRY}/${KRATOS_IMAGE_NAME}:${{ needs.gather_changes.outputs.tag }} ${DOCKERHUB_REGISTRY}/kratos:${{ needs.gather_changes.outputs.minorversion }}
+  #         docker tag ${GITHUB_REGISTRY}/${KRATOS_IMAGE_NAME}:${{ needs.gather_changes.outputs.tag }} ${GITHUB_REGISTRY}/${KRATOS_IMAGE_NAME}:${{ needs.gather_changes.outputs.minorversion }}
+  #     - name: Docker push all tags
+  #       run: |
+  #         docker push -a ${GITHUB_REGISTRY}/${KRATOS_IMAGE_NAME}
+  #         docker push -a ${DOCKERHUB_REGISTRY}/kratos
+  #     - name: Write signing key to disk
+  #       run: echo "${{ secrets.COSIGN_PRIVATE_KEY }}" > cosign.key
+  #     - name: Sign container image
+  #       run: |
+  #         cosign sign --yes --key cosign.key $(docker inspect --format='{{index .RepoDigests 0}}' ${GITHUB_REGISTRY}/${KRATOS_IMAGE_NAME}:${{ needs.gather_changes.outputs.tag }} )
+  #         cosign sign --yes --key cosign.key $(docker inspect --format='{{index .RepoDigests 0}}' ${DOCKERHUB_REGISTRY}/kratos:${{ needs.gather_changes.outputs.tag }} )
+  #       env:
+  #         COSIGN_PASSWORD: ${{ secrets.COSIGN_PASSWORD }}

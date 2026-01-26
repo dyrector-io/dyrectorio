@@ -1,0 +1,31 @@
+# This is meant to be used for running the e2e tests during ci
+services:
+  traefik:
+    networks:
+      - dyo
+  database:
+    networks:
+      - dyo
+  mailslurper:
+    networks:
+      - dyo
+  kratos:
+    networks:
+      - dyo
+  kratos-migrate:
+    networks:
+      - dyo
+  crux:
+    networks:
+      - dyo
+  crux-migrate:
+    networks:
+      - dyo
+  crux-ui:
+    networks:
+      - dyo
+
+networks:
+  dyo:
+    name: ${GITHUB_NETWORK}
+    external: true
