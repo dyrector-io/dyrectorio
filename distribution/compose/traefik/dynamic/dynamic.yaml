@@ -4,30 +4,25 @@ http:
       rule: Host(`localhost`) && PathPrefix(`/kratos`))
       entrypoints: web
       service: "kratos"
-
     crux-http:
       rule: "Host(`localhost`) && PathPrefix(`/api`) && !PathPrefix(`/api/auth`) && !PathPrefix(`/api/status`)"
       entryPoints: ["web"]
       service: "crux-api"
       priority: 20
-
     crux-ui:
       rule: "Host(`localhost`)"
       entryPoints: ["web"]
       service: "crux-ui"
       priority: 10
-
   services:
     crux-api:
       loadBalancer:
         servers:
           - url: "http://172.17.0.1:1848"
-
     crux-ui:
       loadBalancer:
         servers:
           - url: "http://172.17.0.1:3000"
-
     kratos:
       loadBalancer:
         servers:

@@ -16,7 +16,6 @@ services:
     restart: unless-stopped
     labels:
       - org.dyrectorio.service-category=_internal
-
   database:
     container_name: database
     image: ghcr.io/dyrector-io/dyrectorio/multi-database:1.0.4
