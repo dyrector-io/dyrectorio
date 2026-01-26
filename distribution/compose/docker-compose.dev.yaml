@@ -2,7 +2,7 @@
 services:
   traefik:
     container_name: traefik
-    image: docker.io/library/traefik:2.9
+    image: docker.io/library/traefik:2.11
     command:
       - --providers.docker=true
       - --providers.docker.exposedbydefault=false
@@ -37,7 +37,7 @@ services:
       - org.dyrectorio.service-category=_internal
   kratos:
     container_name: kratos
-    image: ghcr.io/dyrector-io/dyrectorio/web/kratos:${DYO_VERSION:-stable}
+    image: ghcr.io/dyrector-io/dyrectorio/web/kratos:${DYO_VERSION:-latest}
     environment:
       - SQA_OPT_OUT=true
       - DSN=postgres://kratos_user:${KRATOS_POSTGRES_PASSWORD}@database:5432/kratos?sslmode=disable&max_conns=20&max_idle_conns=4&connect_timeout=5
@@ -64,7 +64,7 @@ services:
       - org.dyrectorio.service-category=_internal
   kratos-migrate:
     container_name: kratos-migrate
-    image: ghcr.io/dyrector-io/dyrectorio/web/kratos:${DYO_VERSION:-stable}
+    image: ghcr.io/dyrector-io/dyrectorio/web/kratos:${DYO_VERSION:-latest}
     command: -c /etc/config/kratos/kratos.yaml migrate sql -e --yes
     environment:
       - SQA_OPT_OUT=true
