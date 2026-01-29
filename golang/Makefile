@@ -152,11 +152,15 @@ build-cli-push:
 build-dagent: compile-dagent
 	cd build && \
 	docker buildx build --build-arg AGENT_BINARY=dagent --build-arg REVISION=${ORG_GOLANG_HASH} --platform=linux/amd64 --load -t ${AGENT_REGISTRY_URL}/dagent:$(image_version) -t ${DOCKER_REGISTRY}/dagent:$(image_version) .
+	cd build && \
+	docker buildx build -f Dockerfile.alpine --build-arg AGENT_BINARY=dagent --build-arg REVISION=${ORG_GOLANG_HASH} --platform=linux/amd64 --load -t ${AGENT_REGISTRY_URL}/dagent:$(image_version)-alpine -t ${DOCKER_REGISTRY}/dagent:$(image_version)-alpine .
 
 .PHONY: build-crane
 build-crane: compile-crane
 	cd build && \
 	docker buildx build  --build-arg AGENT_BINARY=crane --build-arg REVISION=${ORG_GOLANG_HASH} --platform=linux/amd64 --load -t ${AGENT_REGISTRY_URL}/crane:$(image_version) -t ${DOCKER_REGISTRY}/crane:$(image_version) .
+	cd build && \
+	docker buildx build  -f Dockerfile.alpine --build-arg AGENT_BINARY=crane --build-arg REVISION=${ORG_GOLANG_HASH} --platform=linux/amd64 --load -t ${AGENT_REGISTRY_URL}/crane:$(image_version)-alpine -t ${DOCKER_REGISTRY}/crane:$(image_version)-alpine .
 
 PHONY: build-dagent-multi-push
 build-dagent-multi-push: compile-dagent

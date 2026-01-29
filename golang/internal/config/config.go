@@ -32,7 +32,7 @@ type CommonConfiguration struct {
 	GrpcToken            string `yaml:"grpcToken"                env:"GRPC_TOKEN"                  env-default:""`
 	Name                 string `yaml:"name"                     env:"NAME"                        env-default:"dagent-go"`
 	DefaultLimitsMemory  string `yaml:"defaultLimitsMemory"      env:"DEFAULT_LIMITS_MEMORY"       env-default:"128Mi"`
-	DefaultRegistry      string `yaml:"registry"             env:"DEFAULT_REGISTRY"                 env-default:"index.docker.io"`
+	DefaultRegistry      string `yaml:"registry"                 env:"DEFAULT_REGISTRY"            env-default:"index.docker.io"`
 	DefaultLimitsCPU     string `yaml:"defaultLimitsCPU"         env:"DEFAULT_LIMITS_CPU"          env-default:"100m"`
 	//nolint:lll
 	ImportContainerImage     string        `yaml:"importContainerImage"     env:"IMPORT_CONTAINER_IMAGE"      env-default:"rclone/rclone:1.57.0"`
@@ -42,6 +42,9 @@ type CommonConfiguration struct {
 	DebugUpdateUseContainers bool          `yaml:"debugUpdateUseContainers" env:"DEBUG_UPDATE_USE_CONTAINERS" env-default:"true"`
 	DebugUpdateAlways        bool          `yaml:"debugUpdateAlways"        env:"DEBUG_UPDATE_ALWAYS"         env-default:"false"`
 	Debug                    bool          `yaml:"debug"                    env:"DEBUG"                       env-default:"false"`
+	// bitwarden vault for secret as fallback and UI
+	SecretVault Vault `yaml:"vault" env-prefix:"VAULT_"`
+	// TODO(nandor-magyar): refactor config file with proper prefix based nesting
 }
 
 const (
@@ -49,3 +52,10 @@ const (
 	ConnectionTokenFileName = "token.jwt"
 	NonceBlacklistFileName  = "token-nonce.blacklist"
 )
+
+type Vault struct {
+	URL          string `yaml:"url" env:"URL"`
+	ClientID     string `yaml:"clientID" env:"CLIENT_ID"`
+	ClientSecret string `yaml:"clientSecret" env:"CLIENT_SECRET"`
+	OrgID        string `yaml:"orgID" env:"ORG_ID"`
+}
