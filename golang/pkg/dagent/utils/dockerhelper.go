@@ -152,7 +152,6 @@ func WatchContainersByPrefix(ctx context.Context,
 						changed,
 					}
 				}
-				break
 			}
 		}
 	}(ctx, prefix, chanMessages, chanErrors)

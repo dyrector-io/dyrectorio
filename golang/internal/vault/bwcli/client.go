@@ -2,7 +2,6 @@
 package bwcli
 
 import (
-	"bytes"
 	"context"
 	"crypto/sha256"
 	"encoding/hex"
@@ -82,7 +81,7 @@ func (c *Client) getTemplateItem(ctx context.Context, session string) (Item, err
 	}
 	var it Item
 	if err := json.Unmarshal(stdout, &it); err != nil {
-		return Item{}, fmt.Errorf("%w: %v", ErrDecode, err)
+		return Item{}, fmt.Errorf("decode template item: %w", err)
 	}
 	it.Raw = slices.Clone(stdout)
 	return it, nil
@@ -119,9 +118,7 @@ func New(cfg Config) *Client {
 
 // EnsureServer ensures bw is configured to use serverURL.
 // If the current server differs, it logs out (required by bw) and updates it.
-// Safe for repeated calls.
 func (c *Client) EnsureServer(ctx context.Context, serverURL string, env map[string]string) error {
-	// 1) Read current server
 	stdout, _, _, err := c.run(ctx, "", []string{"config", "server"}, env)
 	if err != nil {
 		// If bw can't read config yet (fresh BW_DATA_PATH), we can attempt to set it.
@@ -138,13 +135,11 @@ func (c *Client) EnsureServer(ctx context.Context, serverURL string, env map[str
 		// 2) Different server → bw requires logout before changing server config.
 		_ = c.LogoutWithEnv(ctx, env) // ignore not logged in
 	}
-
-	// 3) Set desired server
 	_, _, _, err = c.run(ctx, "", []string{"config", "server", serverURL}, env)
 	return err
 }
 
-func (c *Client) ConfigureAgentState(serverURL, userID string) error {
+func (c *Client) ConfigureAgentTempDir(serverURL, userID string) error {
 	dataPath, err := bwDataPath(serverURL, userID)
 	if err != nil {
 		return err
@@ -153,7 +148,6 @@ func (c *Client) ConfigureAgentState(serverURL, userID string) error {
 		c.extraEnv = map[string]string{}
 	}
 	c.extraEnv["BW_DATA_PATH"] = dataPath
-	// optional: also set BW_SERVER_URL, but still call EnsureServer to be safe.
 	c.extraEnv["BW_SERVER_URL"] = serverURL
 	return nil
 }
@@ -173,7 +167,7 @@ func (c *Client) Status(ctx context.Context) (Status, error) {
 	}
 	var st Status
 	if err := decodeJSON(stdout, &st); err != nil {
-		return Status{}, fmt.Errorf("%w: %v", ErrDecode, err)
+		return Status{}, fmt.Errorf("decode status: %w", err)
 	}
 	st.Raw = slices.Clone(stdout)
 	return st, nil
@@ -188,7 +182,6 @@ func (c *Client) encode(ctx context.Context, session string, jsonPayload []byte)
 }
 
 func equalServerURL(a, b string) bool {
-	// Keep it simple: trim trailing slashes and compare.
 	a = strings.TrimRight(strings.TrimSpace(a), "/")
 	b = strings.TrimRight(strings.TrimSpace(b), "/")
 	return strings.EqualFold(a, b)
@@ -197,7 +190,7 @@ func equalServerURL(a, b string) bool {
 // LoginAPIKey logs in using Bitwarden API key values.
 // This method does NOT store session; it just performs login.
 func (c *Client) LoginAPIKey(ctx context.Context, serverURL, clientID, clientSecret string) error {
-	if err := c.ConfigureAgentState(serverURL, clientID); err != nil {
+	if err := c.ConfigureAgentTempDir(serverURL, clientID); err != nil {
 		return err
 	}
 
@@ -244,14 +237,14 @@ func (c *Client) ListItems(ctx context.Context, session string) ([]Item, error) 
 	// bw returns an array.
 	var rawItems []json.RawMessage
 	if err := json.Unmarshal(stdout, &rawItems); err != nil {
-		return nil, fmt.Errorf("%w: %v", ErrDecode, err)
+		return nil, fmt.Errorf("decode items array: %w", err)
 	}
 
 	items := make([]Item, 0, len(rawItems))
 	for _, rm := range rawItems {
 		var it Item
 		if err := json.Unmarshal(rm, &it); err != nil {
-			return nil, fmt.Errorf("%w: %v", ErrDecode, err)
+			return nil, fmt.Errorf("decode item: %w", err)
 		}
 		it.Raw = slices.Clone(rm)
 		items = append(items, it)
@@ -267,7 +260,7 @@ func (c *Client) GetItem(ctx context.Context, session, itemID string) (Item, err
 	}
 	var it Item
 	if err := decodeJSON(stdout, &it); err != nil {
-		return Item{}, fmt.Errorf("%w: %v", ErrDecode, err)
+		return Item{}, fmt.Errorf("decode item: %w", err)
 	}
 	it.Raw = slices.Clone(stdout)
 	return it, nil
@@ -276,7 +269,7 @@ func (c *Client) GetItem(ctx context.Context, session, itemID string) (Item, err
 func (c *Client) CreateItem(ctx context.Context, session string, item Item) (Item, error) {
 	payload, err := json.Marshal(item)
 	if err != nil {
-		return Item{}, fmt.Errorf("%w: %v", ErrDecode, err)
+		return Item{}, fmt.Errorf("marshal item: %w", err)
 	}
 
 	encoded, err := c.encode(ctx, session, payload)
@@ -291,7 +284,7 @@ func (c *Client) CreateItem(ctx context.Context, session string, item Item) (Ite
 	c.log.Trace().Str("name", item.Name).Msgf("item created")
 	var created Item
 	if err := decodeJSON(stdout, &created); err != nil {
-		return Item{}, fmt.Errorf("%w: %v", ErrDecode, err)
+		return Item{}, fmt.Errorf("decode created item: %w", err)
 	}
 	created.Raw = slices.Clone(stdout)
 	return created, nil
@@ -334,13 +327,13 @@ func (c *Client) UpsertSecureNote(
 
 	applyAuthoritative := func(it *Item) {
 		// Ensure this is a secure note.
-		it.Type = 2
+		it.Type = SecureNoteItemType
 		it.Name = name
 		it.Notes = notes
 		if it.SecureNote == nil {
-			it.SecureNote = &SecureNote{Type: 0}
+			it.SecureNote = &SecureNote{Type: SecureNoteTypeGeneric}
 		} else {
-			it.SecureNote.Type = 0
+			it.SecureNote.Type = SecureNoteTypeGeneric
 		}
 
 		// Org + collections (authoritative).
@@ -398,7 +391,7 @@ func (c *Client) UpsertSecureNote(
 func (c *Client) EditItem(ctx context.Context, session, itemID string, item Item) (Item, error) {
 	payload, err := json.Marshal(item)
 	if err != nil {
-		return Item{}, fmt.Errorf("%w: %v", ErrDecode, err)
+		return Item{}, fmt.Errorf("marshal item: %w", err)
 	}
 
 	stdout, _, _, err := c.run(ctx, session, []string{"edit", "item", itemID}, nil, withStdin(payload))
@@ -407,7 +400,7 @@ func (c *Client) EditItem(ctx context.Context, session, itemID string, item Item
 	}
 	var edited Item
 	if err := decodeJSON(stdout, &edited); err != nil {
-		return Item{}, fmt.Errorf("%w: %v", ErrDecode, err)
+		return Item{}, fmt.Errorf("decode edited item: %w", err)
 	}
 	edited.Raw = append([]byte(nil), stdout...)
 	return edited, nil
@@ -421,14 +414,14 @@ func (c *Client) ListOrganizations(ctx context.Context, session string) ([]Organ
 
 	var raw []json.RawMessage
 	if err := json.Unmarshal(stdout, &raw); err != nil {
-		return nil, fmt.Errorf("%w: %v", ErrDecode, err)
+		return nil, fmt.Errorf("decode organizations array: %w", err)
 	}
 
 	out := make([]Organization, 0, len(raw))
 	for _, rm := range raw {
 		var o Organization
 		if err := json.Unmarshal(rm, &o); err != nil {
-			return nil, fmt.Errorf("%w: %v", ErrDecode, err)
+			return nil, fmt.Errorf("decode organization: %w", err)
 		}
 		o.Raw = slices.Clone(rm)
 		out = append(out, o)
@@ -449,14 +442,14 @@ func (c *Client) ListCollections(ctx context.Context, session, organizationID st
 
 	var raw []json.RawMessage
 	if err := json.Unmarshal(stdout, &raw); err != nil {
-		return nil, fmt.Errorf("%w: %v", ErrDecode, err)
+		return nil, fmt.Errorf("decode collections array: %w", err)
 	}
 
 	out := make([]Collection, 0, len(raw))
 	for _, rm := range raw {
 		var col Collection
 		if err := json.Unmarshal(rm, &col); err != nil {
-			return nil, fmt.Errorf("%w: %v", ErrDecode, err)
+			return nil, fmt.Errorf("decode collection: %w", err)
 		}
 		col.Raw = slices.Clone(rm)
 		out = append(out, col)
@@ -541,9 +534,6 @@ func (c *Client) run(ctx context.Context, session string, args []string, env map
 }
 
 func decodeJSON(b []byte, v any) error {
-	dec := json.NewDecoder(bytes.NewReader(b))
-	dec.DisallowUnknownFields() // NOTE: This would break resilience; so we DO NOT disallow.
-	// We keep decoder for potential future streaming, but just unmarshal:
 	return json.Unmarshal(b, v)
 }
 

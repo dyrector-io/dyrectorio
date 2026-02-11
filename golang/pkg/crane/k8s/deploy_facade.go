@@ -265,7 +265,14 @@ func (d *DeployFacade) PostDeploy() error {
 		}
 	}
 
-	return nil
+	// Backup secrets to vault
+	err := d.secret.BackupSecretsToVault(
+		d.params.InstanceConfig.ContainerPreName,
+		d.params.ContainerConfig.Container,
+		d.params.ContainerConfig.Secrets,
+	)
+
+	return err
 }
 
 func (d *DeployFacade) Clear() error {

@@ -44,7 +44,7 @@ type CommonConfiguration struct {
 	Debug                    bool          `yaml:"debug"                    env:"DEBUG"                       env-default:"false"`
 	// bitwarden vault for secret as fallback and UI
 	SecretVault Vault `yaml:"vault" env-prefix:"VAULT_"`
-	// TODO(nandor-magyar): refactor config file with proper prefix based nesting
+	// TODO(nandor-magyar): refactor the whole config file with proper prefix based nesting
 }
 
 const (
@@ -58,4 +58,6 @@ type Vault struct {
 	ClientID     string `yaml:"clientID" env:"CLIENT_ID"`
 	ClientSecret string `yaml:"clientSecret" env:"CLIENT_SECRET"`
 	OrgID        string `yaml:"orgID" env:"ORG_ID"`
+	Password     string `yaml:"password" env:"PASSWORD"`
+	CollectionID string `yaml:"collectionID" env:"COLLECTION_ID"`
 }

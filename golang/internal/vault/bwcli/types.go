@@ -18,6 +18,12 @@ type Field struct {
 	Type  FieldType `json:"type"`
 }
 
+type ItemType int
+
+const (
+	SecureNoteItemType ItemType = 2
+)
+
 type SecureNoteType int
 
 const (
@@ -46,7 +52,7 @@ type Item struct {
 	OrganizationID string   `json:"organizationId,omitempty"`
 	CollectionIDs  []string `json:"collectionIds,omitempty"`
 	FolderID       string   `json:"folderId,omitempty"`
-	Type           int      `json:"type,omitempty"`
+	Type           ItemType `json:"type,omitempty"`
 	Name           string   `json:"name,omitempty"`
 	Notes          string   `json:"notes,omitempty"`
 	Favorite       bool     `json:"favorite,omitempty"`
