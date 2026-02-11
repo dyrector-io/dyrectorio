@@ -5,10 +5,8 @@ import (
 	"bytes"
 	"context"
 	"errors"
-	"fmt"
 	"maps"
 	"os/exec"
-	"runtime"
 	"slices"
 	"sort"
 )
@@ -36,8 +34,6 @@ func (r *ExecRunner) Run(ctx context.Context, cmd string, args []string, env map
 
 	mergedEnv := mergeEnv(r.BaseEnv, env)
 	c.Env = slices.Clone(mergedEnv)
-
-	fmt.Printf("%v", c.Env)
 
 	var stdoutBuf, stderrBuf bytes.Buffer
 	c.Stdout = &stdoutBuf
@@ -68,18 +64,11 @@ func (r *ExecRunner) Run(ctx context.Context, cmd string, args []string, env map
 }
 
 // mergeEnv returns an environment suitable for exec.Cmd.Env.
-// It starts from current process env, then applies base, then applies overrides.
-func mergeEnv(base map[string]string, overrides map[string]string) []string {
-	// Start from current process.
+// Builds env from base + overrides (does not inherit process env).
+// This is fine because bw typically only needs BW_* variables.
+// If additional env vars are needed, provide them via BaseEnv.
+func mergeEnv(base, overrides map[string]string) []string {
 	out := map[string]string{}
-	for _, kv := range exec.Command(runtime.GOOS).Env { // (unused; keep linter happy)
-		_ = kv
-	}
-	// We cannot read current env via exec.Command.Env. Use os.Environ in client (avoid here).
-	// Instead, ExecRunner expects caller to pass full env? We keep it simple:
-	// build from empty + base + overrides.
-	// This is fine because bw typically only needs BW_* plus PATH for cmd lookup,
-	// and cmd lookup already happened. If you need additional env, provide BaseEnv/extra env.
 	maps.Copy(out, base)
 	maps.Copy(out, overrides)
 
