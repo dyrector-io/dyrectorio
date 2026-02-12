@@ -569,6 +569,9 @@ func mapBWError(stdout, stderr []byte) error {
 	case strings.Contains(combined, "you are already logged in as"):
 		// swallowing the already logged in error, it's not a real one
 		return nil
+	case strings.Contains(combined, "user decryption options"):
+		return ErrServerVersionMismatch
+
 	case strings.Contains(combined, "you are not logged in"),
 		strings.Contains(combined, "not logged in"),
 		strings.Contains(combined, "invalid session"),

@@ -40,6 +40,7 @@ type DeployFacadeParams struct {
 	Issuer           string
 	InstanceConfig   v1.InstanceConfig
 	ContainerConfig  v1.ContainerConfig
+	dogger           *dogger.DeploymentLogger
 }
 
 func NewDeployFacade(params *DeployFacadeParams, cfg *config.Configuration) *DeployFacade {
@@ -271,8 +272,11 @@ func (d *DeployFacade) PostDeploy() error {
 		d.params.ContainerConfig.Container,
 		d.params.ContainerConfig.Secrets,
 	)
+	if err != nil {
+		d.params.dogger.WriteInfo(fmt.Sprintf("Notice: vault secret backup failed: %s", err.Error()))
+	}
 
-	return err
+	return nil
 }
 
 func (d *DeployFacade) Clear() error {
@@ -322,6 +326,7 @@ func Deploy(c context.Context, dog *dogger.DeploymentLogger, deployImageRequest 
 			ContainerConfig:  deployImageRequest.ContainerConfig,
 			Issuer:           deployImageRequest.Issuer,
 			imagePullSecrets: deployImageRequest.RegistryAuth,
+			dogger:           dog,
 		},
 		cfg,
 	)

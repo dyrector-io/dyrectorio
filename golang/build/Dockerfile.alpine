@@ -20,11 +20,6 @@ RUN apk add --no-cache ca-certificates tini \
   && npm cache clean --force \
   && chmod 1777 /tmp
 
-# Non-root user
-RUN addgroup -S agent && adduser -S agent -G agent
-USER agent
-ENV HOME=/home/agent
-
 COPY ./out/$AGENT_BINARY-$TARGETOS-$TARGETARCH /agent
 
 HEALTHCHECK --interval=30s --timeout=5s CMD ["/agent", "health"]

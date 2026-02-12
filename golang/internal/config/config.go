@@ -1,6 +1,7 @@
 package config
 
 import (
+	"os/exec"
 	"time"
 )
 
@@ -53,7 +54,18 @@ const (
 	NonceBlacklistFileName  = "token-nonce.blacklist"
 )
 
+// BinaryAvailability is a bool-like type that automatically checks whether
+// the "bw" CLI binary is available on the system
+type BinaryAvailability bool
+
+func (b *BinaryAvailability) SetValue(_ string) error {
+	_, err := exec.LookPath("bw")
+	*b = err == nil
+	return nil
+}
+
 type Vault struct {
+	BinaryAvailable BinaryAvailability `env:"BINARY_AVAILABLE" env-default:""`
 	// Bitwarden vault compatible vault URL
 	URL string `yaml:"url" env:"URL"`
 	// You can find the following two on this view /#/settings/security/security-keys
