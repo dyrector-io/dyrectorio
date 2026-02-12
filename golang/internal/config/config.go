@@ -54,10 +54,14 @@ const (
 )
 
 type Vault struct {
-	URL          string `yaml:"url" env:"URL"`
+	// Bitwarden vault compatible vault URL
+	URL string `yaml:"url" env:"URL"`
+	// You can find the following two on this view /#/settings/security/security-keys
 	ClientID     string `yaml:"clientID" env:"CLIENT_ID"`
 	ClientSecret string `yaml:"clientSecret" env:"CLIENT_SECRET"`
-	OrgID        string `yaml:"orgID" env:"ORG_ID"`
-	Password     string `yaml:"password" env:"PASSWORD"`
+	// ORG ID is in the title bar when opening the Organization
+	OrgID    string `yaml:"orgID" env:"ORG_ID"`
+	Password string `yaml:"password" env:"PASSWORD"`
+	// CollectionID is in the title bar when opening the Collection
 	CollectionID string `yaml:"collectionID" env:"COLLECTION_ID"`
 }
