@@ -366,7 +366,7 @@ func DeployImage(ctx context.Context,
 	}
 	secrets := mapper.ByteMapToStringMap(secret)
 
-	envMap = MergeStringMapUnique(envMap, secrets)
+	envMap = MergeStringMapUnique(secrets, envMap)
 	mountList := buildMountList(cfg, dog, deployImageRequest)
 
 	matchedContainer, err := dockerHelper.GetContainerByName(ctx, cli, containerName)
