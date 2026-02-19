@@ -458,9 +458,13 @@ func DeployImage(ctx context.Context,
 
 	dog.WriteInfo(fmt.Sprintf("Container deployed: %s", containerName))
 
-	err = saveSecretsToVault(ctx, dog, prefix, containerName, secrets, cfg.SecretVault)
+	go func() {
+		if err := saveSecretsToVault(context.WithoutCancel(ctx), dog, prefix, containerName, secrets, cfg.SecretVault); err != nil {
+			dog.Write(dogger.Warning, fmt.Sprintf("Failed to save secrets to vault: %s", err))
+		}
+	}()
 
-	return err
+	return nil
 }
 
 func setNetwork(deployImageRequest *v1.DeployImageRequest) (networkMode string, networks []string) {
