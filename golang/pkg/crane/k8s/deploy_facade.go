@@ -267,14 +267,17 @@ func (d *DeployFacade) PostDeploy() error {
 	}
 
 	// Backup secrets to vault
-	err := d.secret.BackupSecretsToVault(
-		d.params.InstanceConfig.ContainerPreName,
-		d.params.ContainerConfig.Container,
-		d.params.ContainerConfig.Secrets,
-	)
-	if err != nil {
-		d.params.dogger.WriteInfo(fmt.Sprintf("Notice: vault secret backup failed: %s", err.Error()))
-	}
+	go func() {
+		err := d.secret.BackupSecretsToVault(
+			context.WithoutCancel(d.ctx),
+			d.params.InstanceConfig.ContainerPreName,
+			d.params.ContainerConfig.Container,
+			d.params.ContainerConfig.Secrets,
+		)
+		if err != nil {
+			d.params.dogger.Write(dogger.Warning, fmt.Sprintf("vault secret backup failed: %s", err.Error()))
+		}
+	}()
 
 	return nil
 }
