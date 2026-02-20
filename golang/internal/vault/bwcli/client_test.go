@@ -43,7 +43,7 @@ type fakeStep struct {
 	err         error
 }
 
-func (f *fakeRunner) Run(ctx context.Context, cmd string, args []string, env map[string]string, stdin []byte) ([]byte, []byte, int, error) {
+func (f *fakeRunner) Run(ctx context.Context, cmd string, args []string, env map[string]string, stdin []byte) RunResult {
 	f.mu.Lock()
 	defer f.mu.Unlock()
 
@@ -56,24 +56,24 @@ func (f *fakeRunner) Run(ctx context.Context, cmd string, args []string, env map
 
 	// Allow ctx simulation if step provides ctx-like error.
 	if f.i >= len(f.steps) {
-		return nil, []byte("unexpected call"), 2, errors.New("unexpected call")
+		return RunResult{StdErr: []byte("unexpected call"), ExitCode: 2, Err: errors.New("unexpected call")}
 	}
 	step := f.steps[f.i]
 	f.i++
 
 	if step.wantCmd != "" && step.wantCmd != cmd {
-		return nil, []byte("cmd mismatch"), 2, errors.New("cmd mismatch")
+		return RunResult{StdErr: []byte("cmd mismatch"), ExitCode: 2, Err: errors.New("cmd mismatch")}
 	}
 	if step.wantArgs != nil && strings.Join(step.wantArgs, "|") != strings.Join(args, "|") {
-		return nil, []byte("args mismatch"), 2, errors.New("args mismatch")
+		return RunResult{StdErr: []byte("args mismatch"), ExitCode: 2, Err: errors.New("args mismatch")}
 	}
 	for k, v := range step.wantEnvKeys {
 		if env[k] != v {
-			return nil, []byte("env mismatch: " + k), 2, errors.New("env mismatch")
+			return RunResult{StdErr: []byte("env mismatch: " + k), ExitCode: 2, Err: errors.New("env mismatch")}
 		}
 	}
 
-	return step.stdout, step.stderr, step.exitCode, step.err
+	return RunResult{Stdout: step.stdout, StdErr: step.stderr, ExitCode: step.exitCode, Err: step.err}
 }
 
 func TestStatus_ParsesJSON(t *testing.T) {
@@ -91,7 +91,7 @@ func TestStatus_ParsesJSON(t *testing.T) {
 	var buf bytes.Buffer
 	logger := zerolog.New(&buf).Level(zerolog.DebugLevel)
 
-	c := New(Config{
+	c := New(&Config{
 		BWPath:   "bw",
 		Logger:   logger,
 		Runner:   fr,
@@ -126,7 +126,7 @@ func TestListItems_SetsSessionEnv(t *testing.T) {
 		},
 	}
 
-	c := New(Config{BWPath: "bw", Logger: zerolog.Nop(), Runner: fr})
+	c := New(&Config{BWPath: "bw", Logger: zerolog.Nop(), Runner: fr})
 
 	items, err := c.ListItems(context.Background(), "SESSION123")
 	if err != nil {
@@ -163,7 +163,7 @@ func TestErrorMapping(t *testing.T) {
 					},
 				},
 			}
-			c := New(Config{BWPath: "bw", Logger: zerolog.Nop(), Runner: fr})
+			c := New(&Config{BWPath: "bw", Logger: zerolog.Nop(), Runner: fr})
 			_, err := c.ListItems(context.Background(), "S")
 			if !errors.Is(err, tt.want) {
 				t.Fatalf("expected errors.Is(%v), got %v", tt.want, err)
@@ -183,7 +183,7 @@ func TestTimeoutMapping(t *testing.T) {
 			},
 		},
 	}
-	c := New(Config{BWPath: "bw", Logger: zerolog.Nop(), Runner: fr})
+	c := New(&Config{BWPath: "bw", Logger: zerolog.Nop(), Runner: fr})
 
 	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Nanosecond)
 	cancel()
@@ -208,7 +208,7 @@ func TestLogsDoNotLeakSecrets(t *testing.T) {
 	var buf bytes.Buffer
 	logger := zerolog.New(&buf).Level(zerolog.DebugLevel)
 
-	c := New(Config{BWPath: "bw", Logger: logger, Runner: fr})
+	c := New(&Config{BWPath: "bw", Logger: logger, Runner: fr})
 
 	session, err := c.Unlock(context.Background(), "MASTER_PASSWORD_123")
 	if err != nil {
@@ -268,7 +268,7 @@ func TestIntegrationLikeFlow_StatusUnlockSyncList(t *testing.T) {
 		},
 	}
 
-	c := New(Config{BWPath: "bw", Logger: zerolog.Nop(), Runner: fr})
+	c := New(&Config{BWPath: "bw", Logger: zerolog.Nop(), Runner: fr})
 
 	st, err := c.Status(context.Background())
 	if err != nil {

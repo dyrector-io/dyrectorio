@@ -15,13 +15,14 @@ import (
 	"strings"
 	"time"
 
+	"github.com/na4ma4/go-permbits"
 	"github.com/rs/zerolog"
 )
 
 // Usage example:
 //
 //	logger := zerolog.New(os.Stdout).With().Timestamp().Logger()
-//	c := bwcli.New(bwcli.Config{Logger: logger})
+//	c := bwcli.New(&bwcli.Config{Logger: logger})
 //
 //	st, err := c.Status(ctx)
 //	if err != nil { ... }
@@ -34,29 +35,26 @@ import (
 //	items, err := c.ListItems(ctx, session)
 //	_ = items
 
+const (
+	ArbitraryErrorMaxLength = 200
+	DefaultBwBinary         = "bw"
+)
+
 type Config struct {
-	BWPath string // default "bw"
-
-	Logger zerolog.Logger
-	Runner Runner
-
-	// Optional working directory for bw state.
-	WorkDir string
-
-	// Optional env to pass on every command (e.g. BW_DATA_PATH).
-	// Values must never be logged.
+	Runner   Runner
 	ExtraEnv map[string]string
-
-	// HostURL
-	HostURL string
+	BWPath   string
+	WorkDir  string
+	HostURL  string
+	Logger   zerolog.Logger
 }
 
 type Client struct {
-	bwPath   string
-	log      zerolog.Logger
 	runner   Runner
-	workDir  string
 	extraEnv map[string]string
+	bwPath   string
+	workDir  string
+	log      zerolog.Logger
 }
 
 func bwDataPath(serverURL, userID string) (string, error) {
@@ -67,7 +65,7 @@ func bwDataPath(serverURL, userID string) (string, error) {
 		hex.EncodeToString(h[:16]),
 	)
 
-	if err := os.MkdirAll(dir, 0o700); err != nil {
+	if err := os.MkdirAll(dir, permbits.UserAll); err != nil {
 		return "", err
 	}
 
@@ -75,22 +73,22 @@ func bwDataPath(serverURL, userID string) (string, error) {
 }
 
 func (c *Client) getTemplateItem(ctx context.Context, session string) (Item, error) {
-	stdout, _, _, err := c.run(ctx, session, []string{"get", "template", "item"}, nil)
-	if err != nil {
-		return Item{}, err
+	res := c.run(ctx, session, []string{"get", "template", "item"}, nil)
+	if res.Err != nil {
+		return Item{}, res.Err
 	}
 	var it Item
-	if err := json.Unmarshal(stdout, &it); err != nil {
+	if err := json.Unmarshal(res.Stdout, &it); err != nil {
 		return Item{}, fmt.Errorf("decode template item: %w", err)
 	}
-	it.Raw = slices.Clone(stdout)
+	it.Raw = slices.Clone(res.Stdout)
 	return it, nil
 }
 
-func New(cfg Config) *Client {
+func New(cfg *Config) *Client {
 	bw := cfg.BWPath
 	if bw == "" {
-		bw = "bw"
+		bw = DefaultBwBinary
 	}
 
 	l := cfg.Logger
@@ -99,7 +97,7 @@ func New(cfg Config) *Client {
 		l = zerolog.Nop()
 	}
 
-	var r Runner = cfg.Runner
+	r := cfg.Runner
 	if r == nil {
 		r = &ExecRunner{
 			WorkDir: cfg.WorkDir,
@@ -119,14 +117,14 @@ func New(cfg Config) *Client {
 // EnsureServer ensures bw is configured to use serverURL.
 // If the current server differs, it logs out (required by bw) and updates it.
 func (c *Client) EnsureServer(ctx context.Context, serverURL string, env map[string]string) error {
-	stdout, _, _, err := c.run(ctx, "", []string{"config", "server"}, env)
-	if err != nil {
+	res := c.run(ctx, "", []string{"config", "server"}, env)
+	if res.Err != nil {
 		// If bw can't read config yet (fresh BW_DATA_PATH), we can attempt to set it.
 		// But most of the time this command succeeds.
 		// Fall through to set.
-		c.log.Trace().Err(err).Msgf("server config read, ignored error")
+		c.log.Trace().Err(res.Err).Msgf("server config read, ignored error")
 	} else {
-		current := strings.TrimSpace(string(stdout))
+		current := strings.TrimSpace(string(res.Stdout))
 		if current == "" || equalServerURL(current, serverURL) {
 			c.log.Trace().Msgf("bw server URL in config identical")
 			return nil
@@ -135,8 +133,7 @@ func (c *Client) EnsureServer(ctx context.Context, serverURL string, env map[str
 		// 2) Different server → bw requires logout before changing server config.
 		_ = c.LogoutWithEnv(ctx, env) // ignore not logged in
 	}
-	_, _, _, err = c.run(ctx, "", []string{"config", "server", serverURL}, env)
-	return err
+	return c.run(ctx, "", []string{"config", "server", serverURL}, env).Err
 }
 
 func (c *Client) ConfigureAgentTempDir(serverURL, userID string) error {
@@ -153,32 +150,32 @@ func (c *Client) ConfigureAgentTempDir(serverURL, userID string) error {
 }
 
 func (c *Client) LogoutWithEnv(ctx context.Context, env map[string]string) error {
-	_, _, _, err := c.run(ctx, "", []string{"logout"}, env)
-	if errors.Is(err, ErrUnauthorized) {
+	res := c.run(ctx, "", []string{"logout"}, env)
+	if errors.Is(res.Err, ErrUnauthorized) {
 		return nil
 	}
-	return err
+	return res.Err
 }
 
 func (c *Client) Status(ctx context.Context) (Status, error) {
-	stdout, _, _, err := c.run(ctx, "", []string{"status"}, nil)
-	if err != nil {
-		return Status{}, err
+	res := c.run(ctx, "", []string{"status"}, nil)
+	if res.Err != nil {
+		return Status{}, res.Err
 	}
 	var st Status
-	if err := decodeJSON(stdout, &st); err != nil {
+	if err := decodeJSON(res.Stdout, &st); err != nil {
 		return Status{}, fmt.Errorf("decode status: %w", err)
 	}
-	st.Raw = slices.Clone(stdout)
+	st.Raw = slices.Clone(res.Stdout)
 	return st, nil
 }
 
 func (c *Client) encode(ctx context.Context, session string, jsonPayload []byte) (string, error) {
-	stdout, _, _, err := c.run(ctx, session, []string{"encode"}, nil, withStdin(jsonPayload))
-	if err != nil {
-		return "", err
+	res := c.run(ctx, session, []string{"encode"}, nil, withStdin(jsonPayload))
+	if res.Err != nil {
+		return "", res.Err
 	}
-	return strings.TrimSpace(string(stdout)), nil
+	return strings.TrimSpace(string(res.Stdout)), nil
 }
 
 func equalServerURL(a, b string) bool {
@@ -203,19 +200,18 @@ func (c *Client) LoginAPIKey(ctx context.Context, serverURL, clientID, clientSec
 	if err != nil {
 		return err
 	}
-	_, _, _, err = c.run(ctx, "", []string{"login", "--apikey"}, env)
-	return err
+	return c.run(ctx, "", []string{"login", "--apikey"}, env).Err
 }
 
 // Unlock unlocks the vault and returns the session token (bw unlock --raw).
 // The session MUST be passed per command via BW_SESSION env by the caller.
 func (c *Client) Unlock(ctx context.Context, masterPassword string) (string, error) {
 	stdin := []byte(masterPassword + "\n")
-	stdout, _, _, err := c.run(ctx, "", []string{"unlock", "--raw"}, nil, withStdin(stdin))
-	if err != nil {
-		return "", err
+	res := c.run(ctx, "", []string{"unlock", "--raw"}, nil, withStdin(stdin))
+	if res.Err != nil {
+		return "", res.Err
 	}
-	session := strings.TrimSpace(string(stdout))
+	session := strings.TrimSpace(string(res.Stdout))
 	if session == "" {
 		// If bw succeeded but returned empty, treat as CLI error.
 		return "", fmt.Errorf("%w: empty session", ErrCLI)
@@ -224,49 +220,33 @@ func (c *Client) Unlock(ctx context.Context, masterPassword string) (string, err
 }
 
 func (c *Client) Sync(ctx context.Context, session string) error {
-	_, _, _, err := c.run(ctx, session, []string{"sync"}, nil)
-	return err
+	return c.run(ctx, session, []string{"sync"}, nil).Err
 }
 
 func (c *Client) ListItems(ctx context.Context, session string) ([]Item, error) {
-	stdout, _, _, err := c.run(ctx, session, []string{"list", "items"}, nil)
-	if err != nil {
-		return nil, err
+	res := c.run(ctx, session, []string{"list", "items"}, nil)
+	if res.Err != nil {
+		return nil, res.Err
 	}
-
-	// bw returns an array.
-	var rawItems []json.RawMessage
-	if err := json.Unmarshal(stdout, &rawItems); err != nil {
-		return nil, fmt.Errorf("decode items array: %w", err)
-	}
-
-	items := make([]Item, 0, len(rawItems))
-	for _, rm := range rawItems {
-		var it Item
-		if err := json.Unmarshal(rm, &it); err != nil {
-			return nil, fmt.Errorf("decode item: %w", err)
-		}
+	return decodeRawList[Item](res.Stdout, "decode items array", "decode item", func(it *Item, rm json.RawMessage) {
 		it.Raw = slices.Clone(rm)
-		items = append(items, it)
-	}
-
-	return items, nil
+	})
 }
 
 func (c *Client) GetItem(ctx context.Context, session, itemID string) (Item, error) {
-	stdout, _, _, err := c.run(ctx, session, []string{"get", "item", itemID}, nil)
-	if err != nil {
-		return Item{}, err
+	res := c.run(ctx, session, []string{"get", "item", itemID}, nil)
+	if res.Err != nil {
+		return Item{}, res.Err
 	}
 	var it Item
-	if err := decodeJSON(stdout, &it); err != nil {
+	if err := decodeJSON(res.Stdout, &it); err != nil {
 		return Item{}, fmt.Errorf("decode item: %w", err)
 	}
-	it.Raw = slices.Clone(stdout)
+	it.Raw = slices.Clone(res.Stdout)
 	return it, nil
 }
 
-func (c *Client) CreateItem(ctx context.Context, session string, item Item) (Item, error) {
+func (c *Client) CreateItem(ctx context.Context, session string, item *Item) (Item, error) {
 	payload, err := json.Marshal(item)
 	if err != nil {
 		return Item{}, fmt.Errorf("marshal item: %w", err)
@@ -277,16 +257,16 @@ func (c *Client) CreateItem(ctx context.Context, session string, item Item) (Ite
 		return Item{}, err
 	}
 
-	stdout, _, _, err := c.run(ctx, session, []string{"create", "item", encoded}, nil)
-	if err != nil {
-		return Item{}, err
+	res := c.run(ctx, session, []string{"create", "item", encoded}, nil)
+	if res.Err != nil {
+		return Item{}, res.Err
 	}
 	c.log.Trace().Str("name", item.Name).Msgf("item created")
 	var created Item
-	if err := decodeJSON(stdout, &created); err != nil {
+	if err := decodeJSON(res.Stdout, &created); err != nil {
 		return Item{}, fmt.Errorf("decode created item: %w", err)
 	}
-	created.Raw = slices.Clone(stdout)
+	created.Raw = slices.Clone(res.Stdout)
 	return created, nil
 }
 
@@ -318,63 +298,22 @@ func (c *Client) UpsertSecureNote(
 	}
 
 	var existingID string
-	for _, it := range items {
-		if it.Name == name {
-			existingID = it.ID
+	for i := range items {
+		if items[i].Name == name {
+			existingID = items[i].ID
 			break
-		}
-	}
-
-	applyAuthoritative := func(it *Item) {
-		// Ensure this is a secure note.
-		it.Type = SecureNoteItemType
-		it.Name = name
-		it.Notes = notes
-		if it.SecureNote == nil {
-			it.SecureNote = &SecureNote{Type: SecureNoteTypeGeneric}
-		} else {
-			it.SecureNote.Type = SecureNoteTypeGeneric
-		}
-
-		// Org + collections (authoritative).
-		it.OrganizationID = orgID
-		if orgID == "" {
-			it.CollectionIDs = nil
-		} else {
-			// Copy to avoid retaining caller slice.
-			it.CollectionIDs = slices.Clone(collectionIDs)
-		}
-
-		// Hidden fields: exact set.
-		// 1) Remove any *hidden* fields not in desired map.
-		if len(it.Fields) > 0 {
-			out := it.Fields[:0]
-			for _, f := range it.Fields {
-				if f.Type == FieldTypeHidden {
-					if _, ok := hiddenFields[f.Name]; !ok {
-						continue // drop
-					}
-				}
-				out = append(out, f)
-			}
-			it.Fields = out
-		}
-
-		// 2) Upsert desired hidden fields.
-		for k, v := range hiddenFields {
-			it.SetField(k, v, FieldTypeHidden)
 		}
 	}
 
 	// Update existing
 	if existingID != "" {
-		full, err := c.GetItem(ctx, session, existingID)
-		if err != nil {
-			return Item{}, false, err
+		full, getErr := c.GetItem(ctx, session, existingID)
+		if getErr != nil {
+			return Item{}, false, getErr
 		}
-		applyAuthoritative(&full)
-		edited, err := c.EditItem(ctx, session, existingID, full)
-		return edited, false, err
+		applyAuthoritativeSecureNote(&full, name, notes, orgID, collectionIDs, hiddenFields)
+		edited, editErr := c.EditItem(ctx, session, existingID, &full)
+		return edited, false, editErr
 	}
 
 	// Create new from template
@@ -382,51 +321,80 @@ func (c *Client) UpsertSecureNote(
 	if err != nil {
 		return Item{}, false, err
 	}
-	applyAuthoritative(&base)
+	applyAuthoritativeSecureNote(&base, name, notes, orgID, collectionIDs, hiddenFields)
 
-	created, err := c.CreateItem(ctx, session, base) // CreateItem must encode+create
+	created, err := c.CreateItem(ctx, session, &base) // CreateItem must encode+create
 	return created, true, err
 }
 
-func (c *Client) EditItem(ctx context.Context, session, itemID string, item Item) (Item, error) {
+// applyAuthoritativeSecureNote configures it to match the desired secure note state.
+func applyAuthoritativeSecureNote(it *Item, name, notes, orgID string, collectionIDs []string, hiddenFields map[string]string) {
+	// Ensure this is a secure note.
+	it.Type = SecureNoteItemType
+	it.Name = name
+	it.Notes = notes
+	if it.SecureNote == nil {
+		it.SecureNote = &SecureNote{Type: SecureNoteTypeGeneric}
+	} else {
+		it.SecureNote.Type = SecureNoteTypeGeneric
+	}
+
+	// Org + collections (authoritative).
+	it.OrganizationID = orgID
+	if orgID == "" {
+		it.CollectionIDs = nil
+	} else {
+		// Copy to avoid retaining caller slice.
+		it.CollectionIDs = slices.Clone(collectionIDs)
+	}
+
+	// Hidden fields: exact set.
+	// 1) Remove any *hidden* fields not in desired map.
+	if len(it.Fields) > 0 {
+		out := it.Fields[:0]
+		for _, f := range it.Fields {
+			if f.Type == FieldTypeHidden {
+				if _, ok := hiddenFields[f.Name]; !ok {
+					continue // drop
+				}
+			}
+			out = append(out, f)
+		}
+		it.Fields = out
+	}
+
+	// 2) Upsert desired hidden fields.
+	for k, v := range hiddenFields {
+		it.SetField(k, v, FieldTypeHidden)
+	}
+}
+
+func (c *Client) EditItem(ctx context.Context, session, itemID string, item *Item) (Item, error) {
 	payload, err := json.Marshal(item)
 	if err != nil {
 		return Item{}, fmt.Errorf("marshal item: %w", err)
 	}
 
-	stdout, _, _, err := c.run(ctx, session, []string{"edit", "item", itemID}, nil, withStdin(payload))
-	if err != nil {
-		return Item{}, err
+	res := c.run(ctx, session, []string{"edit", "item", itemID}, nil, withStdin(payload))
+	if res.Err != nil {
+		return Item{}, res.Err
 	}
 	var edited Item
-	if err := decodeJSON(stdout, &edited); err != nil {
+	if err := decodeJSON(res.Stdout, &edited); err != nil {
 		return Item{}, fmt.Errorf("decode edited item: %w", err)
 	}
-	edited.Raw = append([]byte(nil), stdout...)
+	edited.Raw = slices.Clone(res.Stdout)
 	return edited, nil
 }
 
 func (c *Client) ListOrganizations(ctx context.Context, session string) ([]Organization, error) {
-	stdout, _, _, err := c.run(ctx, session, []string{"list", "organizations"}, nil)
-	if err != nil {
-		return nil, err
+	res := c.run(ctx, session, []string{"list", "organizations"}, nil)
+	if res.Err != nil {
+		return nil, res.Err
 	}
-
-	var raw []json.RawMessage
-	if err := json.Unmarshal(stdout, &raw); err != nil {
-		return nil, fmt.Errorf("decode organizations array: %w", err)
-	}
-
-	out := make([]Organization, 0, len(raw))
-	for _, rm := range raw {
-		var o Organization
-		if err := json.Unmarshal(rm, &o); err != nil {
-			return nil, fmt.Errorf("decode organization: %w", err)
-		}
+	return decodeRawList(res.Stdout, "decode organizations array", "decode organization", func(o *Organization, rm json.RawMessage) {
 		o.Raw = slices.Clone(rm)
-		out = append(out, o)
-	}
-	return out, nil
+	})
 }
 
 func (c *Client) ListCollections(ctx context.Context, session, organizationID string) ([]Collection, error) {
@@ -435,43 +403,30 @@ func (c *Client) ListCollections(ctx context.Context, session, organizationID st
 		args = append(args, "--organizationid", organizationID)
 	}
 
-	stdout, _, _, err := c.run(ctx, session, args, nil)
-	if err != nil {
-		return nil, err
+	res := c.run(ctx, session, args, nil)
+	if res.Err != nil {
+		return nil, res.Err
 	}
-
-	var raw []json.RawMessage
-	if err := json.Unmarshal(stdout, &raw); err != nil {
-		return nil, fmt.Errorf("decode collections array: %w", err)
-	}
-
-	out := make([]Collection, 0, len(raw))
-	for _, rm := range raw {
-		var col Collection
-		if err := json.Unmarshal(rm, &col); err != nil {
-			return nil, fmt.Errorf("decode collection: %w", err)
-		}
+	return decodeRawList[Collection](res.Stdout, "decode collections array", "decode collection", func(col *Collection, rm json.RawMessage) {
 		col.Raw = slices.Clone(rm)
-		out = append(out, col)
-	}
-	return out, nil
+	})
 }
 
 // UpsertItemByName lists items once and then chooses create vs edit.
 // Returns (item, created, error).
-func (c *Client) UpsertItemByName(ctx context.Context, session string, item Item) (Item, bool, error) {
+func (c *Client) UpsertItemByName(ctx context.Context, session string, item *Item) (Item, bool, error) {
 	items, err := c.ListItems(ctx, session)
 	if err != nil {
 		return Item{}, false, err
 	}
-	for _, it := range items {
-		if it.Name == item.Name && it.Name != "" {
-			edited, err := c.EditItem(ctx, session, it.ID, item)
+	for i := range items {
+		if items[i].Name == item.Name && item.Name != "" {
+			edited, err := c.EditItem(ctx, session, items[i].ID, item)
 			return edited, false, err
 		}
 	}
-	created, err := c.CreateItem(ctx, session, item)
-	return created, true, err
+	created, createErr := c.CreateItem(ctx, session, item)
+	return created, true, createErr
 }
 
 // ---- internal helpers ----
@@ -486,7 +441,7 @@ func withStdin(b []byte) runOpt {
 	return func(o *runOptions) { o.stdin = b }
 }
 
-func (c *Client) run(ctx context.Context, session string, args []string, env map[string]string, opts ...runOpt) ([]byte, []byte, int, error) {
+func (c *Client) run(ctx context.Context, session string, args []string, env map[string]string, opts ...runOpt) RunResult {
 	o := &runOptions{}
 	for _, opt := range opts {
 		opt(o)
@@ -498,39 +453,59 @@ func (c *Client) run(ctx context.Context, session string, args []string, env map
 	}
 
 	start := time.Now()
-	stdout, stderr, exitCode, err := c.runner.Run(ctx, c.bwPath, args, finalEnv, o.stdin)
+	res := c.runner.Run(ctx, c.bwPath, args, finalEnv, o.stdin)
 	dur := time.Since(start)
 
 	evt := c.log.Info().
-		Str("bin", "bw").
+		Str("bin", c.bwPath).
 		Str("op", safeOpName(args)).
-		Int("exit_code", exitCode).
+		Int("exit_code", res.ExitCode).
 		Dur("duration", dur)
 
-	if err != nil {
+	if res.Err != nil {
 		evt = c.log.Warn().
-			Str("bin", "bw").
+			Str("bin", c.bwPath).
 			Str("op", safeOpName(args)).
-			Int("exit_code", exitCode).
+			Int("exit_code", res.ExitCode).
 			Dur("duration", dur)
 	}
 	evt.Send()
 
 	// Context errors first (avoid re-wrapping cancellations as CLI errors).
-	if errors.Is(err, context.DeadlineExceeded) {
-		return stdout, stderr, exitCode, fmt.Errorf("%w: %v", ErrTimeout, err)
+	if errors.Is(res.Err, context.DeadlineExceeded) {
+		res.Err = fmt.Errorf("%w: %v", ErrTimeout, res.Err)
+		return res
 	}
-	if errors.Is(err, context.Canceled) {
-		return stdout, stderr, exitCode, err
+	if errors.Is(res.Err, context.Canceled) {
+		return res
 	}
 
 	// Map bw failures to sentinels.
-	mapped := mapBWError(stdout, stderr)
-	if exitCode != 0 || err != nil {
-		return stdout, stderr, exitCode, mapped
+	mapped := mapBWError(res.Stdout, res.StdErr)
+	if res.ExitCode != 0 || res.Err != nil {
+		res.Err = mapped
+		return res
 	}
 
-	return stdout, stderr, exitCode, nil
+	return res
+}
+
+// decodeRawList decodes a JSON array into a typed slice, calling setRaw for each element.
+func decodeRawList[T any](data []byte, arrayErr, itemErr string, setRaw func(*T, json.RawMessage)) ([]T, error) {
+	var raw []json.RawMessage
+	if err := json.Unmarshal(data, &raw); err != nil {
+		return nil, fmt.Errorf("%s: %w", arrayErr, err)
+	}
+	out := make([]T, 0, len(raw))
+	for _, rm := range raw {
+		var v T
+		if err := json.Unmarshal(rm, &v); err != nil {
+			return nil, fmt.Errorf("%s: %w", itemErr, err)
+		}
+		setRaw(&v, rm)
+		out = append(out, v)
+	}
+	return out, nil
 }
 
 func decodeJSON(b []byte, v any) error {
@@ -539,7 +514,7 @@ func decodeJSON(b []byte, v any) error {
 
 func safeOpName(args []string) string {
 	if len(args) == 0 {
-		return "bw"
+		return DefaultBwBinary
 	}
 	// e.g. "list items" -> "list_items"
 	return strings.ReplaceAll(strings.Join(args, "_"), "-", "_")
@@ -553,8 +528,8 @@ func sanitizeForError(b []byte) string {
 	s := strings.TrimSpace(string(b))
 	s = strings.ReplaceAll(s, "\n", " ")
 	s = strings.ReplaceAll(s, "\r", " ")
-	if len(s) > 200 {
-		s = s[:200] + "…"
+	if len(s) > ArbitraryErrorMaxLength {
+		s = s[:ArbitraryErrorMaxLength] + "…"
 	}
 	return s
 }

@@ -339,7 +339,7 @@ func (s *Secret) BackupSecretsToVault(ctx context.Context, namespace, containerN
 	secretsMap := mapper.ByteMapToStringMap(decrypted)
 
 	// Initialize vault client
-	vault := bwcli.New(bwcli.Config{})
+	vault := bwcli.New(&bwcli.Config{})
 
 	err = vault.LoginAPIKey(ctx, vaultCfg.URL, vaultCfg.ClientID, vaultCfg.ClientSecret)
 	if err != nil {
@@ -351,7 +351,8 @@ func (s *Secret) BackupSecretsToVault(ctx context.Context, namespace, containerN
 		return err
 	}
 
-	if err := vault.Sync(ctx, session); err != nil {
+	err = vault.Sync(ctx, session)
+	if err != nil {
 		return err
 	}
 

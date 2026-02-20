@@ -13,20 +13,23 @@ import (
 
 // Runner abstracts execution so unit tests can inject a fake.
 type Runner interface {
-	Run(ctx context.Context, cmd string, args []string, env map[string]string, stdin []byte) (stdout, stderr []byte, exitCode int, err error)
+	Run(ctx context.Context, cmd string, args []string, env map[string]string, stdin []byte) RunResult
+}
+
+type RunResult struct {
+	Err      error
+	Stdout   []byte
+	StdErr   []byte
+	ExitCode int
 }
 
 // ExecRunner is the production runner using os/exec.
 type ExecRunner struct {
-	// Optional working directory for bw state isolation.
-	WorkDir string
-
-	// Base environment variables to add/override (e.g. BW_DATA_PATH).
-	// NOTE: Never log these values.
 	BaseEnv map[string]string
+	WorkDir string
 }
 
-func (r *ExecRunner) Run(ctx context.Context, cmd string, args []string, env map[string]string, stdin []byte) ([]byte, []byte, int, error) {
+func (r *ExecRunner) Run(ctx context.Context, cmd string, args []string, env map[string]string, stdin []byte) RunResult {
 	c := exec.CommandContext(ctx, cmd, args...)
 	if r.WorkDir != "" {
 		c.Dir = r.WorkDir
@@ -46,7 +49,7 @@ func (r *ExecRunner) Run(ctx context.Context, cmd string, args []string, env map
 
 	// If context cancellation occurred, prefer ctx error.
 	if ctx.Err() != nil {
-		return stdoutBuf.Bytes(), stderrBuf.Bytes(), -1, ctx.Err()
+		return RunResult{Stdout: stdoutBuf.Bytes(), StdErr: stderrBuf.Bytes(), ExitCode: -1, Err: ctx.Err()}
 	}
 
 	exitCode := 0
@@ -56,11 +59,11 @@ func (r *ExecRunner) Run(ctx context.Context, cmd string, args []string, env map
 			exitCode = ee.ExitCode()
 		} else {
 			// Failed to start or other exec-level issues.
-			return stdoutBuf.Bytes(), stderrBuf.Bytes(), -1, err
+			return RunResult{Stdout: stdoutBuf.Bytes(), StdErr: stderrBuf.Bytes(), ExitCode: -1, Err: err}
 		}
 	}
 
-	return stdoutBuf.Bytes(), stderrBuf.Bytes(), exitCode, err
+	return RunResult{Stdout: stdoutBuf.Bytes(), StdErr: stderrBuf.Bytes(), ExitCode: exitCode, Err: err}
 }
 
 // mergeEnv returns an environment suitable for exec.Cmd.Env.

@@ -36,11 +36,11 @@ type DeployFacadeParams struct {
 	Ctx              context.Context
 	RuntimeConfig    *string
 	imagePullSecrets *imageHelper.RegistryAuth
+	dogger           *dogger.DeploymentLogger
 	Image            string
 	Issuer           string
 	InstanceConfig   v1.InstanceConfig
 	ContainerConfig  v1.ContainerConfig
-	dogger           *dogger.DeploymentLogger
 }
 
 func NewDeployFacade(params *DeployFacadeParams, cfg *config.Configuration) *DeployFacade {

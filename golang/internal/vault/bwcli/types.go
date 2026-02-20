@@ -48,24 +48,22 @@ type Status struct {
 // Item is a minimal representation of Bitwarden items.
 // Many fields are optional and vary by "type". Keep unknown parts in Raw.
 type Item struct {
-	ID             string   `json:"id,omitempty"`
-	OrganizationID string   `json:"organizationId,omitempty"`
-	CollectionIDs  []string `json:"collectionIds,omitempty"`
-	FolderID       string   `json:"folderId,omitempty"`
-	Type           ItemType `json:"type,omitempty"`
-	Name           string   `json:"name,omitempty"`
-	Notes          string   `json:"notes,omitempty"`
-	Favorite       bool     `json:"favorite,omitempty"`
-	Reprompt       int      `json:"reprompt,omitempty"`
-
-	Fields     []Field     `json:"fields,omitempty"`
-	SecureNote *SecureNote `json:"secureNote,omitempty"`
-
+	SecureNote      *SecureNote     `json:"secureNote,omitempty"`
+	Notes           string          `json:"notes,omitempty"`
+	FolderID        string          `json:"folderId,omitempty"`
+	ID              string          `json:"id,omitempty"`
+	Name            string          `json:"name,omitempty"`
+	OrganizationID  string          `json:"organizationId,omitempty"`
+	CollectionIDs   []string        `json:"collectionIds,omitempty"`
+	Identity        json.RawMessage `json:"identity,omitempty"`
+	Raw             json.RawMessage `json:"-"`
+	PasswordHistory json.RawMessage `json:"passwordHistory,omitempty"`
+	Fields          []Field         `json:"fields,omitempty"`
 	Login           json.RawMessage `json:"login,omitempty"`
 	Card            json.RawMessage `json:"card,omitempty"`
-	Identity        json.RawMessage `json:"identity,omitempty"`
-	PasswordHistory json.RawMessage `json:"passwordHistory,omitempty"`
-	Raw             json.RawMessage `json:"-"`
+	Type            ItemType        `json:"type,omitempty"`
+	Reprompt        int             `json:"reprompt,omitempty"`
+	Favorite        bool            `json:"favorite,omitempty"`
 }
 
 // Organization / Collection kept minimal for backup grouping later.

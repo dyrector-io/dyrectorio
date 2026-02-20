@@ -459,7 +459,7 @@ func DeployImage(ctx context.Context,
 	dog.WriteInfo(fmt.Sprintf("Container deployed: %s", containerName))
 
 	go func() {
-		if err := saveSecretsToVault(context.WithoutCancel(ctx), dog, prefix, containerName, secrets, cfg.SecretVault); err != nil {
+		if err := saveSecretsToVault(context.WithoutCancel(ctx), dog, prefix, containerName, secrets, &cfg.SecretVault); err != nil {
 			dog.Write(dogger.Warning, fmt.Sprintf("Failed to save secrets to vault: %s", err))
 		}
 	}()
@@ -476,11 +476,13 @@ func setNetwork(deployImageRequest *v1.DeployImageRequest) (networkMode string, 
 	return networkMode, deployImageRequest.ContainerConfig.Networks
 }
 
-func saveSecretsToVault(ctx context.Context, dog *dogger.DeploymentLogger, prefix, name string, secrets map[string]string, vaultCfg internalConfig.Vault) error {
+func saveSecretsToVault(ctx context.Context, dog *dogger.DeploymentLogger,
+	prefix, name string, secrets map[string]string, vaultCfg *internalConfig.Vault,
+) error {
 	if !bool(vaultCfg.BinaryAvailable) {
 		return nil
 	}
-	vault := bwcli.New(bwcli.Config{})
+	vault := bwcli.New(&bwcli.Config{})
 
 	err := vault.LoginAPIKey(ctx, vaultCfg.URL, vaultCfg.ClientID, vaultCfg.ClientSecret)
 	if err != nil {
@@ -492,7 +494,8 @@ func saveSecretsToVault(ctx context.Context, dog *dogger.DeploymentLogger, prefi
 		return err
 	}
 
-	if err := vault.Sync(ctx, session); err != nil {
+	err = vault.Sync(ctx, session)
+	if err != nil {
 		return err
 	}
 
