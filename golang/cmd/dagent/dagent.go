@@ -36,6 +36,10 @@ func serve(_ *cli.Context) error {
 
 	log.Info().Msg("Configuration loaded.")
 
+	if !bool(cfg.SecretVault.BinaryAvailable) && cfg.SecretVault.URL != "" {
+		log.Warn().Msg("Vault URL is configured but 'bw' binary is not available, vault backup will be skipped")
+	}
+
 	return dagent.Serve(&cfg)
 }
 

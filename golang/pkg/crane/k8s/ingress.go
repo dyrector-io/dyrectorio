@@ -171,7 +171,7 @@ func getIngressAnnotations(namespace, name string, opts *routingOptions) map[str
 
 	if len(opts.corsHeaders) > 0 {
 		annotations["nginx.ingress.kubernetes.io/enable-cors"] = "true"
-		annotations["nginx.ingress.kubernetes.io/cors-allow-headers"] = strings.Join(opts.proxyHeaders, ", ")
+		annotations["nginx.ingress.kubernetes.io/cors-allow-headers"] = strings.Join(opts.corsHeaders, ", ")
 	}
 
 	if opts.proxyBuffering {

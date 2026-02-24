@@ -47,7 +47,7 @@ export default class GrpcNodeConnection {
     this.address = xRealIp ?? xForwarderFor ?? call.getPeer()
 
     call.connection = this
-    call.on('end', () => this.onClose())
+    call.on('close', () => this.onClose())
   }
 
   verify(jwtService: JwtService): boolean {
