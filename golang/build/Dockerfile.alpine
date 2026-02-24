@@ -1,0 +1,27 @@
+FROM docker.io/library/node:23-alpine
+
+ARG TARGETOS
+ARG TARGETARCH
+ARG AGENT_BINARY
+ARG REVISION
+
+# Pinned default version of Bitwarden CLI
+ARG BW_CLI_VERSION=2025.12.1
+
+LABEL org.opencontainers.image.title="Agent component for dyrector.io with extensions based on Alpine Linux"
+LABEL org.opencontainers.image.vendor="dyrector.io"
+LABEL org.opencontainers.image.source="https://github.com/dyrector-io/dyrectorio/agent/$AGENT_BINARY"
+LABEL org.opencontainers.image.revision="$REVISION"
+LABEL org.opencontainers.image.documentation="https://docs.dyrector.io"
+
+# Runtime deps + bw
+RUN apk add --no-cache ca-certificates tini \
+  && npm install -g @bitwarden/cli@${BW_CLI_VERSION} \
+  && npm cache clean --force \
+  && chmod 1777 /tmp
+
+COPY ./out/$AGENT_BINARY-$TARGETOS-$TARGETARCH /agent
+
+HEALTHCHECK --interval=30s --timeout=5s CMD ["/agent", "health"]
+
+ENTRYPOINT ["/sbin/tini","--","/agent"]
