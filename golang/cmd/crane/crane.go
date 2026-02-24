@@ -69,6 +69,11 @@ func loadConfiguration() (*config.Configuration, *k8s.Secret, error) {
 	}
 
 	log.Info().Msg("Configuration loaded.")
+
+	if !bool(cfg.SecretVault.BinaryAvailable) && cfg.SecretVault.URL != "" {
+		log.Warn().Msg("Vault URL is configured but 'bw' binary is not available, vault backup will be skipped")
+	}
+
 	return cfg, secretHandler, nil
 }
 
