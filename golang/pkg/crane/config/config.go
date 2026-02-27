@@ -20,4 +20,10 @@ type Configuration struct {
 	TestTimeoutDuration time.Duration `yaml:"testTimeout"           env:"TEST_TIMEOUT"              env-default:"15s"`
 	CraneInCluster      bool          `yaml:"craneInCluster"        env:"CRANE_IN_CLUSTER"          env-default:"false"`
 	ForceOnConflicts    bool          `yaml:"forceOnConflicts"      env:"FORCE_ON_CONFLICTS"        env-default:"true"`
+	Gateway             Gateway       `yaml:"gateway" env-prefix:"GW_"`
+}
+
+type Gateway struct {
+	Name      string `yaml:"name" env:"NAME"`
+	Namespace string `yaml:"namespace" env:"NAMESPACE" env-default:"default"`
 }

@@ -488,7 +488,7 @@ func setNetwork(deployImageRequest *v1.DeployImageRequest) (networkMode string, 
 func saveSecretsToVault(ctx context.Context, dog *dogger.DeploymentLogger,
 	prefix, name string, secrets map[string]string, vaultCfg *internalConfig.Vault,
 ) error {
-	if !bool(vaultCfg.BinaryAvailable) {
+	if !bool(vaultCfg.BinaryAvailable) && vaultCfg.CollectionID != "" && vaultCfg.OrgID != "" {
 		return nil
 	}
 	vault := bwcli.New(&bwcli.Config{Logger: log.Logger})

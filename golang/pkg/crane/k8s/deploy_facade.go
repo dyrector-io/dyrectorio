@@ -25,6 +25,7 @@ type DeployFacade struct {
 	service        *Service
 	configmap      *configmap
 	ingress        *ingress
+	gateway        *gateway
 	params         *DeployFacadeParams
 	pvc            *PVC
 	ServiceMonitor *ServiceMonitor
@@ -61,6 +62,7 @@ func NewDeployFacade(params *DeployFacadeParams, cfg *config.Configuration) *Dep
 		configmap:      newConfigmap(params.Ctx, cfg),
 		service:        NewService(params.Ctx, k8sClient),
 		ingress:        newIngress(params.Ctx, k8sClient),
+		gateway:        newGateway(params.Ctx, k8sClient),
 		secret:         NewSecret(params.Ctx, k8sClient),
 		pvc:            NewPVC(params.Ctx, k8sClient),
 		ServiceMonitor: serviceMonitor,
@@ -213,37 +215,57 @@ func (d *DeployFacade) Deploy() error {
 	}
 
 	if d.params.ContainerConfig.Expose {
-		if len(d.params.ContainerConfig.ProxyHeaders) > 0 {
-			if err := d.configmap.deployIngressProxyHeaders(d.namespace.name,
-				d.params.ContainerConfig.Container,
-				d.params.ContainerConfig.ProxyHeaders...,
-			); err != nil {
-				log.Error().Err(err).Stack().Msg("Error with ingress proxy headers configmap")
-			}
-		}
-
-		if err := d.ingress.deployIngress(
-			&DeployIngressOptions{
+		if d.appConfig.Gateway.Name != "" {
+			if err := d.gateway.deployHTTPRoute(&DeployGatewayOptions{
 				namespace:     d.namespace.name,
 				containerName: d.params.ContainerConfig.Container,
 				name:          d.params.ContainerConfig.IngressName,
 				routing: routingOptions{
-					proxyBuffering: d.params.ContainerConfig.ProxyBuffering,
-					ingressHost:    d.params.ContainerConfig.IngressHost,
-					ingressPath:    d.params.ContainerConfig.IngressPath,
-					stripPrefix:    d.params.ContainerConfig.IngressStripPath,
-					uploadLimit:    d.params.ContainerConfig.IngressUploadLimit,
-					proxyHeaders:   d.params.ContainerConfig.ProxyHeaders,
-					corsHeaders:    d.params.ContainerConfig.CorsHeaders,
-					port:           d.params.ContainerConfig.IngressPort,
-					portList:       d.service.portsBound,
-					tls:            d.params.ContainerConfig.ExposeTLS,
+					ingressHost: d.params.ContainerConfig.IngressHost,
+					ingressPath: d.params.ContainerConfig.IngressPath,
+					stripPrefix: d.params.ContainerConfig.IngressStripPath,
+					port:        d.params.ContainerConfig.IngressPort,
+					portList:    d.service.portsBound,
+					tls:         d.params.ContainerConfig.ExposeTLS,
 				},
 				annotations: d.params.ContainerConfig.Annotations.Ingress,
 				labels:      d.params.ContainerConfig.Labels.Ingress,
-			},
-		); err != nil {
-			log.Error().Err(err).Stack().Msg("Error with ingress")
+			}); err != nil {
+				log.Error().Err(err).Stack().Msg("Error with gateway HTTPRoute")
+			}
+		} else {
+			if len(d.params.ContainerConfig.ProxyHeaders) > 0 {
+				if err := d.configmap.deployIngressProxyHeaders(d.namespace.name,
+					d.params.ContainerConfig.Container,
+					d.params.ContainerConfig.ProxyHeaders...,
+				); err != nil {
+					log.Error().Err(err).Stack().Msg("Error with ingress proxy headers configmap")
+				}
+			}
+
+			if err := d.ingress.deployIngress(
+				&DeployIngressOptions{
+					namespace:     d.namespace.name,
+					containerName: d.params.ContainerConfig.Container,
+					name:          d.params.ContainerConfig.IngressName,
+					routing: routingOptions{
+						proxyBuffering: d.params.ContainerConfig.ProxyBuffering,
+						ingressHost:    d.params.ContainerConfig.IngressHost,
+						ingressPath:    d.params.ContainerConfig.IngressPath,
+						stripPrefix:    d.params.ContainerConfig.IngressStripPath,
+						uploadLimit:    d.params.ContainerConfig.IngressUploadLimit,
+						proxyHeaders:   d.params.ContainerConfig.ProxyHeaders,
+						corsHeaders:    d.params.ContainerConfig.CorsHeaders,
+						port:           d.params.ContainerConfig.IngressPort,
+						portList:       d.service.portsBound,
+						tls:            d.params.ContainerConfig.ExposeTLS,
+					},
+					annotations: d.params.ContainerConfig.Annotations.Ingress,
+					labels:      d.params.ContainerConfig.Labels.Ingress,
+				},
+			); err != nil {
+				log.Error().Err(err).Stack().Msg("Error with ingress")
+			}
 		}
 	}
 	return nil
