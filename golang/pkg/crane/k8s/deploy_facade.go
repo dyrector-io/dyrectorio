@@ -36,6 +36,7 @@ type DeployFacadeParams struct {
 	Ctx              context.Context
 	RuntimeConfig    *string
 	imagePullSecrets *imageHelper.RegistryAuth
+	dogger           *dogger.DeploymentLogger
 	Image            string
 	Issuer           string
 	InstanceConfig   v1.InstanceConfig
@@ -265,6 +266,19 @@ func (d *DeployFacade) PostDeploy() error {
 		}
 	}
 
+	// Backup secrets to vault
+	go func() {
+		err := d.secret.BackupSecretsToVault(
+			context.WithoutCancel(d.ctx),
+			d.params.InstanceConfig.ContainerPreName,
+			d.params.ContainerConfig.Container,
+			d.params.ContainerConfig.Secrets,
+		)
+		if err != nil {
+			d.params.dogger.Write(dogger.Warning, fmt.Sprintf("vault secret backup failed: %s", err.Error()))
+		}
+	}()
+
 	return nil
 }
 
@@ -315,6 +329,7 @@ func Deploy(c context.Context, dog *dogger.DeploymentLogger, deployImageRequest 
 			ContainerConfig:  deployImageRequest.ContainerConfig,
 			Issuer:           deployImageRequest.Issuer,
 			imagePullSecrets: deployImageRequest.RegistryAuth,
+			dogger:           dog,
 		},
 		cfg,
 	)

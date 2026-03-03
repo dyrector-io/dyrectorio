@@ -317,9 +317,7 @@ export default class DeployService {
             },
             data: {
               config: {
-                create: {
-                  type: 'instance',
-                  updatedBy: identity.id,
+                update: {
                   secrets,
                 },
               },

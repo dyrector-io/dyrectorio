@@ -655,8 +655,8 @@ model ConfigBundle {
   team   Team   @relation(fields: [teamId], references: [id], onDelete: Cascade)
   teamId String @db.Uuid
 
-  config   ContainerConfig? @relation(fields: [configId], references: [id], onDelete: Cascade)
-  configId String           @unique @db.Uuid
+  config   ContainerConfig @relation(fields: [configId], references: [id], onDelete: Cascade)
+  configId String          @unique @db.Uuid
 
   deployments ConfigBundleOnDeployments[]
 
