@@ -3,9 +3,11 @@ package k8s
 import (
 	"context"
 	"errors"
+	"fmt"
 	"strings"
 
 	"github.com/rs/zerolog/log"
+	k8sapierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	gwv1 "sigs.k8s.io/gateway-api/apis/v1"
 	gwapply "sigs.k8s.io/gateway-api/applyconfiguration/apis/v1"
@@ -18,8 +20,9 @@ import (
 )
 
 const (
-	defaultHTTPPort  = 80
-	defaultHTTPSPort = 443
+	defaultHTTPPort    = 80
+	defaultHTTPSPort   = 443
+	maxConflictRetries = 5
 )
 
 // facade object for gateway management
@@ -167,11 +170,6 @@ func (gw *gateway) upsertGatewayListener(gwRef config.Gateway, hostname, listene
 		return err
 	}
 
-	current, err := gwClient.Get(gw.ctx, gwRef.Name, metav1.GetOptions{})
-	if err != nil {
-		return err
-	}
-
 	listenerHostname := gwv1.Hostname(hostname)
 	from := gwv1.NamespacesFromAll
 	allowedRoutes := &gwv1.AllowedRoutes{
@@ -214,31 +212,48 @@ func (gw *gateway) upsertGatewayListener(gwRef config.Gateway, hostname, listene
 		}
 	}
 
-	// For each desired listener: replace by name if found, otherwise append.
-	listeners := current.Spec.Listeners
-	for name, dl := range desired {
-		found := false
-		for i, l := range listeners {
-			if string(l.Name) == name {
-				listeners[i] = dl
-				found = true
-				break
+	for attempt := range maxConflictRetries {
+		current, err := gwClient.Get(gw.ctx, gwRef.Name, metav1.GetOptions{})
+		if err != nil {
+			return err
+		}
+
+		// For each desired listener: replace by name if found, otherwise append.
+		listeners := current.Spec.Listeners
+		for name, dl := range desired {
+			found := false
+			for i, l := range listeners {
+				if string(l.Name) == name {
+					listeners[i] = dl
+					found = true
+					break
+				}
+			}
+			if !found {
+				listeners = append(listeners, dl)
 			}
 		}
-		if !found {
-			listeners = append(listeners, dl)
+		current.Spec.Listeners = listeners
+
+		result, err := gwClient.Update(gw.ctx, current, metav1.UpdateOptions{})
+		if err != nil {
+			if k8sapierrors.IsConflict(err) {
+				log.Warn().Err(err).
+					Str("gateway", gwRef.Name).
+					Str("listener", listenerName).
+					Int("attempt", attempt+1).
+					Msg("Gateway conflict, retrying")
+				continue
+			}
+			log.Error().Err(err).Str("gateway", gwRef.Name).Str("listener", listenerName).Send()
+			return err
 		}
-	}
-	current.Spec.Listeners = listeners
 
-	result, err := gwClient.Update(gw.ctx, current, metav1.UpdateOptions{})
-	if err != nil {
-		log.Error().Err(err).Str("gateway", gwRef.Name).Str("listener", listenerName).Send()
-		return err
+		log.Info().Str("gateway", result.Name).Str("listener", listenerName).Msg("Gateway listener upserted")
+		return nil
 	}
 
-	log.Info().Str("gateway", result.Name).Str("listener", listenerName).Msg("Gateway listener upserted")
-	return nil
+	return fmt.Errorf("gateway %q update failed after %d conflict retries", gwRef.Name, maxConflictRetries)
 }
 
 func (gw *gateway) deleteHTTPRoute(namespace, name string) error {
