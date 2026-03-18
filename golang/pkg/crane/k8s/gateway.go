@@ -182,7 +182,7 @@ func (gw *gateway) upsertGatewayListener(gwRef config.Gateway, hostname, listene
 	if tls {
 		httpsName := listenerName + "-https"
 		tlsMode := gwv1.TLSModeTerminate
-		secretName := gwv1.ObjectName(util.JoinV("-", containerName, "tls"))
+		secretName := gwv1.ObjectName(util.JoinV("-", listenerName, "tls"))
 		desired[httpsName] = gwv1.Listener{
 			Name:          gwv1.SectionName(httpsName),
 			Port:          gwv1.PortNumber(defaultHTTPSPort),
