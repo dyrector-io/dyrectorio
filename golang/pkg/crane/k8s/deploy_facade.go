@@ -268,6 +268,11 @@ func (d *DeployFacade) PostDeploy() error {
 
 	// Backup secrets to vault
 	go func() {
+		wg := grpc.VaultWaitGroupFromContext(d.ctx)
+		if wg != nil {
+			wg.Add(1)
+			defer wg.Done()
+		}
 		err := d.secret.BackupSecretsToVault(
 			context.WithoutCancel(d.ctx),
 			d.params.InstanceConfig.ContainerPreName,

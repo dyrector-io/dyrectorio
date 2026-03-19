@@ -459,6 +459,11 @@ func DeployImage(ctx context.Context,
 	dog.WriteInfo(fmt.Sprintf("Container deployed: %s", containerName))
 
 	go func() {
+		wg := grpc.VaultWaitGroupFromContext(ctx)
+		if wg != nil {
+			wg.Add(1)
+			defer wg.Done()
+		}
 		if err := saveSecretsToVault(context.WithoutCancel(ctx), dog, prefix, containerName, secrets, &cfg.SecretVault); err != nil {
 			dog.Write(dogger.Warning, fmt.Sprintf("Failed to save secrets to vault: %s", err))
 		}
@@ -482,7 +487,8 @@ func saveSecretsToVault(ctx context.Context, dog *dogger.DeploymentLogger,
 	if !bool(vaultCfg.BinaryAvailable) {
 		return nil
 	}
-	vault := bwcli.New(&bwcli.Config{})
+	vault := bwcli.New(&bwcli.Config{Logger: log.Logger})
+	defer vault.Cleanup()
 
 	err := vault.LoginAPIKey(ctx, vaultCfg.URL, vaultCfg.ClientID, vaultCfg.ClientSecret)
 	if err != nil {

@@ -9,6 +9,7 @@ import (
 	"io"
 	"net/http"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/rs/zerolog/log"
@@ -39,6 +40,17 @@ import (
 type Connection struct {
 	Conn   *grpc.ClientConn
 	Client agent.AgentClient
+}
+
+type vaultWaitGroupKey struct{}
+
+func contextWithVaultWaitGroup(ctx context.Context, wg *sync.WaitGroup) context.Context {
+	return context.WithValue(ctx, vaultWaitGroupKey{}, wg)
+}
+
+func VaultWaitGroupFromContext(ctx context.Context) *sync.WaitGroup {
+	wg, _ := ctx.Value(vaultWaitGroupKey{}).(*sync.WaitGroup)
+	return wg
 }
 
 type ContainerLogEvent struct {
@@ -523,6 +535,9 @@ func executeDeployRequest(
 		}
 	}
 
+	var wg sync.WaitGroup
+	ctx = contextWithVaultWaitGroup(ctx, &wg)
+
 	for i := range req.Requests {
 		imageReq := mapper.MapDeployImage(req.Prefix, req.Requests[i], appConfig)
 		dog.SetRequestID(imageReq.RequestID)
@@ -538,6 +553,9 @@ func executeDeployRequest(
 		}
 	}
 
+	dog.WriteInfo("Waiting for async tasks to finish.")
+
+	wg.Wait()
 	deployStatus = common.DeploymentStatus_SUCCESSFUL
 }
 
@@ -725,8 +743,13 @@ func executeVersionDeployLegacyRequest(
 
 	t1 := time.Now()
 
+	var wg sync.WaitGroup
+	ctx = contextWithVaultWaitGroup(ctx, &wg)
+
 	deployStatus := common.DeploymentStatus_SUCCESSFUL
 	if err = deploy(ctx, dog, &deployImageRequest, nil); err == nil {
+		dog.WriteInfo("Waiting for async tasks to finish.")
+		wg.Wait()
 		dog.WriteInfo(fmt.Sprintf("Deployment took: %.2f seconds", time.Since(t1).Seconds()))
 		dog.WriteInfo("Deployment succeeded.")
 	} else {
