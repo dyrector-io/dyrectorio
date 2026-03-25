@@ -76,6 +76,10 @@ const encryptWithPGP = async (text: string, key: string): Promise<string> => {
 
 // actions
 const setItems = (items: UniqueSecretKeyValue[]) => (): UniqueSecretKeyValue[] => {
+  if (!items) {
+    items = []
+  }
+
   const lastLine = items.length > 0 ? items[items.length - 1] : null
   const emptyLine = lastLine && isCompletelyEmpty(lastLine) ? lastLine : generateEmptyLine()
 
@@ -211,7 +215,7 @@ const SecretKeyValueInput = (props: SecretKeyValueInputProps) => {
         message = secretOriginsToString(t, info.origins, configType)
       }
 
-      const saved = items.find(it => it.key === item.key && it.value === item.value)
+      const saved = items?.find(it => it.key === item.key && it.value === item.value)
       const encrypted = item.encrypted ?? false
 
       result.push({
@@ -299,6 +303,10 @@ const SecretKeyValueInput = (props: SecretKeyValueInputProps) => {
         }
       }),
     )
+
+    if (newItems.length < 1) {
+      newItems = null
+    }
 
     propsOnSubmit(newItems)
     dispatch(setItems(newItems))
@@ -399,9 +407,9 @@ const SecretKeyValueInput = (props: SecretKeyValueInputProps) => {
     )
   }
 
-  const currentKeys = new Set(items.map(it => it.key))
+  const currentKeys = new Set(items?.map(it => it.key) ?? [])
   const hasMissingKeys = baseItems && baseItems.some(it => !currentKeys.has(it.key))
-  const canEncryptSome = publicKey && items.some(it => !it.encrypted && it.value)
+  const canEncryptSome = publicKey && items?.some(it => !it.encrypted && it.value)
 
   return (
     <form className={clsx(className, 'flex flex-col gap-2')}>
