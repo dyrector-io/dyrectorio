@@ -11,7 +11,7 @@ const DyoBadge = (props: DyoBadgeProps) => {
 
   const { icon, large } = props
 
-  return <DyoIcon src={`/badges/${icon}.svg`} alt={t(`${icon}`)} size={large ? 'lg' : 'md'} />
+  return <DyoIcon src={`/badges/${icon}.svg`} alt={t(icon)} size={large ? 'lg' : 'md'} />
 }
 
 export default DyoBadge

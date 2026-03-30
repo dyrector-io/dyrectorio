@@ -11,7 +11,7 @@ interface WebSocketContextInterface {
 
 export const WebSocketContext = React.createContext<WebSocketContextInterface>({ client: null })
 
-export const WebSocketProvider = (props: React.PropsWithChildren<{}>) => {
+export const WebSocketProvider = (props: React.PropsWithChildren) => {
   const { children } = props
 
   const { t } = useTranslation('common')

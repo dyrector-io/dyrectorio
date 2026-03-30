@@ -38,7 +38,7 @@ export const unsafeKeyRule = yup.string().matches(unsafeKeywordsRegex, ERROR_NO_
 
 const REGEX_ERROR_INVALID_CONTAINER_NAME = { regex: 'errors:yup.string.containerName' }
 
-export const matchContainerName = (schema: yup.StringSchema<string, yup.AnyObject, undefined>) =>
+export const matchContainerName = (schema: yup.StringSchema) =>
   schema.matches(CONTAINER_NAME_REGEX, { message: REGEX_ERROR_INVALID_CONTAINER_NAME }) // all characters are non-whitespaces
 
 export const uniqueKeySchema = yup
@@ -240,7 +240,6 @@ const createOverlapTest = (
   portRanges: ContainerPortRange[],
   field: Exclude<keyof ContainerPortRange, 'id'>,
 ) =>
-  // eslint-disable-next-line no-template-curly-in-string
   schema.test('port-range-overlap', 'container:validation.pathOverlapsSomePortranges', value =>
     value && portRanges.length > 0
       ? !portRanges.some(it => {
@@ -404,14 +403,11 @@ const createMetricsPortRule = (ports: ContainerPort[]) => {
     return portNumberRule.nullable().optional().label('container:crane.metricsPort')
   }
 
-  return (
-    portNumberRule
-      // eslint-disable-next-line no-template-curly-in-string
-      .test('metric-port', 'container:validation.missingExternalPort', value =>
-        value && ports.length > 0 ? ports.some(it => it.external === value) : true,
-      )
-      .label('container:crane.metricsPort')
-  )
+  return portNumberRule
+    .test('metric-port', 'container:validation.missingExternalPort', value =>
+      value && ports.length > 0 ? ports.some(it => it.external === value) : true,
+    )
+    .label('container:crane.metricsPort')
 }
 
 const metricsRule = yup.mixed().when(['ports'], ([ports]) => {
@@ -562,7 +558,6 @@ const testSecretRules =
     return true
   }
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const createContainerConfigBaseSchema = (imageLabels: Record<string, string>) =>
   yup.object().shape({
     name: matchContainerName(yup.string().nullable().optional().label('container:containerName')),

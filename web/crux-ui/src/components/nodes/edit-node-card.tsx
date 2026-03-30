@@ -45,8 +45,8 @@ const EditNodeCard = (props: EditNodeCardProps) => {
       }
 
       const res = await (!editing
-        ? sendForm('POST', routes.node.api.list(), body as CreateNode)
-        : sendForm('PUT', routes.node.api.details(node.id), body as UpdateNode))
+        ? sendForm('POST', routes.node.api.list(), body)
+        : sendForm('PUT', routes.node.api.details(node.id), body))
 
       if (res.ok) {
         let result: NodeDetails

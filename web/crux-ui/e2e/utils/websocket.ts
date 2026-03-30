@@ -1,6 +1,5 @@
 import { WS_TYPE_PATCH_RECEIVED } from '@app/models'
 import { WsMessage } from '@app/websockets/common'
-// eslint-disable-next-line import/no-extraneous-dependencies
 import { Page, WebSocket } from 'playwright'
 
 export type WebSocketRef = {
@@ -51,7 +50,7 @@ export const waitSocketReceived = async (
     !type && !match
       ? undefined
       : (data: { payload: string }) => {
-          const message: WsMessage = JSON.parse(data.payload as string)
+          const message: WsMessage = JSON.parse(data.payload)
 
           if (type && message.type !== `${route}/${type}`) {
             return false

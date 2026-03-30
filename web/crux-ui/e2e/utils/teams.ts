@@ -1,4 +1,3 @@
-/* eslint-disable import/no-extraneous-dependencies */
 import { ROUTE_TEAMS, teamUrl } from '@app/routes'
 import { Page } from 'playwright'
 

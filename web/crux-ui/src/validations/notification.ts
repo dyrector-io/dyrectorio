@@ -1,4 +1,3 @@
-/* eslint-disable import/prefer-default-export */
 import { NOTIFICATION_TYPE_VALUES, NotificationType } from '@app/models'
 import { nameRule } from './common'
 import yup from './yup'

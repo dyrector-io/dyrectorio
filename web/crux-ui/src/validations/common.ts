@@ -94,10 +94,10 @@ export const portRule = yup.number().min(1).max(65565).label('common:port')
 
 export const REGEX_ERROR_NO_WHITESPACES = { regex: 'errors:yup.string.notContainWhitespaces' }
 
-export const matchNoWhitespace = (schema: yup.StringSchema<string, yup.AnyObject, undefined>) =>
+export const matchNoWhitespace = (schema: yup.StringSchema) =>
   schema.matches(/^\S+$/g, { message: REGEX_ERROR_NO_WHITESPACES }) // all characters are non-whitespaces
 
-export const matchNoLeadingOrTrailingWhitespaces = (schema: yup.StringSchema<string, yup.AnyObject, undefined>) =>
+export const matchNoLeadingOrTrailingWhitespaces = (schema: yup.StringSchema) =>
   schema.matches(/^[^\s]+(\s+[^\s]+)*$/g, { message: REGEX_ERROR_NO_WHITESPACES }) // any characters but no trailing whitespaces
 
 export const matchValues = (name: string, valueSchema: yup.AnySchema) =>

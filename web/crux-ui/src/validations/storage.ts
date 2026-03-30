@@ -1,4 +1,3 @@
-/* eslint-disable import/prefer-default-export */
 import yup from './yup'
 import { descriptionRule, iconRule, nameRule } from './common'
 
@@ -8,6 +7,7 @@ const secretRule = yup.string().when(['public', 'changeCredentials'], {
   otherwise: s => s.optional().nullable(),
 })
 
+// eslint-disable-next-line import-x/prefer-default-export
 export const storageSchema = yup.object().shape({
   name: nameRule,
   description: descriptionRule,

@@ -25,7 +25,7 @@ class WebSocketClient {
 
   private errorHandler: WsErrorHandler = null
 
-  private kicked: boolean = false
+  private kicked = false
 
   get connected(): boolean {
     return this.socket?.readyState === WebSocket.OPEN

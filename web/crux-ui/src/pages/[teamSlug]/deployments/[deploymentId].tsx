@@ -45,7 +45,6 @@ const DeploymentDetailsPage = (props: DeploymentDetailsPageProps) => {
   const handleApiError = defaultApiErrorHandler(t)
 
   const onWsError = (error: Error) => {
-    // eslint-disable-next-line
     console.error('ws', 'edit-deployment', error)
     toast(t('errors:connectionLost'))
   }

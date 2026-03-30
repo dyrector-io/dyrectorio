@@ -91,7 +91,7 @@ const EditPipelineCard = (props: EditPipelineCardProps) => {
           delete body.token
         }
 
-        request = sendForm('PUT', routes.pipeline.api.details(pipeline.id), body as UpdatePipeline)
+        request = sendForm('PUT', routes.pipeline.api.details(pipeline.id), body)
       }
 
       const res = await request

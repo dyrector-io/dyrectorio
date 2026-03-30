@@ -112,6 +112,7 @@ export type RecoverEmail = {
 }
 
 const KRATOS_LOCATION_CHANGE_REQUIRED = 'browser_location_change_required'
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const KRATOS_LOCATION_CHANGE_REQUIRED_TYPE_VALUE = [KRATOS_LOCATION_CHANGE_REQUIRED] as const
 
 export type KratosLocationChangeRequiredError = {

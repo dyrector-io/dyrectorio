@@ -1,5 +1,4 @@
 /* eslint-disable @typescript-eslint/no-use-before-define */
-/* eslint-disable import/no-extraneous-dependencies */
 import { ProjectType } from '@app/models'
 import { expect, Page } from '@playwright/test'
 import { GHCR_PREFIX, REGISTRY_NAME, TEAM_ROUTES } from './common'
@@ -217,7 +216,7 @@ export const copyDeployment = async (page: Page, deploymentId: string, newName: 
   await page.waitForSelector('h2:text-is("Deployments")')
 
   await page.locator('button:has-text("Copy")').click()
-  await fillDeploymentPrefix(page, `${newName}`)
+  await fillDeploymentPrefix(page, newName)
   await page.locator('button:has-text("Copy")').click()
   await expect(page.locator(`label:has-text('${newName}')`)).toBeVisible()
 

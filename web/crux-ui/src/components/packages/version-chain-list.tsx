@@ -15,24 +15,21 @@ const VersionChainList = (props: VersionChainListProps) => {
 
   const { t } = useTranslation('packages')
 
-  const itemTemplate = (chain: PackageVersionChain) =>
-    /* eslint-disable react/jsx-key */
-    [
-      <DyoLabel>{chain.project.name}</DyoLabel>,
-      <DyoLabel>{chain.earliest.name}</DyoLabel>,
-      <div className="flex flex-row p-auto">
-        <DyoLabel>{chain.latest.name}</DyoLabel>
+  const itemTemplate = (chain: PackageVersionChain) => [
+    <DyoLabel>{chain.project.name}</DyoLabel>,
+    <DyoLabel>{chain.earliest.name}</DyoLabel>,
+    <div className="flex flex-row p-auto">
+      <DyoLabel>{chain.latest.name}</DyoLabel>
 
-        <DyoImgButton
-          className="ml-auto"
-          src="/trash-can.svg"
-          alt={t('common:delete')}
-          height={24}
-          onClick={async () => await onRemove(chain)}
-        />
-      </div>,
-    ]
-  /* eslint-enable react/jsx-key */
+      <DyoImgButton
+        className="ml-auto"
+        src="/trash-can.svg"
+        alt={t('common:delete')}
+        height={24}
+        onClick={async () => await onRemove(chain)}
+      />
+    </div>,
+  ]
 
   return (
     <DyoList

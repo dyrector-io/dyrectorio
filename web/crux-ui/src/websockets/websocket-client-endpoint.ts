@@ -3,9 +3,9 @@ import { WebSocketClientOptions, WebSocketClientSendMessage, WsMessage, WsMessag
 class WebSocketClientEndpoint {
   private sendClientMessage: WebSocketClientSendMessage = null
 
-  private callbacks: Map<string, Array<WsMessageCallback>> = new Map()
+  private callbacks: Map<string, WsMessageCallback[]> = new Map()
 
-  private sendables: Array<WsMessage<object>> = []
+  private sendables: WsMessage<object>[] = []
 
   constructor(readonly path: string) {}
 

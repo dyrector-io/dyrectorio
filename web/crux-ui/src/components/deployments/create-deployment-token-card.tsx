@@ -56,7 +56,7 @@ const CreateDeploymentTokenCard = (props: CreateDeploymentTokenCardProps) => {
       expirationInDays: EXPIRATION_VALUES[0],
     } as CreateDeploymentToken,
     onSubmit: async (values, { setFieldError }) => {
-      const res = await sendForm('PUT', routes.deployment.api.token(deployment.id), values as CreateDeploymentToken)
+      const res = await sendForm('PUT', routes.deployment.api.token(deployment.id), values)
 
       if (res.ok) {
         const json = await res.json()

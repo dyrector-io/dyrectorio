@@ -8,13 +8,14 @@ import { DyoLabel } from '@app/elements/dyo-label'
 import DyoToggle from '@app/elements/dyo-toggle'
 import { defaultApiErrorHandler } from '@app/errors'
 import useDyoFormik from '@app/hooks/use-dyo-formik'
+import { SubmitHook } from '@app/hooks/use-submit'
 import useTeamRoutes from '@app/hooks/use-team-routes'
 import {
   CreateNotification,
-  NotificationDetails,
-  NotificationType,
   NOTIFICATION_EVENT_VALUES,
   NOTIFICATION_TYPE_VALUES,
+  NotificationDetails,
+  NotificationType,
   UpdateNotification,
 } from '@app/models'
 import { sendForm } from '@app/utils'
@@ -22,7 +23,6 @@ import { notificationSchema } from '@app/validations'
 import useTranslation from 'next-translate/useTranslation'
 import { useState } from 'react'
 import { NotificationEventList } from './notification-event-list'
-import { SubmitHook } from '@app/hooks/use-submit'
 
 interface EditNotificationCardProps {
   notification?: NotificationDetails
@@ -65,8 +65,8 @@ const EditNotificationCard = (props: EditNotificationCardProps) => {
       }
 
       const res = await (editMode
-        ? sendForm('PUT', routes.notification.api.details(notification.id), request as UpdateNotification)
-        : sendForm('POST', routes.notification.api.list(), request as CreateNotification))
+        ? sendForm('PUT', routes.notification.api.details(notification.id), request)
+        : sendForm('POST', routes.notification.api.list(), request))
 
       if (res.ok) {
         let result: NotificationDetails
@@ -79,7 +79,7 @@ const EditNotificationCard = (props: EditNotificationCardProps) => {
         }
 
         setNotification(result)
-        onNotificationEdited(result as NotificationDetails)
+        onNotificationEdited(result)
       } else {
         await handleApiError(res, setFieldError)
       }

@@ -1,4 +1,3 @@
-/* eslint-disable import/prefer-default-export */
 import { DYO_LABEL_ENV_PREFIX } from '@app/const'
 import { ENVIRONMENT_VALUE_TYPES, EnvironmentRule, EnvironmentValueType } from '@app/models'
 
@@ -15,6 +14,7 @@ import { ENVIRONMENT_VALUE_TYPES, EnvironmentRule, EnvironmentValueType } from '
  *  - Required: "required" marks the environment as required.
  *  - Default value: "default:value".
  */
+// eslint-disable-next-line import-x/prefer-default-export
 export const parseDyrectorioEnvRules = (labels: Record<string, string>): Record<string, EnvironmentRule> => {
   if (!labels) {
     return {}

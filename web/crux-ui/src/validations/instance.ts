@@ -3,7 +3,7 @@ import { Translate } from 'next-translate'
 import { getConfigFieldErrorsForSchema, ContainerConfigValidationErrors } from './image'
 import { createConcreteContainerConfigSchema } from './container'
 
-// eslint-disable-next-line import/prefer-default-export
+// eslint-disable-next-line import-x/prefer-default-export
 export const getConcreteContainerConfigFieldErrors = (
   newConfig: ConcreteContainerConfigData,
   validation: Record<string, string>,

@@ -1,4 +1,3 @@
-/* eslint-disable import/no-extraneous-dependencies */
 import { ROUTE_LOGIN, ROUTE_TEAMS_CREATE } from '@app/routes'
 import { test } from './test.fixture'
 import { BASE_URL, STORAGE_STATE } from '../../playwright.config'
@@ -45,7 +44,7 @@ test('global setup', async ({ page }) => {
   await page.waitForSelector('h2:text-is("Dashboard")')
 
   logInfo('saving storage state')
-  await page.context().storageState({ path: STORAGE_STATE as string })
+  await page.context().storageState({ path: STORAGE_STATE })
 
   logInfo('changing registry to ghcr')
   await page.goto(TEAM_ROUTES.registry.list())

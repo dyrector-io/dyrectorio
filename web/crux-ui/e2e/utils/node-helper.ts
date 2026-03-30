@@ -1,4 +1,3 @@
-// eslint-disable-next-line import/no-extraneous-dependencies
 import { expect, Page } from '@playwright/test'
 import { ExecOptions } from 'child_process'
 import { DAGENT_NODE, execAsync, getExecOptions, screenshotPath, TEAM_ROUTES } from './common'

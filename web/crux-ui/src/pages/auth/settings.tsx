@@ -35,7 +35,7 @@ import {
   teamSlugOrFirstTeam,
   withContextAuthorization,
 } from '@app/utils'
-import { Identity, SettingsFlow, UiContainer } from '@ory/kratos-client'
+import { Identity, SettingsFlow } from '@ory/kratos-client'
 import { cookieOf } from '@server/cookie'
 import kratos, { identityWasRecovered, sessionOfContext } from '@server/kratos'
 import { GetServerSidePropsContext } from 'next'
@@ -62,7 +62,7 @@ const SettingsPage = (props: SettingsPageProps) => {
   const metadata = propsPublicMetadata as IdentityPublicMetadata
   const [onboardingDisabled, setOnboardingDisabled] = useState(metadata?.disableOnboarding ?? false)
   const [modalConfig, confirm] = useConfirmation()
-  const [ui, setUi] = useState<UiContainer>(flow.ui)
+  const [ui, setUi] = useState(flow.ui)
 
   const oidc = mapOidcAvailability(ui)
   const oidcActions = mapUiToOidcProviders(ui)

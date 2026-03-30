@@ -1,5 +1,4 @@
 import { expect } from '@playwright/test'
-import { test } from '../../utils/test.fixture'
 import { DAGENT_NODE, TEAM_ROUTES } from 'e2e/utils/common'
 import { deploy } from 'e2e/utils/node-helper'
 import {
@@ -10,6 +9,7 @@ import {
   createProject,
   createVersion,
 } from '../../utils/projects'
+import { test } from '../../utils/test.fixture'
 
 test('Protecting a deployment should fail while an incremental protected deployment exists in a different version with the same node and prefix', async ({
   page,

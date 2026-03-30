@@ -62,8 +62,8 @@ const EditStorageCard = (props: EditStorageCardProps) => {
       const body: CreateStorage | UpdateStorage = editableStorageToDto(values)
 
       const res = await (!editing
-        ? sendForm('POST', routes.storage.api.list(), body as CreateStorage)
-        : sendForm('PUT', routes.storage.api.details(storage.id), body as UpdateStorage))
+        ? sendForm('POST', routes.storage.api.list(), body)
+        : sendForm('PUT', routes.storage.api.details(storage.id), body))
 
       if (res.ok) {
         let result: EditableStorage = {

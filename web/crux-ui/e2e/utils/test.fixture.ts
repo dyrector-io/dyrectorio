@@ -1,4 +1,3 @@
-/* eslint-disable import/no-extraneous-dependencies */
 import { ChromiumBrowserContext, Page, TestInfo, test as base } from '@playwright/test'
 
 const CPU_THROTTLE = process.env.CPUTHROTTLE
@@ -7,7 +6,6 @@ const DEBUG = !!process.env.REQUESTTHROTTLE
 
 const LOG_LEVELS = DEBUG ? ['error', 'warning', 'info', 'debug', 'trace'] : ['error', 'warning']
 
-// eslint-disable-next-line import/prefer-default-export
 export const test = base.extend({})
 
 export const hookTestPageEvents = (page: Page, testInfo: TestInfo) => {

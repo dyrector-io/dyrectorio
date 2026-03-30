@@ -43,7 +43,7 @@ if (!isServerSide()) {
     persistence: 'localStorage+cookie',
     loaded: onLoaded,
     opt_out_capturing_by_default: true,
-  }) as PostHog
+  })
 }
 
 const usePosthog = (pageProps: any) => {

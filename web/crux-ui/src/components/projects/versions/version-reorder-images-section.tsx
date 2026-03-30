@@ -65,7 +65,7 @@ const VersionReorderImagesSection = (props: VersionReorderImagesSectionProps) =>
         <span className="text-md text-light-eased">{`${img.name}:`}</span>
 
         <span className={clsx('text-md', img.tag ? 'text-light-eased' : 'text-warning-orange/75')}>
-          {`${img.tag ? img.tag : t('unknownTag')}`}
+          {img.tag ? img.tag : t('unknownTag')}
         </span>
       </div>
     </DyoCard>

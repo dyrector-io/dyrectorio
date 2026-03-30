@@ -1,5 +1,5 @@
+import { WS_TYPE_PATCH_CONFIG } from '@app/models'
 import { expect, Page } from '@playwright/test'
-import { test } from '../../utils/test.fixture'
 import { NGINX_TEST_IMAGE_WITH_TAG, TEAM_ROUTES } from 'e2e/utils/common'
 import { waitSocketRef, wsPatchSent } from 'e2e/utils/websocket'
 import {
@@ -10,7 +10,7 @@ import {
   wsPatchMatchRestartPolicy,
 } from 'e2e/utils/websocket-match'
 import { createImage, createProject, createVersion } from '../../utils/projects'
-import { WS_TYPE_PATCH_CONFIG } from '@app/models'
+import { test } from '../../utils/test.fixture'
 
 const setup = async (
   page: Page,

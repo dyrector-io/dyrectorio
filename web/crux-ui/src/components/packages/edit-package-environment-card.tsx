@@ -55,12 +55,8 @@ const EditPackageEnvironmentCard = (props: EditPackageEnvironmentCardProps) => {
       }
 
       const res = await (!editing
-        ? sendForm('POST', routes.package.api.environments(packageId), body as CreatePackageEnvironment)
-        : sendForm(
-            'PUT',
-            routes.package.api.environmentDetails(packageId, environment.id),
-            body as UpdatePackageEnvironment,
-          ))
+        ? sendForm('POST', routes.package.api.environments(packageId), body)
+        : sendForm('PUT', routes.package.api.environmentDetails(packageId, environment.id), body))
 
       if (!res.ok) {
         await handleApiError(res, setFieldError)

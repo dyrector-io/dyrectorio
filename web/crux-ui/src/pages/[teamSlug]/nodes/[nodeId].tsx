@@ -92,7 +92,7 @@ const NodeDetailsPage = (props: NodeDetailsPageProps) => {
         sublinks={[
           {
             name: node.name,
-            url: `${routes.node.details(node.id)}`,
+            url: routes.node.details(node.id),
           },
         ]}
       >

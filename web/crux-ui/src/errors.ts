@@ -1,10 +1,10 @@
 import { Translate } from 'next-translate'
+import { NextRouter } from 'next/router'
 import toast, { ToastOptions } from 'react-hot-toast'
 import { fromApiError } from './error-responses'
 import { DyoErrorDto, WsErrorMessage } from './models'
-import WebSocketClient from './websockets/websocket-client'
 import { ROUTE_LOGIN } from './routes'
-import { NextRouter } from 'next/router'
+import WebSocketClient from './websockets/websocket-client'
 
 export type DyoApiErrorHandler = (res: Response, setErrorValue?: FormikSetErrorValue) => Promise<void>
 
@@ -60,6 +60,7 @@ export const apiErrorHandler =
       }
     } catch (err) {
       console.error('Failed to handle api error', res.status, res.url)
+      console.error(err)
       translation = translator(null, 500, null)
     }
 

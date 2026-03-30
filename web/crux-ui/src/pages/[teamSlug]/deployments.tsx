@@ -194,7 +194,7 @@ const DeploymentsPage = () => {
               onSelectionChange={type => {
                 setFilter({
                   ...filter,
-                  status: type === 'all' ? null : (type as DeploymentStatus),
+                  status: type === 'all' ? null : type,
                 })
               }}
               qaLabel={chipsQALabelFromValue}

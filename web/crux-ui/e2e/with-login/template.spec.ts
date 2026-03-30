@@ -1,7 +1,7 @@
 import { expect, Page } from '@playwright/test'
-import { test } from '../utils/test.fixture'
 import { TEAM_ROUTES } from 'e2e/utils/common'
 import { createProjectFromTemplate } from '../utils/templates'
+import { test } from '../utils/test.fixture'
 
 const templates = [
   {

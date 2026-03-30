@@ -1,7 +1,7 @@
 import { expect } from '@playwright/test'
-import { test } from '../utils/test.fixture'
 import { TEAM_ROUTES } from 'e2e/utils/common'
 import { createStorage, deleteStorage } from 'e2e/utils/storages'
+import { test } from '../utils/test.fixture'
 
 const TEST_URL = 'https://test.storage.com'
 const TEST_ACCESS_KEY = '1234'

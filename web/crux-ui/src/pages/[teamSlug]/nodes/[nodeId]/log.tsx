@@ -45,7 +45,7 @@ const NodeContainerLogPage = (props: InstanceLogPageProps) => {
   const { t } = useTranslation('common')
   const routes = useTeamRoutes()
 
-  const [takeIndex, setTakeIndex] = useState<number>(0)
+  const [takeIndex, setTakeIndex] = useState(0)
   const [log, setLog] = useState<ContainerLogMessage[]>([])
 
   const [node] = useNodeState(propsNode)
@@ -104,11 +104,11 @@ const NodeContainerLogPage = (props: InstanceLogPageProps) => {
   const sublinks: BreadcrumbLink[] = [
     {
       name: node.name,
-      url: `${routes.node.details(node.id)}`,
+      url: routes.node.details(node.id),
     },
     {
       name: t('log'),
-      url: `${routes.node.containerLog(node.id, { prefix, name })}`,
+      url: routes.node.containerLog(node.id, { prefix, name }),
     },
   ]
 

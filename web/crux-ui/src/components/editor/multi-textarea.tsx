@@ -1,8 +1,8 @@
+import DyoTextArea, { DyoTextAreaProps } from '@app/elements/dyo-text-area'
 import { editIdOf } from '@app/models'
 import { CSSProperties } from 'react'
 import { ItemEditorState } from './use-item-editor-state'
 import useMultiInputState from './use-multi-input-state'
-import DyoTextArea, { DyoTextAreaProps } from '@app/elements/dyo-text-area'
 
 interface MultiTextAreaProps extends Omit<DyoTextAreaProps, 'id' | 'onFocus' | 'onBlur' | 'onChange'> {
   id: string

@@ -1,7 +1,7 @@
 import yup from './yup'
 import { nameRule } from './common'
 
-// eslint-disable-next-line import/prefer-default-export
+// eslint-disable-next-line import-x/prefer-default-export
 export const generateTokenSchema = yup.object().shape({
   name: nameRule.required(),
   expirationInDays: yup.number().min(0).required().label('tokens:expirationIn'),

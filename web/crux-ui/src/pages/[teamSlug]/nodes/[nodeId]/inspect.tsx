@@ -35,11 +35,11 @@ const NodeContainerInspectPage = ({ node, prefix, name, inspection }: ContainerI
   const sublinks: BreadcrumbLink[] = [
     {
       name: node.name,
-      url: `${routes.node.details(node.id)}`,
+      url: routes.node.details(node.id),
     },
     {
       name: t('inspect'),
-      url: `${routes.node.containerInspect(node.id, { prefix, name })}`,
+      url: routes.node.containerInspect(node.id, { prefix, name }),
     },
   ]
 

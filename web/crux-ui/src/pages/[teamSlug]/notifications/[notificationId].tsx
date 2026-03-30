@@ -58,7 +58,7 @@ const NotificationDetailsPage = (props: NotificationDetailsPageProps) => {
 
   const onSubmitted = (item: NotificationDetails) => {
     setEditing(false)
-    setNotification(item as NotificationDetails)
+    setNotification(item)
   }
 
   const onTest = async () => {

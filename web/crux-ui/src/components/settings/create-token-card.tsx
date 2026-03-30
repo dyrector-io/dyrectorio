@@ -38,7 +38,7 @@ const CreateTokenCard = (props: CreateTokenCardProps) => {
       expirationInDays: EXPIRATION_VALUES[0],
     } as GenerateToken,
     onSubmit: async (values, { setFieldError }) => {
-      const res = await sendForm('POST', API_TOKENS, values as GenerateToken)
+      const res = await sendForm('POST', API_TOKENS, values)
 
       if (res.ok) {
         const json = await res.json()

@@ -7,7 +7,7 @@ export type WsMessage<T = any> = {
 
 export const WS_TYPE_SUBSCRIBE = 'subscribe'
 export const WS_TYPE_UNSUBSCRIBE = 'unsubscribe'
-const SUBSCRIPTION_MESSAGE_TYPE_VALUES = [WS_TYPE_SUBSCRIBE, WS_TYPE_UNSUBSCRIBE] as const
+export const SUBSCRIPTION_MESSAGE_TYPE_VALUES = [WS_TYPE_SUBSCRIBE, WS_TYPE_UNSUBSCRIBE] as const
 export type SubscriptionMessageType = (typeof SUBSCRIPTION_MESSAGE_TYPE_VALUES)[number]
 
 export const WS_TYPE_SUBBED = 'subbed'
@@ -30,9 +30,9 @@ export type WebSocketClientSendMessage = (message: WsMessage) => boolean
 export type WebSocketClientOptions = {
   onOpen?: VoidFunction
   onClose?: VoidFunction
-  onSend?: (message: WsMessage<any>) => void
-  onReceive?: (message: WsMessage<any>) => void
+  onSend?: (message: WsMessage) => void
+  onReceive?: (message: WsMessage) => void
   onError?: (error: any) => void
-  transformReceive?: (message: WsMessage<any>) => WsMessage<any>
-  transformSend?: (message: WsMessage<any>) => WsMessage<any>
+  transformReceive?: (message: WsMessage) => WsMessage
+  transformSend?: (message: WsMessage) => WsMessage
 }

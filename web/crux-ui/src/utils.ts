@@ -450,9 +450,9 @@ export const withContextAuthorization =
     return await ssr(context)
   }
 
-export const parseStringUnionType = <T>(value: string, fallback: T, validValues: ReadonlyArray<T>): T => {
+export const parseStringUnionType = <T>(value: string, fallback: T, validValues: readonly T[]): T => {
   if (value) {
-    const index = (validValues as unknown as ReadonlyArray<string>).indexOf(value)
+    const index = (validValues as unknown as readonly string[]).indexOf(value)
     return validValues[index]
   }
 

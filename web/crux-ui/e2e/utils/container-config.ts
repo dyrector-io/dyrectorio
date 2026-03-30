@@ -1,9 +1,8 @@
-/* eslint-disable import/prefer-default-export */
-// eslint-disable-next-line import/no-extraneous-dependencies
 import { expect, Page } from '@playwright/test'
 import { WebSocketRef, wsPatchSent } from './websocket'
 import { wsPatchMatchPorts } from './websocket-match'
 
+// eslint-disable-next-line import-x/prefer-default-export
 export const addPortsToContainerConfig = async (
   page: Page,
   ws: WebSocketRef,

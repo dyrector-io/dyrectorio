@@ -1,4 +1,4 @@
-/* eslint-disable import/no-cycle */
+/* eslint-disable import-x/no-cycle */
 import { MAILSLURPER_TIMEOUT } from './common'
 
 // further info: https://github.com/mailslurper/mailslurper/wiki/Email-Endpoints

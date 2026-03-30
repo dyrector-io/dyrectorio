@@ -12,11 +12,11 @@ import { SubmitHook } from '@app/hooks/use-submit'
 import useTeamRoutes from '@app/hooks/use-team-routes'
 import { CreatePackage, PackageDetails, PackageVersionChain, UpdatePackage } from '@app/models'
 import { sendForm } from '@app/utils'
+import { packageSchema } from '@app/validations'
 import useTranslation from 'next-translate/useTranslation'
 import { useState } from 'react'
 import AddVersionChains from './add-version-chains'
 import VersionChainList from './version-chain-list'
-import { packageSchema } from '@app/validations'
 
 type EditPackageCardProps = {
   className?: string

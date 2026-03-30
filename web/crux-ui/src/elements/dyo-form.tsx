@@ -1,6 +1,6 @@
 import React from 'react'
 
-export interface DyoFormProps extends Omit<React.TextareaHTMLAttributes<HTMLFormElement>, 'ref'> {}
+export type DyoFormProps = Omit<React.TextareaHTMLAttributes<HTMLFormElement>, 'ref'>
 
 const DyoForm = (props: DyoFormProps) => {
   const { onSubmit, onKeyDown, children, ...forwardedProps } = props

@@ -56,7 +56,7 @@ const onPost = async (req: NextApiRequest, res: NextApiResponse) => {
     if (typeof cookieHeader === 'string') {
       cookie = cookieHeader
     } else {
-      cookie = (cookieHeader as string[]).find(it => it.startsWith('ory_kratos_session'))
+      cookie = cookieHeader.find(it => it.startsWith('ory_kratos_session'))
     }
 
     const session = await obtainSessionFromResponse(error)

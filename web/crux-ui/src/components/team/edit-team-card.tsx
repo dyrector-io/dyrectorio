@@ -69,9 +69,7 @@ const EditTeamCard = (props: EditTeamCardProps) => {
         }
       }
 
-      const res = await (!editing
-        ? sendForm('POST', API_TEAMS, body as CreateTeam)
-        : sendForm('PUT', teamApiUrl(team.id), body as UpdateTeam))
+      const res = await (!editing ? sendForm('POST', API_TEAMS, body) : sendForm('PUT', teamApiUrl(team.id), body))
 
       if (res.ok) {
         let result: Team

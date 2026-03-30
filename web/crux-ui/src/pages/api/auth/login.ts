@@ -7,7 +7,7 @@ import {
   UpdateLoginWithPassword,
   toKratosLocationChangeRequiredError,
 } from '@app/models'
-import { LoginFlow, UiContainer, UpdateLoginFlowBody } from '@ory/kratos-client'
+import { LoginFlow, UpdateLoginFlowBody } from '@ory/kratos-client'
 import { validateCaptcha } from '@server/captcha'
 import { cookieOf, forwardCookieToResponse } from '@server/cookie'
 import { useErrorMiddleware } from '@server/error-middleware'
@@ -49,7 +49,7 @@ const isAlreadyLoggedIn = (res: AxiosErrorResponse<LoginFlow>): boolean => {
     return false
   }
 
-  const newUi = res.data.ui as UiContainer
+  const newUi = res.data.ui
   // TODO(@robot9706): this is the best solution I found
   return newUi.messages.some(it => it.id === 4000001 && it.text.startsWith(LOGIN_DETECTED))
 }

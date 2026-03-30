@@ -1,5 +1,5 @@
-import { REGEX_ERROR_NO_WHITESPACES, getValidationError, matchNoLeadingOrTrailingWhitespaces } from './common'
 import * as yup from 'yup'
+import { REGEX_ERROR_NO_WHITESPACES, getValidationError, matchNoLeadingOrTrailingWhitespaces } from './common'
 
 describe('common validation tests', () => {
   describe('matchNoTrailingWhitespace', () => {

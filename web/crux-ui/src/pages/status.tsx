@@ -13,7 +13,7 @@ const StatusPage = () => {
   const { t } = useTranslation('status')
   const router = useRouter()
 
-  const { data: status, error } = useSWR<DyoServiceInfo, any>(API_STATUS, fetcher)
+  const { data: status, error } = useSWR<DyoServiceInfo>(API_STATUS, fetcher)
 
   const navigateToIndex = async () => await router.push(ROUTE_INDEX)
 

@@ -1,7 +1,7 @@
 import { API_USERS_ME_PREFERENCES_ONBOARDING, ROUTE_PROFILE } from '@app/routes'
 import { expect } from '@playwright/test'
-import { test } from '../utils/test.fixture'
 import { TEAM_ROUTES } from 'e2e/utils/common'
+import { test } from '../utils/test.fixture'
 
 test.describe('Onboarding', () => {
   test('should be toggleable', async ({ page }) => {

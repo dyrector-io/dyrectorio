@@ -1,6 +1,6 @@
+import { RegistryDetails } from '@app/models'
 import { expect } from '@playwright/test'
 import { registrySchema } from './registry' // Import the schema you want to test
-import { RegistryDetails } from '@app/models'
 
 const testRegistryDetailsDto: RegistryDetails = {
   id: '4AAF29ED-7BB2-4BC0-9FCC-631E50E2B64E',

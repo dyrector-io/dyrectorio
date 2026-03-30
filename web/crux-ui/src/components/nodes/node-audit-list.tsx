@@ -20,6 +20,7 @@ import { getEndOfToday, utcDateToLocale } from '@app/utils'
 import useTranslation from 'next-translate/useTranslation'
 import { QA_MODAL_LABEL_NODE_AUDIT_DETAILS } from 'quality-assurance'
 import { useEffect, useState } from 'react'
+// eslint-disable-next-line import-x/no-rename-default
 import JsonEditor from '../shared/json-editor'
 
 type NodeAuditFilter = {

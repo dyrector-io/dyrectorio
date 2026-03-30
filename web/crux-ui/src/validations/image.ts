@@ -1,13 +1,13 @@
 import { ContainerConfigData } from '@app/models'
-import yup from './yup'
+import { Translate } from 'next-translate'
 import { ErrorWithPath, getValidationError } from './common'
 import { createContainerConfigSchema } from './container'
-import { Translate } from 'next-translate'
+import yup from './yup'
 
 export type ContainerConfigValidationErrors = Record<string, yup.ValidationError>
 
 export const getConfigFieldErrorsForSchema = (
-  schema: yup.Schema<any, any, any>,
+  schema: yup.Schema,
   data: any,
   t: Translate,
 ): ContainerConfigValidationErrors => {

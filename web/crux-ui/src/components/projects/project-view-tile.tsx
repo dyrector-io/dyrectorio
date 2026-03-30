@@ -1,7 +1,7 @@
+import { sortString } from '@app/elements/dyo-table'
 import DyoWrap from '@app/elements/dyo-wrap'
 import { Project } from '@app/models'
 import ProjectCard from './project-card'
-import { sortString } from '@app/elements/dyo-table'
 
 export interface ProjectViewTileProps {
   projects: Project[]

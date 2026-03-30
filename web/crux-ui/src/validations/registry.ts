@@ -1,4 +1,3 @@
-/* eslint-disable import/prefer-default-export */
 import {
   GITHUB_NAMESPACE_VALUES,
   GITLAB_NAMESPACE_VALUES,
@@ -97,7 +96,6 @@ export const registrySchema = yup.object().shape({
   }),
 })
 
-// eslint-disable-next-line no-template-curly-in-string
 export const nameTagSchema = yup.string().matches(/^[^:]+(:[^:]+)?$/, { message: 'images:invalidImageFormat' })
 
 export const createRegistryTokenSchema = yup.object().shape({

@@ -1,7 +1,7 @@
 import { ROUTE_TEAMS, teamUrl } from '@app/routes'
 import { expect } from '@playwright/test'
-import { test } from '../utils/test.fixture'
 import { createTeam, deleteTeam } from 'e2e/utils/teams'
+import { test } from '../utils/test.fixture'
 
 test('Can create team', async ({ page }) => {
   const teamName = 'create-test-team'

@@ -9,7 +9,7 @@ import { NextApiRequest, NextApiResponse } from 'next'
 const onPost = async (req: NextApiRequest, res: NextApiResponse) => {
   const cookie = cookieOf(req)
 
-  const dto = req.body as any
+  const dto = req.body
 
   const body: UpdateSettingsWithOidc = {
     method: 'oidc',
@@ -41,7 +41,7 @@ const onPost = async (req: NextApiRequest, res: NextApiResponse) => {
 const onDelete = async (req: NextApiRequest, res: NextApiResponse) => {
   const cookie = cookieOf(req)
 
-  const dto = req.body as any
+  const dto = req.body
 
   const body: UpdateSettingsWithOidc = {
     method: 'oidc',

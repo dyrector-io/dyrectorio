@@ -1,8 +1,7 @@
-// eslint-disable-next-line import/no-extraneous-dependencies
 import { expect, Page } from '@playwright/test'
 import { TEAM_ROUTES } from './common'
 
-// eslint-disable-next-line import/prefer-default-export
+// eslint-disable-next-line import-x/prefer-default-export
 export const createNode = async (page: Page, name: string) => {
   await page.goto(TEAM_ROUTES.node.list())
   await page.waitForSelector('h2:text-is("Nodes")')

@@ -228,7 +228,7 @@ const SecretKeyValueInput = (props: SecretKeyValueInputProps) => {
       })
     })
 
-    return result as SecretElement[]
+    return result
   }
 
   useEffect(() => {

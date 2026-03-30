@@ -1,10 +1,9 @@
-/* eslint-disable import/prefer-default-export */
-/* eslint-disable import/no-extraneous-dependencies */
 import { ProjectType } from '@app/models'
 import { ROUTE_TEMPLATES } from '@app/routes'
 import { Page } from '@playwright/test'
 import { TEAM_ROUTES } from './common'
 
+// eslint-disable-next-line import-x/prefer-default-export
 export const createProjectFromTemplate = async (
   page: Page,
   templateName: string,

@@ -6,7 +6,7 @@ import { DyoLabel } from './dyo-label'
 export interface DyoFileUploadProps {
   name: string
   multiple: boolean
-  handleFile: Function
+  handleFile: (files: any) => void
   accept: string
   label?: string
 }

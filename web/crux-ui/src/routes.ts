@@ -214,7 +214,7 @@ class AuditRoutes {
 
   api = (query: AuditLogQuery) => urlQuery(`/api${this.root}`, query)
 
-  list = () => `${this.root}`
+  list = () => this.root
 }
 
 // node

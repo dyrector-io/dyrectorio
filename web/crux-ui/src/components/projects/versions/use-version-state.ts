@@ -49,6 +49,7 @@ export type ImageTagsMap = Record<string, Record<string, RegistryImageTag[]>> //
 
 export type VersionAddSection = 'image' | 'deployment' | 'copy-deployment' | 'none'
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const VERSION_SECTIONS_STATE_VALUES = ['images', 'deployments', 'reorder'] as const
 export type VersionSection = (typeof VERSION_SECTIONS_STATE_VALUES)[number]
 

@@ -1,15 +1,14 @@
-/* eslint-disable import/no-extraneous-dependencies */
-/* eslint-disable import/prefer-default-export */
+import { PatchConfigMessage, WS_TYPE_PATCH_CONFIG } from '@app/models'
 import { Page, expect } from '@playwright/test'
 import { TEAM_ROUTES } from './common'
 import { waitSocketRef, wsPatchSent } from './websocket'
-import { PatchConfigMessage, WS_TYPE_PATCH_CONFIG } from '@app/models'
 
 const matchPatchEnvironment = (expected: Record<string, string>) => (message: PatchConfigMessage) =>
   Object.entries(expected).every(([key, value]) =>
     message.config?.environment?.find(it => it.key === key && it.value === value),
   )
 
+// eslint-disable-next-line import-x/prefer-default-export
 export const createConfigBundle = async (page: Page, name: string, data: Record<string, string>): Promise<string> => {
   await page.goto(TEAM_ROUTES.configBundle.list())
   await page.waitForSelector('h2:text-is("Config bundles")')

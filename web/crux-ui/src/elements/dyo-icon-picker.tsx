@@ -1,8 +1,8 @@
 import { FormikSetFieldValue } from '@app/utils'
 import clsx from 'clsx'
+import { sendQASelectIconEvent } from 'quality-assurance'
 import { useState } from 'react'
 import DyoBadge from './dyo-badge'
-import { sendQASelectIconEvent } from 'quality-assurance'
 
 interface DyoIconPickerProps {
   className?: string

@@ -1,5 +1,5 @@
+import { HealthCheckProbe, WS_TYPE_PATCH_CONFIG } from '@app/models'
 import { expect, Page } from '@playwright/test'
-import { test } from '../../utils/test.fixture'
 import { NGINX_TEST_IMAGE_WITH_TAG, TEAM_ROUTES } from 'e2e/utils/common'
 import {
   wsPatchMatchCorsHeader,
@@ -19,8 +19,8 @@ import {
   wsPatchMatchServiceLabel,
 } from 'e2e/utils/websocket-match'
 import { createImage, createProject, createVersion } from '../../utils/projects'
+import { test } from '../../utils/test.fixture'
 import { waitSocketRef, wsPatchSent } from '../../utils/websocket'
-import { HealthCheckProbe, WS_TYPE_PATCH_CONFIG } from '@app/models'
 
 const setup = async (
   page: Page,

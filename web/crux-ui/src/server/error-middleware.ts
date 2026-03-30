@@ -1,8 +1,7 @@
-import { DyoApiError } from '@app/models'
 import { isDyoApiError } from '@app/utils'
 import { NextApiRequest, NextApiResponse } from 'next'
 
-// eslint-disable-next-line import/prefer-default-export
+// eslint-disable-next-line import-x/prefer-default-export
 export const useErrorMiddleware = async (
   req: NextApiRequest,
   res: NextApiResponse,
@@ -13,7 +12,7 @@ export const useErrorMiddleware = async (
     await next()
   } catch (err) {
     if (isDyoApiError(err) && err.status < 500) {
-      const error = err as DyoApiError
+      const error = err
       res.statusCode = err.status
 
       res.json({

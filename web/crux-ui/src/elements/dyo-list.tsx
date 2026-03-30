@@ -48,6 +48,7 @@ export const DyoList = <T,>(props: DyoListProps<T>) => {
     'If the data type is not string, then you must define the itemBuilder',
   )
 
+  // eslint-disable-next-line @typescript-eslint/array-type
   const data: Array<string[]> | Array<React.ReactNode[]> = !props
     ? []
     : isArrayOfStringArrays(propsData)
@@ -56,13 +57,13 @@ export const DyoList = <T,>(props: DyoListProps<T>) => {
 
   const headerClassNames: string[] = headers
     ? typeof headerClassName === 'string'
-      ? headers.map(() => headerClassName as string)
+      ? headers.map(() => headerClassName)
       : (headerClassName ?? headers.map(() => null))
     : []
 
   const itemClassNames: string[] = data[0]
     ? typeof itemClassName === 'string'
-      ? data[0].map(() => itemClassName as string)
+      ? data[0].map(() => itemClassName)
       : (itemClassName ?? data[0].map(() => null))
     : []
 

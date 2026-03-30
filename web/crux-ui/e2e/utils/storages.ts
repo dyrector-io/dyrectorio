@@ -1,4 +1,3 @@
-// eslint-disable-next-line import/no-extraneous-dependencies
 import { Page } from 'playwright'
 import { TEAM_ROUTES } from './common'
 
@@ -24,5 +23,5 @@ export const deleteStorage = async (page: Page, storageId: string) => {
 
   await page.locator('button:has-text("Delete")').click()
   await page.locator('div[role="dialog"] button:has-text("Delete")').click()
-  await page.waitForURL(`${TEAM_ROUTES.storage.list()}`)
+  await page.waitForURL(TEAM_ROUTES.storage.list())
 }

@@ -29,7 +29,7 @@ import useNodeState from './use-node-state'
 
 export type NodeDetailsSection = 'editing' | 'containers' | 'logs' | 'deployments'
 
-export type ContainerTargetStates = { [key: string]: ContainerState } // containerName to targetState
+export type ContainerTargetStates = Record<string, ContainerState> // containerName to targetState
 
 export type NodeContainersFilter = TextFilter & {
   showAll: boolean

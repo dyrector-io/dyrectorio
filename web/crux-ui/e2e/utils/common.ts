@@ -1,5 +1,4 @@
-/* eslint-disable import/no-extraneous-dependencies */
-/* eslint-disable import/no-cycle */
+/* eslint-disable import-x/no-cycle */
 import { ATTRIB_CSRF, HEADER_SET_COOKIE } from '@app/const'
 import { UpdateLoginWithPassword } from '@app/models'
 import { TeamRoutes } from '@app/routes'
@@ -156,7 +155,7 @@ export const getUserSessionToken = async (frontend: FrontendApi) => {
     cookie,
   })
 
-  const sessionCookieHeader = kratosRes.headers[HEADER_SET_COOKIE] as string[]
+  const sessionCookieHeader = kratosRes.headers[HEADER_SET_COOKIE]
   return sessionCookieHeader.find(it => it.startsWith('ory_kratos_session'))
 }
 

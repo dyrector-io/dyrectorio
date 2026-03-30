@@ -1,3 +1,4 @@
+import { v4 as uuid } from 'uuid'
 import {
   ConcreteContainerConfig,
   ContainerConfig,
@@ -27,10 +28,9 @@ import {
   Volume,
 } from './container'
 
-import { v4 as uuid } from 'uuid'
 import { mergeBoolean, mergeNumber } from './container-merge'
 
-export type JsonKeyValue = { [key: string]: string }
+export type JsonKeyValue = Record<string, string>
 
 export type JsonInitContainer = {
   name: string

@@ -166,7 +166,6 @@ const AddImagesCard = (props: AddImagesCardProps) => {
     const checked = !!selected.find(it => it.image.name === selectable.image.name)
     const onCheckedChange = isChecked => onImageCheckedChange(selectable, isChecked)
 
-    /* eslint-disable react/jsx-key */
     return [
       <div className="flex flex-row p-auto">
         <DyoCheckbox
@@ -178,7 +177,6 @@ const AddImagesCard = (props: AddImagesCardProps) => {
         <DyoLabel onClick={() => onCheckedChange(!checked)}>{selectable.image.name}</DyoLabel>
       </div>,
     ]
-    /* eslint-enable react/jsx-key */
   }
 
   return (

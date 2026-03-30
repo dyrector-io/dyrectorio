@@ -1,10 +1,10 @@
+import { WS_TYPE_PATCH_CONFIG } from '@app/models'
 import { expect } from '@playwright/test'
-import { test } from '../../utils/test.fixture'
 import { NGINX_TEST_IMAGE_WITH_TAG, TEAM_ROUTES } from 'e2e/utils/common'
 import { deployWithDagent } from '../../utils/node-helper'
 import { addImageToVersion, createImage, createProject, createVersion } from '../../utils/projects'
+import { test } from '../../utils/test.fixture'
 import { waitSocketRef, wsPatchSent } from '../../utils/websocket'
-import { WS_TYPE_PATCH_CONFIG } from '@app/models'
 
 test('In progress deployment should be not deletable', async ({ page }) => {
   const projectName = 'project-delete-test-1'

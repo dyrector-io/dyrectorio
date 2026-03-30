@@ -79,7 +79,6 @@ const AddVersionChains = (props: AddVersionChainsProps) => {
     const checked = !!selected.find(it => it.id === selectable.id)
     const onCheckedChange = isChecked => onChainCheckedChange(selectable, isChecked)
 
-    /* eslint-disable react/jsx-key */
     return [
       <div className="flex flex-row p-auto">
         <DyoCheckbox
@@ -94,7 +93,6 @@ const AddVersionChains = (props: AddVersionChainsProps) => {
       <DyoLabel onClick={() => onCheckedChange(!checked)}>{selectable.earliest.name}</DyoLabel>,
       <DyoLabel onClick={() => onCheckedChange(!checked)}>{selectable.latest.name}</DyoLabel>,
     ]
-    /* eslint-enable react/jsx-key */
   }
 
   return (
