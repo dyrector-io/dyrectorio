@@ -458,18 +458,20 @@ func DeployImage(ctx context.Context,
 
 	dog.WriteInfo(fmt.Sprintf("Container deployed: %s", containerName))
 
-	wg := grpc.VaultWaitGroupFromContext(ctx)
-	if wg != nil {
-		wg.Add(1)
-	}
-	go func() {
+	if cfg.SecretVault.BinaryAvailable && cfg.SecretVault.ClientID != "" {
+		wg := grpc.VaultWaitGroupFromContext(ctx)
 		if wg != nil {
-			defer wg.Done()
+			wg.Add(1)
 		}
-		if err := saveSecretsToVault(context.WithoutCancel(ctx), dog, prefix, containerName, secrets, &cfg.SecretVault); err != nil {
-			dog.Write(dogger.Warning, fmt.Sprintf("Failed to save secrets to vault: %s", err))
-		}
-	}()
+		go func() {
+			if wg != nil {
+				defer wg.Done()
+			}
+			if err := saveSecretsToVault(context.WithoutCancel(ctx), dog, prefix, containerName, secrets, &cfg.SecretVault); err != nil {
+				dog.Write(dogger.Warning, fmt.Sprintf("Failed to save secrets to vault: %s", err))
+			}
+		}()
+	}
 
 	return nil
 }

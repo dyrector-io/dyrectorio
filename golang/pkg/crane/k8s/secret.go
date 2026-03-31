@@ -325,7 +325,7 @@ func (s *Secret) GetSecret(namespace, name string) (
 	return item.Data, item.ResourceVersion, nil
 }
 
-func (s *Secret) BackupSecretsToVault(ctx context.Context, namespace, containerName string, secrets map[string]string) (bool, error) {
+func (s *Secret) SaveSecretsToVault(ctx context.Context, namespace, containerName string, secrets map[string]string) (bool, error) {
 	vaultCfg := s.appConfig.SecretVault
 	if !bool(vaultCfg.BinaryAvailable) {
 		return false, nil
