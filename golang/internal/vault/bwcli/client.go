@@ -38,6 +38,7 @@ import (
 const (
 	ArbitraryErrorMaxLength = 200
 	DefaultBwBinary         = "bw"
+	vaultDirPerm            = 0o700
 )
 
 type Config struct {
@@ -54,8 +55,8 @@ type Client struct {
 	extraEnv        map[string]string
 	bwPath          string
 	workDir         string
-	log             zerolog.Logger
 	releasePathLock func()
+	log             zerolog.Logger
 }
 
 // vaultPathLocks serializes concurrent access to the same BW_DATA_PATH.
@@ -72,7 +73,7 @@ func acquireVaultPath(path string) func() {
 func bwDataPath(serverURL, userID string) (string, error) {
 	h := sha256.Sum256([]byte(serverURL + "|" + userID))
 	dir := filepath.Join(os.TempDir(), "dyo-agent-vault", hex.EncodeToString(h[:16]))
-	if err := os.MkdirAll(dir, 0o700); err != nil {
+	if err := os.MkdirAll(dir, vaultDirPerm); err != nil {
 		return "", err
 	}
 	return dir, nil
@@ -85,23 +86,6 @@ func (c *Client) Cleanup() {
 		c.releasePathLock()
 		c.releasePathLock = nil
 	}
-}
-
-func (c *Client) getTemplateItem(ctx context.Context, session string) (Item, error) {
-	res := c.run(ctx, session, []string{"get", "template", "item"}, nil)
-	if res.Err != nil {
-		return Item{}, res.Err
-	}
-	data := extractJSON(res)
-	if len(data) == 0 {
-		return Item{}, fmt.Errorf("%w: bw get template item returned empty response", ErrCLI)
-	}
-	var it Item
-	if err := json.Unmarshal(data, &it); err != nil {
-		return Item{}, fmt.Errorf("decode template item: %w", err)
-	}
-	it.Raw = slices.Clone(data)
-	return it, nil
 }
 
 func New(cfg *Config) *Client {
@@ -252,7 +236,7 @@ func (c *Client) ListItems(ctx context.Context, session string) ([]Item, error) 
 	if len(data) == 0 {
 		return []Item{}, nil
 	}
-	return decodeRawList[Item](data, "decode items array", "decode item", func(it *Item, rm json.RawMessage) {
+	return decodeRawList(data, "decode items array", "decode item", func(it *Item, rm json.RawMessage) {
 		it.Raw = slices.Clone(rm)
 	})
 }
@@ -659,18 +643,25 @@ func trimToJSON(b []byte) []byte {
 	return nil
 }
 
+// isJSONValueStart returns true if c can be the first non-whitespace byte of
+// a JSON value or the closing ']' of an empty array.
+func isJSONValueStart(c byte) bool {
+	return c == '{' || c == '[' || c == '"' || c == ']' ||
+		c == '-' || (c >= '0' && c <= '9') ||
+		c == 't' || c == 'f' || c == 'n'
+}
+
 // isJSONArrayStart returns true if b begins with '[' followed by a valid JSON value or ']'.
 func isJSONArrayStart(b []byte) bool {
-	if len(b) < 2 {
+	const MinJSONSize = 2
+	if len(b) < MinJSONSize {
 		return false
 	}
 	for _, c := range b[1:] {
 		if c == ' ' || c == '\t' || c == '\n' || c == '\r' {
 			continue
 		}
-		return c == '{' || c == '[' || c == '"' || c == ']' ||
-			c == '-' || (c >= '0' && c <= '9') ||
-			c == 't' || c == 'f' || c == 'n'
+		return isJSONValueStart(c)
 	}
 	return false
 }

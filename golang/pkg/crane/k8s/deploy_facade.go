@@ -267,13 +267,15 @@ func (d *DeployFacade) PostDeploy() error {
 	}
 
 	// Backup secrets to vault
+	wg := grpc.VaultWaitGroupFromContext(d.ctx)
+	if wg != nil {
+		wg.Add(1)
+	}
 	go func() {
-		wg := grpc.VaultWaitGroupFromContext(d.ctx)
 		if wg != nil {
-			wg.Add(1)
 			defer wg.Done()
 		}
-		err := d.secret.BackupSecretsToVault(
+		created, err := d.secret.BackupSecretsToVault(
 			context.WithoutCancel(d.ctx),
 			d.params.InstanceConfig.ContainerPreName,
 			d.params.ContainerConfig.Container,
@@ -281,6 +283,12 @@ func (d *DeployFacade) PostDeploy() error {
 		)
 		if err != nil {
 			d.params.dogger.Write(dogger.Warning, fmt.Sprintf("vault secret backup failed: %s", err.Error()))
+		} else if created {
+			d.params.dogger.WriteInfo(fmt.Sprintf("Vault secret created: %s/%s",
+				d.params.InstanceConfig.ContainerPreName, d.params.ContainerConfig.Container))
+		} else {
+			d.params.dogger.WriteInfo(fmt.Sprintf("Vault secret updated: %s/%s",
+				d.params.InstanceConfig.ContainerPreName, d.params.ContainerConfig.Container))
 		}
 	}()
 
