@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"sync"
 	"time"
 
 	imageHelper "github.com/dyrector-io/dyrectorio/golang/internal/helper/image"
@@ -40,6 +41,7 @@ type DeploymentLogger struct {
 	deploymentID string
 	requestID    string
 	logs         []string
+	streamMu     sync.Mutex
 }
 
 func NewDeploymentLogger(ctx context.Context, deploymentID *string,
@@ -65,6 +67,22 @@ func (dog *DeploymentLogger) SetRequestID(requestID string) {
 	dog.requestID = requestID
 }
 
+// send is the single point for all stream.Send calls.
+// It is thread-safe and self-disabling: after the first Send error the stream
+// is nilled so subsequent calls are silent no-ops.
+func (dog *DeploymentLogger) send(msg *common.DeploymentStatusMessage) {
+	dog.streamMu.Lock()
+	defer dog.streamMu.Unlock()
+	if dog.stream == nil {
+		log.Trace().Msgf("dog stream was already nil: %s", msg)
+		return
+	}
+	if err := dog.stream.Send(msg); err != nil {
+		log.Error().Err(err).Str("deployment", dog.deploymentID).Msg("Deployment stream send error")
+		dog.stream = nil
+	}
+}
+
 // Writes to all available streams: std.out and gRPC streams
 func (dog *DeploymentLogger) Write(level Level, messages ...string) {
 	for i := range messages {
@@ -72,16 +90,11 @@ func (dog *DeploymentLogger) Write(level Level, messages ...string) {
 		dog.logs = append(dog.logs, messages[i])
 	}
 
-	if dog.stream != nil {
-		logLevel := common.DeploymentMessageLevel(level)
-		err := dog.stream.Send(&common.DeploymentStatusMessage{
-			Log:      messages,
-			LogLevel: &logLevel,
-		})
-		if err != nil {
-			log.Error().Err(err).Stack().Str("deployment", dog.deploymentID).Msg("Write error")
-		}
-	}
+	logLevel := common.DeploymentMessageLevel(level)
+	dog.send(&common.DeploymentStatusMessage{
+		Log:      messages,
+		LogLevel: &logLevel,
+	})
 }
 
 func (dog *DeploymentLogger) WriteDeploymentStatus(status common.DeploymentStatus, messages ...string) {
@@ -90,22 +103,17 @@ func (dog *DeploymentLogger) WriteDeploymentStatus(status common.DeploymentStatu
 		dog.logs = append(dog.logs, messages[i])
 	}
 
-	if dog.stream != nil {
-		logLevel := common.DeploymentMessageLevel_INFO
-		if status == common.DeploymentStatus_FAILED {
-			logLevel = common.DeploymentMessageLevel_ERROR
-		}
-		err := dog.stream.Send(&common.DeploymentStatusMessage{
-			Log:      messages,
-			LogLevel: &logLevel,
-			Data: &common.DeploymentStatusMessage_DeploymentStatus{
-				DeploymentStatus: status,
-			},
-		})
-		if err != nil {
-			log.Error().Err(err).Stack().Str("deployment", dog.deploymentID).Msg("Write deployment status error")
-		}
+	logLevel := common.DeploymentMessageLevel_INFO
+	if status == common.DeploymentStatus_FAILED {
+		logLevel = common.DeploymentMessageLevel_ERROR
 	}
+	dog.send(&common.DeploymentStatusMessage{
+		Log:      messages,
+		LogLevel: &logLevel,
+		Data: &common.DeploymentStatusMessage_DeploymentStatus{
+			DeploymentStatus: status,
+		},
+	})
 }
 
 func (dog *DeploymentLogger) WriteContainerState(
@@ -121,55 +129,30 @@ func (dog *DeploymentLogger) WriteContainerState(
 		dog.logs = append(dog.logs, messages[i])
 	}
 
-	if dog.stream != nil {
-		instance := &common.DeploymentStatusMessage_Instance{
+	logLevel := common.DeploymentMessageLevel(level)
+	dog.send(&common.DeploymentStatusMessage{
+		Log:      messages,
+		LogLevel: &logLevel,
+		Data: &common.DeploymentStatusMessage_Instance{
 			Instance: &common.InstanceDeploymentItem{
 				InstanceId: dog.requestID,
 				State:      containerState,
 				Reason:     reason,
 			},
-		}
-
-		logLevel := common.DeploymentMessageLevel(level)
-
-		err := dog.stream.Send(&common.DeploymentStatusMessage{
-			Log:      messages,
-			LogLevel: &logLevel,
-			Data:     instance,
-		})
-		if err != nil {
-			log.Error().
-				Err(err).
-				Stack().
-				Str("deployment", dog.deploymentID).
-				Str("prefix", prefix).
-				Msg("Write container state error")
-		}
-	}
+		},
+	})
 }
 
 func (dog *DeploymentLogger) WriteContainerProgress(status string, progress float32) {
-	if dog.stream != nil {
-		progress := &common.DeploymentStatusMessage_ContainerProgress{
+	dog.send(&common.DeploymentStatusMessage{
+		Data: &common.DeploymentStatusMessage_ContainerProgress{
 			ContainerProgress: &common.DeployContainerProgress{
 				InstanceId: dog.requestID,
 				Status:     status,
 				Progress:   progress,
 			},
-		}
-
-		err := dog.stream.Send(&common.DeploymentStatusMessage{
-			Data: progress,
-		})
-		if err != nil {
-			log.Error().
-				Err(err).
-				Stack().
-				Str("deployment", dog.deploymentID).
-				Str("prefix", dog.requestID).
-				Msg("Write container progress error")
-		}
-	}
+		},
+	})
 }
 
 func (dog *DeploymentLogger) GetLogs() []string {

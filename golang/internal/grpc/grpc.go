@@ -9,6 +9,8 @@ import (
 	"io"
 	"net/http"
 	"strings"
+	"sync"
+	"sync/atomic"
 	"time"
 
 	"github.com/rs/zerolog/log"
@@ -39,6 +41,41 @@ import (
 type Connection struct {
 	Conn   *grpc.ClientConn
 	Client agent.AgentClient
+}
+
+type vaultWaitGroupKey struct{}
+
+// VaultTaskTracker wraps a WaitGroup with an observable pending count.
+type VaultTaskTracker struct {
+	wg    sync.WaitGroup
+	count atomic.Int32
+}
+
+func (t *VaultTaskTracker) Add(delta int32) {
+	t.count.Add(delta)
+	t.wg.Add(int(delta))
+}
+
+func (t *VaultTaskTracker) Done() {
+	t.count.Add(-1)
+	t.wg.Done()
+}
+
+func (t *VaultTaskTracker) Wait() {
+	t.wg.Wait()
+}
+
+func (t *VaultTaskTracker) Count() int32 {
+	return t.count.Load()
+}
+
+func contextWithVaultWaitGroup(ctx context.Context, tracker *VaultTaskTracker) context.Context {
+	return context.WithValue(ctx, vaultWaitGroupKey{}, tracker)
+}
+
+func VaultWaitGroupFromContext(ctx context.Context) *VaultTaskTracker {
+	tracker, _ := ctx.Value(vaultWaitGroupKey{}).(*VaultTaskTracker)
+	return tracker
 }
 
 type ContainerLogEvent struct {
@@ -473,6 +510,69 @@ func (cl *ClientLoop) handleGrpcTokenError(err error, token *config.ValidJWT) {
 	}
 }
 
+// vaultHeartbeatIntervalDivisor divides GrpcKeepalive to get the vault-wait
+// heartbeat interval. Sending a real DATA frame 3× per keepalive period
+// prevents proxies and NAT devices from closing the idle HTTP/2 connection.
+const vaultHeartbeatIntervalDivisor = 3
+
+// vaultHeartbeat sends periodic log messages while vault tasks are pending.
+// It exits when done is closed.
+func vaultHeartbeat(tracker *VaultTaskTracker, dog *dogger.DeploymentLogger, interval time.Duration, done <-chan struct{}) {
+	t := time.NewTicker(interval)
+	defer t.Stop()
+	for {
+		select {
+		case <-t.C:
+			if n := tracker.Count(); n > 0 {
+				dog.WriteInfo(fmt.Sprintf("%d vault task(s) still pending...", n))
+			}
+		case <-done:
+			return
+		}
+	}
+}
+
+// waitVaultTasks blocks until all async vault goroutines finish,
+// sending periodic heartbeat messages so the stream stays alive.
+func waitVaultTasks(tracker *VaultTaskTracker, dog *dogger.DeploymentLogger, interval time.Duration) {
+	if n := tracker.Count(); n > 0 {
+		dog.WriteInfo(fmt.Sprintf("Waiting for %d async vault task(s) to finish.", n))
+	}
+	done := make(chan struct{})
+	go vaultHeartbeat(tracker, dog, interval, done)
+	tracker.Wait()
+	close(done)
+}
+
+// deployImages deploys each image request in order and, on full success,
+// updates shared secrets. Returns the first error encountered.
+func deployImages(
+	ctx context.Context, req *agent.DeployRequest, dog *dogger.DeploymentLogger,
+	deploy DeployFunc, deploySecrets DeploySharedSecretsFunc, appConfig *config.CommonConfiguration,
+) error {
+	for i := range req.Requests {
+		imageReq := mapper.MapDeployImage(req.Prefix, req.Requests[i], appConfig)
+		dog.SetRequestID(imageReq.RequestID)
+
+		var versionData *v1.VersionData
+		if req.VersionName != "" {
+			versionData = &v1.VersionData{Version: req.VersionName, ReleaseNotes: req.ReleaseNotes}
+		}
+
+		if err := deploy(ctx, dog, imageReq, versionData); err != nil {
+			return err
+		}
+	}
+
+	if len(req.Secrets) > 0 {
+		dog.WriteInfo("Deploying secrets")
+		if err := deploySecrets(ctx, req.Prefix, req.Secrets); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
 func executeDeployRequest(
 	ctx context.Context, req *agent.DeployRequest,
 	deploy DeployFunc, deploySecrets DeploySharedSecretsFunc, appConfig *config.CommonConfiguration,
@@ -488,57 +588,55 @@ func executeDeployRequest(
 	}
 	log.Info().Str("deployment", req.Id).Msg("Opening status channel")
 
-	deployCtx := metadata.AppendToOutgoingContext(ctx, "dyo-deployment-id", req.Id)
-	statusStream, err := grpcConn.Client.DeploymentStatus(deployCtx, grpc.WaitForReady(true))
+	// streamCtx is detached from the gRPCLoop ctx so can't produce in between results
+	streamCtx := metadata.AppendToOutgoingContext(context.WithoutCancel(ctx), "dyo-deployment-id", req.Id)
+	streamCtx, streamCancel := context.WithCancel(streamCtx)
+
+	statusStream, err := grpcConn.Client.DeploymentStatus(streamCtx, grpc.WaitForReady(true))
 	if err != nil {
+		streamCancel()
 		log.Error().Stack().Err(err).Str("deployment", req.Id).Msg("Status connect error")
 		return
 	}
 
-	dog := dogger.NewDeploymentLogger(ctx, &req.Id, statusStream, appConfig)
+	dog := dogger.NewDeploymentLogger(streamCtx, &req.Id, statusStream, appConfig)
 
 	dog.WriteDeploymentStatus(common.DeploymentStatus_IN_PROGRESS, "Started.")
 
 	if len(req.Requests) < 1 {
 		dog.WriteDeploymentStatus(common.DeploymentStatus_PREPARING, "There were no images to deploy.")
+		if _, closeErr := statusStream.CloseAndRecv(); closeErr != nil {
+			log.Error().Stack().Err(closeErr).Str("deployment", req.Id).Msg("Status close error")
+		}
+		streamCancel()
 		return
 	}
 
-	deployStatus := common.DeploymentStatus_FAILED
-	defer func() {
-		dog.WriteDeploymentStatus(deployStatus)
+	var tracker VaultTaskTracker
+	ctx = contextWithVaultWaitGroup(ctx, &tracker)
 
-		err = statusStream.CloseSend()
-		if err != nil {
-			log.Error().Stack().Err(err).Str("deployment", req.Id).Msg("Status close error")
-		}
-	}()
-
-	if len(req.Secrets) > 0 {
-		dog.WriteInfo("Deploying secrets")
-		err = deploySecrets(ctx, req.Prefix, req.Secrets)
-		if err != nil {
-			dog.WriteError(err.Error())
-			return
-		}
+	waitVault := func() {
+		waitVaultTasks(&tracker, dog, appConfig.GrpcKeepalive/vaultHeartbeatIntervalDivisor)
 	}
 
-	for i := range req.Requests {
-		imageReq := mapper.MapDeployImage(req.Prefix, req.Requests[i], appConfig)
-		dog.SetRequestID(imageReq.RequestID)
-
-		var versionData *v1.VersionData
-		if req.VersionName != "" {
-			versionData = &v1.VersionData{Version: req.VersionName, ReleaseNotes: req.ReleaseNotes}
+	closeStream := func(status common.DeploymentStatus) {
+		dog.WriteDeploymentStatus(status)
+		if _, closeErr := statusStream.CloseAndRecv(); closeErr != nil {
+			log.Error().Stack().Err(closeErr).Str("deployment", req.Id).Msg("Status close error")
 		}
-
-		if err = deploy(ctx, dog, imageReq, versionData); err != nil {
-			dog.WriteError(err.Error())
-			return
-		}
+		streamCancel()
 	}
 
-	deployStatus = common.DeploymentStatus_SUCCESSFUL
+	if err = deployImages(ctx, req, dog, deploy, deploySecrets, appConfig); err != nil {
+		dog.WriteError(err.Error())
+		waitVault()
+		closeStream(common.DeploymentStatus_FAILED)
+		return
+	}
+
+	waitVault()
+	dog.WriteInfo("Deployment is completed.")
+	closeStream(common.DeploymentStatus_SUCCESSFUL)
 }
 
 func streamContainerStatus(
@@ -702,14 +800,19 @@ func executeVersionDeployLegacyRequest(
 	}
 	log.Info().Str("deployment", req.RequestId).Msg("Opening status channel.")
 
-	deployCtx := metadata.AppendToOutgoingContext(ctx, "dyo-deployment-id", req.RequestId)
-	statusStream, err := grpcConn.Client.DeploymentStatus(deployCtx, grpc.WaitForReady(true))
+	// streamCtx is detached from the gRPC loop context so that a reconnect does
+	// not cancel the status stream while deployment is still running.
+	streamCtx := metadata.AppendToOutgoingContext(context.WithoutCancel(ctx), "dyo-deployment-id", req.RequestId)
+	streamCtx, streamCancel := context.WithCancel(streamCtx)
+
+	statusStream, err := grpcConn.Client.DeploymentStatus(streamCtx, grpc.WaitForReady(true))
 	if err != nil {
+		streamCancel()
 		log.Error().Stack().Err(err).Str("deployment", req.RequestId).Msg("Status connect error")
 		return
 	}
 
-	dog := dogger.NewDeploymentLogger(ctx, &req.RequestId, statusStream, appConfig)
+	dog := dogger.NewDeploymentLogger(streamCtx, &req.RequestId, statusStream, appConfig)
 	dog.SetRequestID(req.RequestId)
 
 	deployImageRequest := v1.DeployImageRequest{}
@@ -718,6 +821,7 @@ func executeVersionDeployLegacyRequest(
 
 		errorText := fmt.Sprintf("JSON parse error: %v", err)
 		dog.WriteDeploymentStatus(common.DeploymentStatus_FAILED, errorText)
+		streamCancel()
 		return
 	}
 
@@ -725,24 +829,33 @@ func executeVersionDeployLegacyRequest(
 
 	t1 := time.Now()
 
-	deployStatus := common.DeploymentStatus_SUCCESSFUL
+	var tracker VaultTaskTracker
+	ctx = contextWithVaultWaitGroup(ctx, &tracker)
+
+	deployStatus := common.DeploymentStatus_FAILED
+	defer func() {
+		// Wait for vault goroutines before writing final status and closing the stream.
+		tracker.Wait()
+		dog.WriteDeploymentStatus(deployStatus)
+		if _, closeErr := statusStream.CloseAndRecv(); closeErr != nil {
+			log.Error().Stack().Err(closeErr).
+				Str("deployment", req.RequestId).
+				Str("deployImageRequestId", deployImageRequest.RequestID).
+				Msg("Status close err")
+		}
+		streamCancel()
+	}()
+
 	if err = deploy(ctx, dog, &deployImageRequest, nil); err == nil {
+		if n := tracker.Count(); n > 0 {
+			dog.WriteInfo(fmt.Sprintf("Waiting for %d async vault tasks to finish.", n))
+		}
+		tracker.Wait()
 		dog.WriteInfo(fmt.Sprintf("Deployment took: %.2f seconds", time.Since(t1).Seconds()))
 		dog.WriteInfo("Deployment succeeded.")
+		deployStatus = common.DeploymentStatus_SUCCESSFUL
 	} else {
-		deployStatus = common.DeploymentStatus_FAILED
 		dog.WriteError(fmt.Sprintf("Deployment failed %s", err.Error()))
-	}
-
-	dog.WriteDeploymentStatus(deployStatus)
-
-	err = statusStream.CloseSend()
-	if err != nil {
-		log.Error().Stack().Err(err).
-			Str("deployment", req.RequestId).
-			Str("deployImageRequestId", deployImageRequest.RequestID).
-			Msg("Status close err")
-		return
 	}
 }
 

@@ -129,12 +129,13 @@ const serve = async () => {
     options: {
       package: ['agent'],
       protoPath: [join(__dirname, '../proto/agent.proto'), join(__dirname, '../proto/common.proto')],
-      keepalive: {
-        keepaliveTimeoutMs: configService.get<number>('GRPC_KEEPALIVE_TIMEOUT_MS') ?? 5 * 1000,
-        keepaliveTimeMs: configService.get<number>('GRPC_KEEPALIVE_TIME_MS') ?? 30 * 1000,
-        keepalivePermitWithoutCalls: 1,
-        http2MinPingIntervalWithoutDataMs: configService.get<number>('HTTP2_MINPINGINTERVAL_MS') ?? 30 * 1000,
-        http2MinTimeBetweenPingsMs: configService.get<number>('HTTP2_MINTIMEBETWEENPINGS_MS') ?? 10 * 1000,
+      channelOptions: {
+        'grpc.keepalive_time_ms': configService.get<number>('GRPC_KEEPALIVE_TIME_MS') ?? 30 * 1000,
+        'grpc.keepalive_timeout_ms': configService.get<number>('GRPC_KEEPALIVE_TIMEOUT_MS') ?? 20 * 1000,
+        'grpc.keepalive_permit_without_calls': 1,
+        'grpc.http2.min_ping_interval_without_data_ms':
+          configService.get<number>('HTTP2_MINPINGINTERVAL_MS') ?? 20 * 1000,
+        'grpc.http2.min_time_between_pings_ms': configService.get<number>('HTTP2_MINTIMEBETWEENPINGS_MS') ?? 10 * 1000,
       },
       // tls termination occurs at the reverse proxy
       credentials: ServerCredentials.createInsecure(),

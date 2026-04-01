@@ -267,17 +267,32 @@ func (d *DeployFacade) PostDeploy() error {
 	}
 
 	// Backup secrets to vault
-	go func() {
-		err := d.secret.BackupSecretsToVault(
-			context.WithoutCancel(d.ctx),
-			d.params.InstanceConfig.ContainerPreName,
-			d.params.ContainerConfig.Container,
-			d.params.ContainerConfig.Secrets,
-		)
-		if err != nil {
-			d.params.dogger.Write(dogger.Warning, fmt.Sprintf("vault secret backup failed: %s", err.Error()))
+	if d.appConfig.SecretVault.BinaryAvailable && d.appConfig.SecretVault.ClientID != "" {
+		wg := grpc.VaultWaitGroupFromContext(d.ctx)
+		if wg != nil {
+			wg.Add(1)
 		}
-	}()
+		go func() {
+			if wg != nil {
+				defer wg.Done()
+			}
+			created, err := d.secret.SaveSecretsToVault(
+				context.WithoutCancel(d.ctx),
+				d.params.InstanceConfig.ContainerPreName,
+				d.params.ContainerConfig.Container,
+				d.params.ContainerConfig.Secrets,
+			)
+			if err != nil {
+				d.params.dogger.Write(dogger.Warning, fmt.Sprintf("vault secret backup failed: %s", err.Error()))
+			} else if created {
+				d.params.dogger.WriteInfo(fmt.Sprintf("Vault secret created: %s/%s",
+					d.params.InstanceConfig.ContainerPreName, d.params.ContainerConfig.Container))
+			} else {
+				d.params.dogger.WriteInfo(fmt.Sprintf("Vault secret updated: %s/%s",
+					d.params.InstanceConfig.ContainerPreName, d.params.ContainerConfig.Container))
+			}
+		}()
+	}
 
 	return nil
 }

@@ -13,9 +13,9 @@ import (
 	"path/filepath"
 	"slices"
 	"strings"
+	"sync"
 	"time"
 
-	"github.com/na4ma4/go-permbits"
 	"github.com/rs/zerolog"
 )
 
@@ -38,6 +38,7 @@ import (
 const (
 	ArbitraryErrorMaxLength = 200
 	DefaultBwBinary         = "bw"
+	vaultDirPerm            = 0o700
 )
 
 type Config struct {
@@ -50,39 +51,41 @@ type Config struct {
 }
 
 type Client struct {
-	runner   Runner
-	extraEnv map[string]string
-	bwPath   string
-	workDir  string
-	log      zerolog.Logger
+	runner          Runner
+	extraEnv        map[string]string
+	bwPath          string
+	workDir         string
+	releasePathLock func()
+	log             zerolog.Logger
+}
+
+// vaultPathLocks serializes concurrent access to the same BW_DATA_PATH.
+// bw corrupts its session files when two processes share the same data directory.
+var vaultPathLocks sync.Map // map[string]*sync.Mutex
+
+func acquireVaultPath(path string) func() {
+	val, _ := vaultPathLocks.LoadOrStore(path, &sync.Mutex{})
+	mu := val.(*sync.Mutex)
+	mu.Lock()
+	return mu.Unlock
 }
 
 func bwDataPath(serverURL, userID string) (string, error) {
 	h := sha256.Sum256([]byte(serverURL + "|" + userID))
-	dir := filepath.Join(
-		os.TempDir(),
-		"dyo-agent-vault",
-		hex.EncodeToString(h[:16]),
-	)
-
-	if err := os.MkdirAll(dir, permbits.UserAll); err != nil {
+	dir := filepath.Join(os.TempDir(), "dyo-agent-vault", hex.EncodeToString(h[:16]))
+	if err := os.MkdirAll(dir, vaultDirPerm); err != nil {
 		return "", err
 	}
-
 	return dir, nil
 }
 
-func (c *Client) getTemplateItem(ctx context.Context, session string) (Item, error) {
-	res := c.run(ctx, session, []string{"get", "template", "item"}, nil)
-	if res.Err != nil {
-		return Item{}, res.Err
+// Cleanup releases the per-path lock acquired by ConfigureAgentTempDir.
+// Always call this with defer after creating a Client for a vault operation.
+func (c *Client) Cleanup() {
+	if c.releasePathLock != nil {
+		c.releasePathLock()
+		c.releasePathLock = nil
 	}
-	var it Item
-	if err := json.Unmarshal(res.Stdout, &it); err != nil {
-		return Item{}, fmt.Errorf("decode template item: %w", err)
-	}
-	it.Raw = slices.Clone(res.Stdout)
-	return it, nil
 }
 
 func New(cfg *Config) *Client {
@@ -137,14 +140,15 @@ func (c *Client) EnsureServer(ctx context.Context, serverURL string, env map[str
 }
 
 func (c *Client) ConfigureAgentTempDir(serverURL, userID string) error {
-	dataPath, err := bwDataPath(serverURL, userID)
+	dir, err := bwDataPath(serverURL, userID)
 	if err != nil {
 		return err
 	}
+	c.releasePathLock = acquireVaultPath(dir)
 	if c.extraEnv == nil {
 		c.extraEnv = map[string]string{}
 	}
-	c.extraEnv["BW_DATA_PATH"] = dataPath
+	c.extraEnv["BW_DATA_PATH"] = dir
 	c.extraEnv["BW_SERVER_URL"] = serverURL
 	return nil
 }
@@ -228,7 +232,11 @@ func (c *Client) ListItems(ctx context.Context, session string) ([]Item, error) 
 	if res.Err != nil {
 		return nil, res.Err
 	}
-	return decodeRawList[Item](res.Stdout, "decode items array", "decode item", func(it *Item, rm json.RawMessage) {
+	data := extractJSON(res)
+	if len(data) == 0 {
+		return []Item{}, nil
+	}
+	return decodeRawList(data, "decode items array", "decode item", func(it *Item, rm json.RawMessage) {
 		it.Raw = slices.Clone(rm)
 	})
 }
@@ -238,11 +246,21 @@ func (c *Client) GetItem(ctx context.Context, session, itemID string) (Item, err
 	if res.Err != nil {
 		return Item{}, res.Err
 	}
+	data := extractJSON(res)
+	c.log.Trace().
+		Str("stdout", sanitizeForError(res.Stdout)).
+		Str("stderr", sanitizeForError(res.StdErr)).
+		Str("json", sanitizeForError(data)).
+		Msg("get item raw output")
+	if len(data) == 0 {
+		return Item{}, ErrNotFound
+	}
 	var it Item
-	if err := decodeJSON(res.Stdout, &it); err != nil {
+	if err := decodeJSON(data, &it); err != nil {
 		return Item{}, fmt.Errorf("decode item: %w", err)
 	}
-	it.Raw = slices.Clone(res.Stdout)
+	c.log.Trace().Str("id", it.ID).Str("name", it.Name).Msg("get item parsed")
+	it.Raw = slices.Clone(data)
 	return it, nil
 }
 
@@ -262,11 +280,15 @@ func (c *Client) CreateItem(ctx context.Context, session string, item *Item) (It
 		return Item{}, res.Err
 	}
 	c.log.Trace().Str("name", item.Name).Msgf("item created")
+	data := extractJSON(res)
+	if len(data) == 0 {
+		return *item, nil
+	}
 	var created Item
-	if err := decodeJSON(res.Stdout, &created); err != nil {
+	if err := decodeJSON(data, &created); err != nil {
 		return Item{}, fmt.Errorf("decode created item: %w", err)
 	}
-	created.Raw = slices.Clone(res.Stdout)
+	created.Raw = slices.Clone(data)
 	return created, nil
 }
 
@@ -291,40 +313,49 @@ func (c *Client) UpsertSecureNote(
 		return Item{}, false, fmt.Errorf("%w: collectionIDs requires orgID", ErrCLI)
 	}
 
-	// Find existing by name (list once).
-	items, err := c.ListItems(ctx, session)
-	if err != nil {
-		return Item{}, false, err
+	// Find existing by name directly.
+	existing, err := c.GetItem(ctx, session, name)
+	if errors.Is(err, ErrMultipleResults) {
+		// bw fuzzy-matched multiple items — resolve by exact name via list.
+		existing, err = c.findItemByExactName(ctx, session, name)
 	}
-
-	var existingID string
-	for i := range items {
-		if items[i].Name == name {
-			existingID = items[i].ID
-			break
-		}
+	if err != nil && !errors.Is(err, ErrNotFound) {
+		return Item{}, false, err
 	}
 
 	// Update existing
-	if existingID != "" {
-		full, getErr := c.GetItem(ctx, session, existingID)
-		if getErr != nil {
-			return Item{}, false, getErr
+	if err == nil {
+		applyAuthoritativeSecureNote(&existing, name, notes, orgID, collectionIDs, hiddenFields)
+		edited, editErr := c.EditItem(ctx, session, existing.ID, &existing)
+		if editErr == nil {
+			c.log.Info().Str("name", name).Int("fields", len(hiddenFields)).Msg("vault note updated")
 		}
-		applyAuthoritativeSecureNote(&full, name, notes, orgID, collectionIDs, hiddenFields)
-		edited, editErr := c.EditItem(ctx, session, existingID, &full)
 		return edited, false, editErr
 	}
 
-	// Create new from template
-	base, err := c.getTemplateItem(ctx, session)
-	if err != nil {
-		return Item{}, false, err
-	}
+	// Create new — applyAuthoritativeSecureNote sets every field we need,
+	// so no template fetch is required.
+	var base Item
 	applyAuthoritativeSecureNote(&base, name, notes, orgID, collectionIDs, hiddenFields)
 
 	created, err := c.CreateItem(ctx, session, &base) // CreateItem must encode+create
+	if err == nil {
+		c.log.Info().Str("name", name).Int("fields", len(hiddenFields)).Msg("vault note created")
+	}
 	return created, true, err
+}
+
+func (c *Client) findItemByExactName(ctx context.Context, session, name string) (Item, error) {
+	items, err := c.ListItems(ctx, session)
+	if err != nil {
+		return Item{}, err
+	}
+	for i := range items {
+		if items[i].Name == name {
+			return items[i], nil
+		}
+	}
+	return Item{}, ErrNotFound
 }
 
 // applyAuthoritativeSecureNote configures it to match the desired secure note state.
@@ -375,15 +406,24 @@ func (c *Client) EditItem(ctx context.Context, session, itemID string, item *Ite
 		return Item{}, fmt.Errorf("marshal item: %w", err)
 	}
 
-	res := c.run(ctx, session, []string{"edit", "item", itemID}, nil, withStdin(payload))
+	encoded, err := c.encode(ctx, session, payload)
+	if err != nil {
+		return Item{}, err
+	}
+
+	res := c.run(ctx, session, []string{"edit", "item", itemID, encoded}, nil)
 	if res.Err != nil {
 		return Item{}, res.Err
 	}
+	data := extractJSON(res)
+	if len(data) == 0 {
+		return *item, nil
+	}
 	var edited Item
-	if err := decodeJSON(res.Stdout, &edited); err != nil {
+	if err := decodeJSON(data, &edited); err != nil {
 		return Item{}, fmt.Errorf("decode edited item: %w", err)
 	}
-	edited.Raw = slices.Clone(res.Stdout)
+	edited.Raw = slices.Clone(data)
 	return edited, nil
 }
 
@@ -407,7 +447,7 @@ func (c *Client) ListCollections(ctx context.Context, session, organizationID st
 	if res.Err != nil {
 		return nil, res.Err
 	}
-	return decodeRawList[Collection](res.Stdout, "decode collections array", "decode collection", func(col *Collection, rm json.RawMessage) {
+	return decodeRawList(res.Stdout, "decode collections array", "decode collection", func(col *Collection, rm json.RawMessage) {
 		col.Raw = slices.Clone(rm)
 	})
 }
@@ -456,7 +496,7 @@ func (c *Client) run(ctx context.Context, session string, args []string, env map
 	res := c.runner.Run(ctx, c.bwPath, args, finalEnv, o.stdin)
 	dur := time.Since(start)
 
-	evt := c.log.Info().
+	evt := c.log.Debug().
 		Str("bin", c.bwPath).
 		Str("op", safeOpName(args)).
 		Int("exit_code", res.ExitCode).
@@ -477,6 +517,16 @@ func (c *Client) run(ctx context.Context, session string, args []string, env map
 		return res
 	}
 	if errors.Is(res.Err, context.Canceled) {
+		return res
+	}
+
+	// Detect bw prompting for master password (session missing/expired).
+	// This can happen even on exit 0 when multiple bw processes share a BW_DATA_PATH.
+	// Skip for "unlock" itself — it naturally displays the prompt on stderr while
+	// reading the password from stdin.
+	isUnlockCmd := len(args) > 0 && args[0] == "unlock"
+	if !isUnlockCmd && strings.Contains(strings.ToLower(string(res.StdErr)), "master password") {
+		res.Err = ErrLocked
 		return res
 	}
 
@@ -562,6 +612,9 @@ func mapBWError(stdout, stderr []byte) error {
 	case strings.Contains(combined, "not found"),
 		strings.Contains(combined, "does not exist"):
 		return ErrNotFound
+
+	case strings.Contains(combined, "more than one result"):
+		return ErrMultipleResults
 	default:
 		snip := sanitizeForError(stderr)
 		if snip == "" {
@@ -572,6 +625,55 @@ func mapBWError(stdout, stderr []byte) error {
 		}
 		return ErrCLI
 	}
+}
+
+// trimToJSON advances past any leading bytes that are not '{' or '[',
+// handling BOMs, ANSI escape sequences, and other non-JSON prefixes.
+// Returns nil if no JSON start character is found.
+// For '[', validates that it looks like a real JSON array (not text like "[input is hidden]").
+func trimToJSON(b []byte) []byte {
+	for i, c := range b {
+		if c == '{' {
+			return b[i:]
+		}
+		if c == '[' && isJSONArrayStart(b[i:]) {
+			return b[i:]
+		}
+	}
+	return nil
+}
+
+// isJSONValueStart returns true if c can be the first non-whitespace byte of
+// a JSON value or the closing ']' of an empty array.
+func isJSONValueStart(c byte) bool {
+	return c == '{' || c == '[' || c == '"' || c == ']' ||
+		c == '-' || (c >= '0' && c <= '9') ||
+		c == 't' || c == 'f' || c == 'n'
+}
+
+// isJSONArrayStart returns true if b begins with '[' followed by a valid JSON value or ']'.
+func isJSONArrayStart(b []byte) bool {
+	const MinJSONSize = 2
+	if len(b) < MinJSONSize {
+		return false
+	}
+	for _, c := range b[1:] {
+		if c == ' ' || c == '\t' || c == '\n' || c == '\r' {
+			continue
+		}
+		return isJSONValueStart(c)
+	}
+	return false
+}
+
+// extractJSON returns the first parseable JSON slice from the run result.
+// Some bw builds write JSON to stderr; others mix non-JSON text into stdout.
+// Try stdout first, fall back to stderr.
+func extractJSON(res RunResult) []byte {
+	if j := trimToJSON(res.Stdout); j != nil {
+		return j
+	}
+	return trimToJSON(res.StdErr)
 }
 
 func cloneMap(m map[string]string) map[string]string {

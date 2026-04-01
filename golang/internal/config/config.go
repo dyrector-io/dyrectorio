@@ -40,7 +40,7 @@ type CommonConfiguration struct {
 	ImportContainerImage     string        `yaml:"importContainerImage"     env:"IMPORT_CONTAINER_IMAGE"      env-default:"rclone/rclone:1.57.0"` //nolint:lll
 	SecretVault              Vault         `yaml:"vault" env-prefix:"VAULT_"`
 	GrpcKeepalive            time.Duration `yaml:"grpcKeepalive"            env:"GRPC_KEEPALIVE"              env-default:"30s"`
-	DefaultTimeout           time.Duration `yaml:"defaultTimeout"           env:"DEFAULT_TIMEOUT"             env-default:"5s"`
+	DefaultTimeout           time.Duration `yaml:"defaultTimeout"           env:"DEFAULT_TIMEOUT"             env-default:"20s"`
 	ReadHeaderTimeout        time.Duration `yaml:"readHeaderTimeout"        env:"READ_HEADER_TIMEOUT"         env-default:"15s"`
 	DebugUpdateUseContainers bool          `yaml:"debugUpdateUseContainers" env:"DEBUG_UPDATE_USE_CONTAINERS" env-default:"true"`
 	DebugUpdateAlways        bool          `yaml:"debugUpdateAlways"        env:"DEBUG_UPDATE_ALWAYS"         env-default:"false"`
