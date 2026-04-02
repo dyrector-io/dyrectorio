@@ -54,7 +54,7 @@ export default class NodeContainerHttpController {
     description: 'Request must include `nodeId`, `prefix`.',
     summary: 'Returns a list of containers on a node.  Use `_` as the prefix to get all containers.',
   })
-  @ApiOkResponse({ description: 'Container list.' })
+  @ApiOkResponse({ type: ContainerDto, isArray: true, description: 'Container list.' })
   @ApiBadRequestResponse({ description: 'Bad request for get container list.' })
   @ApiForbiddenResponse({ description: 'Unauthorized request for get container list.' })
   async getContainers(
