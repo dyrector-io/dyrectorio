@@ -1,0 +1,79 @@
+# This is meant to be used for local development
+services:
+  traefik:
+    container_name: traefik
+    image: docker.io/library/traefik:2.11
+    command:
+      - --providers.docker=true
+      - --providers.docker.exposedbydefault=false
+      - --entrypoints.web.address=:80
+      - --providers.file.directory=/etc/traefik/dynamic
+    ports:
+      - "${EXTERNAL_PORT:-80}:80"
+    volumes:
+      - ${DOCKER_SOCKET:-/var/run/docker.sock}:/var/run/docker.sock:ro
+      - ${PWD}/distribution/compose/traefik/dynamic:/etc/traefik/dynamic:ro
+    restart: unless-stopped
+    labels:
+      - org.dyrectorio.service-category=_internal
+  database:
+    container_name: database
+    image: ghcr.io/dyrector-io/dyrectorio/multi-database:1.0.4
+    environment:
+      - POSTGRES_PASSWORD=${ROOT_POSTGRES_PASSWORD}
+      - CRUX_POSTGRES_PASSWORD=${CRUX_POSTGRES_PASSWORD}
+      - KRATOS_POSTGRES_PASSWORD=${KRATOS_POSTGRES_PASSWORD}
+    restart: unless-stopped
+    volumes: ['database:/var/lib/postgresql/data']
+    ports:
+      - 127.0.0.1:5432:5432
+    healthcheck:
+      # testing the healtheck with a specific database and users
+      test: [CMD-SHELL, pg_isready -d crux -U crux_user]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    labels:
+      - org.dyrectorio.service-category=_internal
+  kratos:
+    container_name: kratos
+    image: ghcr.io/dyrector-io/dyrectorio/web/kratos:${DYO_VERSION:-latest}
+    environment:
+      - SQA_OPT_OUT=true
+      - DSN=postgres://kratos_user:${KRATOS_POSTGRES_PASSWORD}@database:5432/kratos?sslmode=disable&max_conns=20&max_idle_conns=4&connect_timeout=5
+      - KRATOS_URL=${EXTERNAL_PROTO}://${DOMAIN}:${EXTERNAL_PORT}/kratos
+      - KRATOS_ADMIN_URL=http://kratos:4434
+      - AUTH_URL=${EXTERNAL_PROTO}://${DOMAIN}:${EXTERNAL_PORT}/auth
+      - CRUX_UI_URL=${EXTERNAL_PROTO}://${DOMAIN}:${EXTERNAL_PORT}
+      - LOG_LEVEL=info
+      - LOG_LEAK_SENSITIVE_VALUES=false
+      - SECRETS_COOKIE=${KRATOS_SECRET}
+      - COURIER_SMTP_CONNECTION_URI=${SMTP_URI}
+      - FROM_EMAIL=${FROM_EMAIL}
+      - FROM_NAME=${FROM_NAME}
+    ports:
+      - 4433:4433
+      - 4434:4434
+    depends_on:
+      database:
+        condition: service_healthy
+      kratos-migrate:
+        condition: service_completed_successfully
+    restart: unless-stopped
+    labels:
+      - org.dyrectorio.service-category=_internal
+  kratos-migrate:
+    container_name: kratos-migrate
+    image: ghcr.io/dyrector-io/dyrectorio/web/kratos:${DYO_VERSION:-latest}
+    command: -c /etc/config/kratos/kratos.yaml migrate sql -e --yes
+    environment:
+      - SQA_OPT_OUT=true
+      - DSN=postgres://kratos_user:${KRATOS_POSTGRES_PASSWORD}@database:5432/kratos?sslmode=disable&max_conns=20&max_idle_conns=4
+    depends_on:
+      database:
+        condition: service_healthy
+    restart: 'no'
+    labels:
+      - org.dyrectorio.service-category=_internal
+volumes:
+  database:

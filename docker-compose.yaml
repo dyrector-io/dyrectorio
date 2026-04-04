@@ -120,3 +120,4 @@ services:
       - org.dyrectorio.service-category=_internal
 volumes:
   database:
+    name: dyodb

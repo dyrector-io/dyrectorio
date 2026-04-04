@@ -1,6 +1,6 @@
 FROM ubuntu:noble
 
-RUN apt-get update && apt-get install -y docker-compose nodejs npm jq curl zstd libasound2t64
+RUN apt-get update && apt-get install -y docker-compose-v2 nodejs npm jq curl zstd libasound2t64
 
 RUN mkdir playwright
 
