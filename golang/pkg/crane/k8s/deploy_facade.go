@@ -228,8 +228,9 @@ func (d *DeployFacade) Deploy() error {
 					portList:    d.service.portsBound,
 					tls:         d.params.ContainerConfig.ExposeTLS,
 				},
-				annotations: d.params.ContainerConfig.Annotations.Ingress,
-				labels:      d.params.ContainerConfig.Labels.Ingress,
+				annotations:  d.params.ContainerConfig.Annotations.Ingress,
+				labels:       d.params.ContainerConfig.Labels.Ingress,
+				customRoutes: d.params.ContainerConfig.Experimental.CustomRoute,
 			}); err != nil {
 				log.Error().Err(err).Stack().Msg("Error with gateway HTTPRoute")
 			}

@@ -201,6 +201,52 @@ type ContainerConfig struct {
 type Experimental struct {
 	NodeSelector map[string]string                       `json:"nodeSelector"`
 	Tolerations  []*applyv1.TolerationApplyConfiguration `json:"tolerations" binding:"dive"`
+	CustomRoute  []CustomRoute                           `json:"customRoute"`
+}
+
+// CustomRoute defines a custom HTTP route rule for the Gateway API,
+// mirroring the helm chart route values structure.
+// Each entry maps to one HTTPRouteRule in the deployed HTTPRoute resource.
+type CustomRoute struct {
+	// Path is the PathPrefix match for this rule (defaults to "/").
+	Path string `json:"path"`
+	// Timeouts configures request and backendRequest timeouts (e.g. "10s").
+	Timeouts string `json:"timeouts,omitempty"`
+	// Filters are applied to requests that match this rule.
+	Filters []CustomRouteFilter `json:"filters,omitempty"`
+	// HTTPSRedirect emits a RequestRedirect filter (HTTP 301 → https) instead
+	// of a backend ref. Filters are ignored when true.
+	HTTPSRedirect bool `json:"httpsRedirect,omitempty"`
+}
+
+type CustomRouteFilter struct {
+	Type                   string                      `json:"type"`
+	RequestHeaderModifier  *CustomRouteHeaderFilter    `json:"requestHeaderModifier,omitempty"`
+	ResponseHeaderModifier *CustomRouteHeaderFilter    `json:"responseHeaderModifier,omitempty"`
+	RequestRedirect        *CustomRouteRequestRedirect `json:"requestRedirect,omitempty"`
+	URLRewrite             *CustomRouteURLRewrite      `json:"urlRewrite,omitempty"`
+}
+
+type CustomRouteHeaderFilter struct {
+	Set    []CustomRouteHeader `json:"set,omitempty"`
+	Add    []CustomRouteHeader `json:"add,omitempty"`
+	Remove []string            `json:"remove,omitempty"`
+}
+
+type CustomRouteHeader struct {
+	Name  string `json:"name"`
+	Value string `json:"value"`
+}
+
+type CustomRouteRequestRedirect struct {
+	Scheme     string `json:"scheme,omitempty"`
+	Hostname   string `json:"hostname,omitempty"`
+	Port       *int32 `json:"port,omitempty"`
+	StatusCode *int   `json:"statusCode,omitempty"`
+}
+
+type CustomRouteURLRewrite struct {
+	Hostname string `json:"hostname,omitempty"`
 }
 
 type Metrics struct {
