@@ -6,7 +6,7 @@ export type Editor = {
   focusedInputId?: string
 }
 
-export type InputEditorsMap = Record<string, string> // inputId to editorIds
+export type InputEditorsMap = Record<string, string[]> // inputId to editorIds
 
 export type InputEditors = {
   inputId: string
