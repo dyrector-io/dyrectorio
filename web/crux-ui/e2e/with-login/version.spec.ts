@@ -48,7 +48,8 @@ test("New version should get the default version's images and deployments", asyn
   await page.goto(TEAM_ROUTES.project.versions(projectId).details(childVersionId, { section: 'deployments' }))
   await page.waitForSelector('h2:text-is("Versions")')
 
-  await expect(await page.locator(`h3:has-text("You haven't added a deployment to this version")`)).toHaveCount(0)
+  const deploymentRows = await page.locator('table.w-full >> tbody >> tr')
+  await expect(deploymentRows).toHaveCount(1)
 })
 
 test('Change default version should work', async ({ page }) => {
