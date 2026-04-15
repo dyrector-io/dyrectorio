@@ -27,11 +27,11 @@ func TestBackoffWait(t *testing.T) {
 		},
 	}
 	for _, tt := range tests {
-		t.Run(tt.name, func(_ *testing.T) {
+		t.Run(tt.name, func(t *testing.T) {
 			b := backoff.New(tt.params.maxWait)
 			for i := range 30 {
 				start := time.Now()
-				b.Wait(context.Background())
+				b.Wait(t.Context())
 				end := time.Now()
 				log.Printf("iter %d passed: %s\n", i, end.Sub(start))
 			}
@@ -39,10 +39,10 @@ func TestBackoffWait(t *testing.T) {
 	}
 }
 
-func TestBackoffCancel(_ *testing.T) {
+func TestBackoffCancel(t *testing.T) {
 	b := backoff.New(time.Second)
 	start := time.Now()
-	ctx, cancel := context.WithCancel(context.Background())
+	ctx, cancel := context.WithCancel(t.Context())
 	go func(context.Context) {
 		for range 100 {
 			b.Wait(ctx)

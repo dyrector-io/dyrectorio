@@ -311,7 +311,7 @@ func executeCallback(mapError func(*agent.AgentError) *agent.AgentCommandError, 
 func (cl *ClientLoop) grpcLoop(token *config.ValidJWT) error {
 	var stream agent.Agent_ConnectClient
 	var err error
-	backoff := backoff.New(time.Minute)
+	bo := backoff.New(time.Minute)
 	defer cl.cancel()
 	defer func() {
 		err = grpcConn.Conn.Close()
@@ -324,7 +324,7 @@ func (cl *ClientLoop) grpcLoop(token *config.ValidJWT) error {
 	}()
 	for {
 		if grpcConn.Client == nil {
-			backoff.Wait(cl.Ctx)
+			bo.Wait(cl.Ctx)
 			client := agent.NewAgentClient(grpcConn.Conn)
 			grpcConn.SetClient(client)
 
@@ -421,7 +421,6 @@ func initWithToken(
 
 	opts := []grpc.DialOption{
 		grpc.WithTransportCredentials(creds),
-		grpc.WithBlock(),
 		grpc.WithKeepaliveParams(
 			keepalive.ClientParameters{
 				Time:                appConfig.GrpcKeepalive,

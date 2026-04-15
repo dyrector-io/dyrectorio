@@ -210,28 +210,28 @@ type Experimental struct {
 // mirroring the helm chart route values structure.
 // Each entry maps to one HTTPRouteRule in the deployed HTTPRoute resource.
 type CustomRoute struct {
+	// Port is the backend service port for TCP routing. Defaults to the container's
+	// IngressPort when omitted.
+	Port *uint16 `json:"port,omitempty"`
 	// Name is the rule name. Defaults to "rule-N" when omitted.
 	Name string `json:"name,omitempty"`
 	// Path is the PathPrefix match for this rule (defaults to "/").
 	// Ignored when Paths is non-empty.
 	Path string `json:"path"`
+	// Timeouts configures request and backendRequest timeouts (e.g. "10s").
+	Timeouts string `json:"timeouts,omitempty"`
+	// Protocol selects the route type: "http" (default) or "tcp".
+	Protocol string `json:"protocol,omitempty"`
+	// SectionName pins the parentRef to a specific listener on the Gateway (TCP routes only).
+	SectionName string `json:"sectionName,omitempty"`
 	// Paths is a list of path matches for this rule. When provided, each entry
 	// produces one HTTPRouteMatch. Takes precedence over Path.
 	Paths []CustomRoutePath `json:"paths,omitempty"`
-	// Timeouts configures request and backendRequest timeouts (e.g. "10s").
-	Timeouts string `json:"timeouts,omitempty"`
 	// Filters are applied to requests that match this rule.
 	Filters []CustomRouteFilter `json:"filters,omitempty"`
 	// HTTPSRedirect emits a RequestRedirect filter (HTTP 301 → https) instead
 	// of a backend ref. Filters are ignored when true.
 	HTTPSRedirect bool `json:"httpsRedirect,omitempty"`
-	// Protocol selects the route type: "http" (default) or "tcp".
-	Protocol string `json:"protocol,omitempty"`
-	// Port is the backend service port for TCP routing. Defaults to the container's
-	// IngressPort when omitted.
-	Port *uint16 `json:"port,omitempty"`
-	// SectionName pins the parentRef to a specific listener on the Gateway (TCP routes only).
-	SectionName string `json:"sectionName,omitempty"`
 }
 
 // CustomRoutePath is a single path match entry within a CustomRoute.
@@ -242,11 +242,11 @@ type CustomRoutePath struct {
 }
 
 type CustomRouteFilter struct {
-	Type                   string                      `json:"type"`
 	RequestHeaderModifier  *CustomRouteHeaderFilter    `json:"requestHeaderModifier,omitempty"`
 	ResponseHeaderModifier *CustomRouteHeaderFilter    `json:"responseHeaderModifier,omitempty"`
 	RequestRedirect        *CustomRouteRequestRedirect `json:"requestRedirect,omitempty"`
 	URLRewrite             *CustomRouteURLRewrite      `json:"urlRewrite,omitempty"`
+	Type                   string                      `json:"type"`
 }
 
 type CustomRouteHeaderFilter struct {
@@ -261,10 +261,10 @@ type CustomRouteHeader struct {
 }
 
 type CustomRouteRequestRedirect struct {
-	Scheme     string `json:"scheme,omitempty"`
-	Hostname   string `json:"hostname,omitempty"`
 	Port       *int32 `json:"port,omitempty"`
 	StatusCode *int   `json:"statusCode,omitempty"`
+	Scheme     string `json:"scheme,omitempty"`
+	Hostname   string `json:"hostname,omitempty"`
 }
 
 type CustomRouteURLRewrite struct {
