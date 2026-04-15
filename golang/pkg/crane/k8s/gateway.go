@@ -10,18 +10,14 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	gwv1 "sigs.k8s.io/gateway-api/apis/v1"
 	gwapply "sigs.k8s.io/gateway-api/applyconfiguration/apis/v1"
+	gwapplyv1a2 "sigs.k8s.io/gateway-api/applyconfiguration/apis/v1alpha2"
 	gatewayclientset "sigs.k8s.io/gateway-api/pkg/client/clientset/versioned"
 	gatewayv1client "sigs.k8s.io/gateway-api/pkg/client/clientset/versioned/typed/apis/v1"
+	gatewayv1a2client "sigs.k8s.io/gateway-api/pkg/client/clientset/versioned/typed/apis/v1alpha2"
 
 	v1 "github.com/dyrector-io/dyrectorio/golang/api/v1"
 	"github.com/dyrector-io/dyrectorio/golang/internal/domain"
 	"github.com/dyrector-io/dyrectorio/golang/pkg/crane/config"
-)
-
-const (
-	defaultHTTPPort    = 80
-	defaultHTTPSPort   = 443
-	maxConflictRetries = 5
 )
 
 // facade object for gateway management
@@ -54,9 +50,9 @@ func newGateway(ctx context.Context, client *Client) *gateway {
 	return &gateway{ctx: ctx, status: "", client: client, appConfig: client.appConfig}
 }
 
-// deployHTTPRoute creates or updates an HTTPRoute for the given options and upserts the
+// deployRoutes creates or updates an HTTPRoute for the given options and upserts the
 // corresponding listener on the parent Gateway.
-func (gw *gateway) deployHTTPRoute(options *DeployGatewayOptions) error {
+func (gw *gateway) deployRoutes(options *DeployGatewayOptions) error {
 	if options == nil {
 		return errors.New("gateway opts is nil")
 	}
@@ -80,8 +76,6 @@ func (gw *gateway) deployHTTPRoute(options *DeployGatewayOptions) error {
 		DomainFallback: gw.appConfig.RootDomain,
 	})
 
-	// Route name mirrors the migration convention: <container>-<hostname-with-dashes>
-	// e.g. management-management-ver-hanover-cloud
 	routeName := options.containerName + "-" + strings.ReplaceAll(hostname, ".", "-")
 
 	ingressPath := "/"
@@ -92,45 +86,65 @@ func (gw *gateway) deployHTTPRoute(options *DeployGatewayOptions) error {
 	backendName := gwv1.ObjectName(options.containerName)
 	backendPort := gwv1.PortNumber(routedPort)
 
-	var rules []*gwapply.HTTPRouteRuleApplyConfiguration
-	if len(options.customRoutes) > 0 {
-		rules = buildCustomRules(options.customRoutes, backendName, backendPort)
-	} else {
-		rules = []*gwapply.HTTPRouteRuleApplyConfiguration{
-			buildDefaultRule(ingressPath, backendName, backendPort, routing.stripPrefix, options.stripPrefixReplacement),
+	var httpRoutes, tcpRoutes []v1.CustomRoute
+	for _, r := range options.customRoutes {
+		if strings.EqualFold(r.Protocol, "tcp") {
+			tcpRoutes = append(tcpRoutes, r)
+		} else {
+			httpRoutes = append(httpRoutes, r)
 		}
 	}
 
-	gwRef := gw.appConfig.Gateway
-	parentRef := gwapply.ParentReference().
-		WithName(gwv1.ObjectName(gwRef.Name))
-	if gwRef.Namespace != "" {
-		parentRef.WithNamespace(gwv1.Namespace(gwRef.Namespace))
+	if len(httpRoutes) > 0 || len(options.customRoutes) == 0 {
+		var rules []*gwapply.HTTPRouteRuleApplyConfiguration
+		if len(httpRoutes) > 0 {
+			rules = buildCustomRules(httpRoutes, backendName, backendPort)
+		} else {
+			rules = []*gwapply.HTTPRouteRuleApplyConfiguration{
+				buildDefaultRule(ingressPath, backendName, backendPort, routing.stripPrefix, options.stripPrefixReplacement),
+			}
+		}
+
+		gwRef := gw.appConfig.Gateway
+		parentRef := gwapply.ParentReference().
+			WithName(gwv1.ObjectName(gwRef.Name))
+		if gwRef.Namespace != "" {
+			parentRef.WithNamespace(gwv1.Namespace(gwRef.Namespace))
+		}
+
+		applyConfig := gwapply.HTTPRoute(routeName, options.namespace).
+			WithAnnotations(options.annotations).
+			WithLabels(options.labels).
+			WithSpec(
+				gwapply.HTTPRouteSpec().
+					WithHostnames(gwv1.Hostname(hostname)).
+					WithParentRefs(parentRef).
+					WithRules(rules...),
+			)
+
+		httpClient, err := gw.getHTTPRouteClient(options.namespace)
+		if err != nil {
+			return err
+		}
+
+		result, err := httpClient.Apply(gw.ctx, applyConfig, metav1.ApplyOptions{
+			FieldManager: gw.appConfig.FieldManagerName,
+			Force:        gw.appConfig.ForceOnConflicts,
+		})
+		if err != nil {
+			log.Error().Err(err).Str("httpRoute", routeName).Send()
+			return err
+		}
+
+		log.Info().Str("httpRoute", result.Name).Msg("HTTPRoute applied")
 	}
 
-	applyConfig := gwapply.HTTPRoute(routeName, options.namespace).
-		WithSpec(
-			gwapply.HTTPRouteSpec().
-				WithHostnames(gwv1.Hostname(hostname)).
-				WithParentRefs(parentRef).
-				WithRules(rules...),
-		)
-
-	client, err := gw.getHTTPRouteClient(options.namespace)
-	if err != nil {
-		return err
+	for _, route := range tcpRoutes {
+		if err := gw.deployTCPRoute(options, route, routedPort); err != nil {
+			return err
+		}
 	}
 
-	result, err := client.Apply(gw.ctx, applyConfig, metav1.ApplyOptions{
-		FieldManager: gw.appConfig.FieldManagerName,
-		Force:        gw.appConfig.ForceOnConflicts,
-	})
-	if err != nil {
-		log.Error().Err(err).Str("httpRoute", routeName).Send()
-		return err
-	}
-
-	log.Info().Str("httpRoute", result.Name).Msg("HTTPRoute applied")
 	return nil
 }
 
@@ -185,7 +199,15 @@ func buildCustomRules(
 	rules := make([]*gwapply.HTTPRouteRuleApplyConfiguration, 0, len(routes))
 
 	for i, route := range routes {
-		ruleName := gwv1.SectionName("rule-" + strconv.Itoa(i))
+		name := route.Name
+		if name == "" {
+			name = "rule-" + strconv.Itoa(i)
+		}
+		ruleName := gwv1.SectionName(name)
+
+		if route.Protocol != "" && route.Protocol != "http" {
+			continue
+		}
 
 		if route.HTTPSRedirect {
 			statusCode := 301
@@ -204,20 +226,37 @@ func buildCustomRules(
 			continue
 		}
 
-		path := route.Path
-		if path == "" {
-			path = "/"
+		var matches []*gwapply.HTTPRouteMatchApplyConfiguration
+		if len(route.Paths) > 0 {
+			for _, p := range route.Paths {
+				matchType := gwv1.PathMatchPathPrefix
+				switch p.Type {
+				case "Exact":
+					matchType = gwv1.PathMatchExact
+				case "RegularExpression":
+					matchType = gwv1.PathMatchRegularExpression
+				}
+				val := p.Value
+				if val == "" {
+					val = "/"
+				}
+				matches = append(matches, gwapply.HTTPRouteMatch().WithPath(
+					gwapply.HTTPPathMatch().WithType(matchType).WithValue(val),
+				))
+			}
+		} else {
+			path := route.Path
+			if path == "" {
+				path = "/"
+			}
+			matches = append(matches, gwapply.HTTPRouteMatch().WithPath(
+				gwapply.HTTPPathMatch().WithType(gwv1.PathMatchPathPrefix).WithValue(path),
+			))
 		}
 
 		rule := gwapply.HTTPRouteRule().
 			WithName(ruleName).
-			WithMatches(
-				gwapply.HTTPRouteMatch().WithPath(
-					gwapply.HTTPPathMatch().
-						WithType(gwv1.PathMatchPathPrefix).
-						WithValue(path),
-				),
-			).
+			WithMatches(matches...).
 			WithBackendRefs(
 				gwapply.HTTPBackendRef().
 					WithName(backendName).
@@ -293,6 +332,59 @@ func buildHeaderFilter(h *v1.CustomRouteHeaderFilter) *gwapply.HTTPHeaderFilterA
 	return hf
 }
 
+func (gw *gateway) deployTCPRoute(options *DeployGatewayOptions, route v1.CustomRoute, defaultPort uint16) error {
+	port := defaultPort
+	if route.Port != nil {
+		port = *route.Port
+	}
+
+	routeName := options.containerName + "-tcp-" + strconv.Itoa(int(port))
+
+	gwRef := gw.appConfig.Gateway
+	parentRef := gwapply.ParentReference().
+		WithName(gwv1.ObjectName(gwRef.Name))
+	if gwRef.Namespace != "" {
+		parentRef.WithNamespace(gwv1.Namespace(gwRef.Namespace))
+	}
+	if route.SectionName != "" {
+		parentRef.WithSectionName(gwv1.SectionName(route.SectionName))
+	}
+
+	rule := gwapplyv1a2.TCPRouteRule().
+		WithName(gwv1.SectionName("rule-0")).
+		WithBackendRefs(
+			gwapply.BackendRef().
+				WithName(gwv1.ObjectName(options.containerName)).
+				WithPort(gwv1.PortNumber(port)),
+		)
+
+	applyConfig := gwapplyv1a2.TCPRoute(routeName, options.namespace).
+		WithAnnotations(options.annotations).
+		WithLabels(options.labels).
+		WithSpec(
+			gwapplyv1a2.TCPRouteSpec().
+				WithParentRefs(parentRef).
+				WithRules(rule),
+		)
+
+	client, err := gw.getTCPRouteClient(options.namespace)
+	if err != nil {
+		return err
+	}
+
+	result, err := client.Apply(gw.ctx, applyConfig, metav1.ApplyOptions{
+		FieldManager: gw.appConfig.FieldManagerName,
+		Force:        gw.appConfig.ForceOnConflicts,
+	})
+	if err != nil {
+		log.Error().Err(err).Str("tcpRoute", routeName).Send()
+		return err
+	}
+
+	log.Info().Str("tcpRoute", result.Name).Msg("TCPRoute applied")
+	return nil
+}
+
 func (gw *gateway) deleteHTTPRoute(namespace, name string) error {
 	client, err := gw.getHTTPRouteClient(namespace)
 	if err != nil {
@@ -316,7 +408,7 @@ func (gw *gateway) getHTTPRouteClient(namespace string) (gatewayv1client.HTTPRou
 	return cs.GatewayV1().HTTPRoutes(namespace), nil
 }
 
-func (gw *gateway) getGatewayClient(namespace string) (gatewayv1client.GatewayInterface, error) {
+func (gw *gateway) getTCPRouteClient(namespace string) (gatewayv1a2client.TCPRouteInterface, error) {
 	restConfig, err := gw.client.GetRestConfig()
 	if err != nil {
 		return nil, err
@@ -327,5 +419,5 @@ func (gw *gateway) getGatewayClient(namespace string) (gatewayv1client.GatewayIn
 		return nil, err
 	}
 
-	return cs.GatewayV1().Gateways(namespace), nil
+	return cs.GatewayV1alpha2().TCPRoutes(namespace), nil
 }

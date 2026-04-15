@@ -133,6 +133,8 @@ type Markers struct {
 	Service map[string]string `json:"service"`
 	// k8s-only ingress annotations
 	Ingress map[string]string `json:"ingress"`
+	// k8s-only gateway annotations (HTTPRoute / TCPRoute)
+	Gateway map[string]string `json:"gateway"`
 }
 
 type ContainerState string
@@ -208,8 +210,14 @@ type Experimental struct {
 // mirroring the helm chart route values structure.
 // Each entry maps to one HTTPRouteRule in the deployed HTTPRoute resource.
 type CustomRoute struct {
+	// Name is the rule name. Defaults to "rule-N" when omitted.
+	Name string `json:"name,omitempty"`
 	// Path is the PathPrefix match for this rule (defaults to "/").
+	// Ignored when Paths is non-empty.
 	Path string `json:"path"`
+	// Paths is a list of path matches for this rule. When provided, each entry
+	// produces one HTTPRouteMatch. Takes precedence over Path.
+	Paths []CustomRoutePath `json:"paths,omitempty"`
 	// Timeouts configures request and backendRequest timeouts (e.g. "10s").
 	Timeouts string `json:"timeouts,omitempty"`
 	// Filters are applied to requests that match this rule.
@@ -217,6 +225,20 @@ type CustomRoute struct {
 	// HTTPSRedirect emits a RequestRedirect filter (HTTP 301 → https) instead
 	// of a backend ref. Filters are ignored when true.
 	HTTPSRedirect bool `json:"httpsRedirect,omitempty"`
+	// Protocol selects the route type: "http" (default) or "tcp".
+	Protocol string `json:"protocol,omitempty"`
+	// Port is the backend service port for TCP routing. Defaults to the container's
+	// IngressPort when omitted.
+	Port *uint16 `json:"port,omitempty"`
+	// SectionName pins the parentRef to a specific listener on the Gateway (TCP routes only).
+	SectionName string `json:"sectionName,omitempty"`
+}
+
+// CustomRoutePath is a single path match entry within a CustomRoute.
+// Type is one of: "Exact", "PathPrefix" (default), "RegularExpression".
+type CustomRoutePath struct {
+	Type  string `json:"type,omitempty"`
+	Value string `json:"value"`
 }
 
 type CustomRouteFilter struct {

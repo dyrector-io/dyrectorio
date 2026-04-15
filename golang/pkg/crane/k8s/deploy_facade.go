@@ -216,7 +216,7 @@ func (d *DeployFacade) Deploy() error {
 
 	if d.params.ContainerConfig.Expose {
 		if d.appConfig.Gateway.Name != "" {
-			if err := d.gateway.deployHTTPRoute(&DeployGatewayOptions{
+			if err := d.gateway.deployRoutes(&DeployGatewayOptions{
 				namespace:     d.namespace.name,
 				containerName: d.params.ContainerConfig.Container,
 				name:          d.params.ContainerConfig.IngressName,
@@ -228,8 +228,8 @@ func (d *DeployFacade) Deploy() error {
 					portList:    d.service.portsBound,
 					tls:         d.params.ContainerConfig.ExposeTLS,
 				},
-				annotations:  d.params.ContainerConfig.Annotations.Ingress,
-				labels:       d.params.ContainerConfig.Labels.Ingress,
+				annotations:  d.params.ContainerConfig.Annotations.Gateway,
+				labels:       d.params.ContainerConfig.Labels.Gateway,
 				customRoutes: d.params.ContainerConfig.Experimental.CustomRoute,
 			}); err != nil {
 				log.Error().Err(err).Stack().Msg("Error with gateway HTTPRoute")
