@@ -67,7 +67,7 @@ func Serve(ctx context.Context) error {
 		return err
 	}
 
-	socket, err := net.Listen(socketType, socketPath)
+	socket, err := (&net.ListenConfig{}).Listen(ctx, socketType, socketPath)
 	if err != nil {
 		return err
 	}
