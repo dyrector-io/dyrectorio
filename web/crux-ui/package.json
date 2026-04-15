@@ -54,7 +54,7 @@
   "devDependencies": {
     "@eslint/compat": "^2.0.3",
     "@eslint/js": "^9.39.4",
-    "@playwright/test": "^1.56.1",
+    "@playwright/test": "^1.59.1",
     "@types/jest": "^29.5.3",
     "@types/js-yaml": "^4.0.9",
     "@types/jsoneditor": "^9.9.0",
@@ -73,7 +73,7 @@
     "eslint-plugin-prettier": "^5.5.5",
     "jest": "^29.6.2",
     "next-translate-plugin": "^2.5.2",
-    "playwright": "^1.56.1",
+    "playwright": "^1.59.1",
     "postcss": "^8.4.27",
     "prettier": "^3.8.1",
     "tailwindcss": "^3.3.3",

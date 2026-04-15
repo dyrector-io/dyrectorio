@@ -2,9 +2,9 @@ FROM ubuntu:noble
 
 RUN apt-get update && apt-get install -y docker-compose nodejs npm jq curl zstd libasound2t64
 
-RUN mkdir playwright
+RUN mkdir /playwright
 
-WORKDIR playwright
+WORKDIR /playwright
 
 COPY package*.json ./
 
@@ -13,7 +13,7 @@ RUN npm i && \
 
 WORKDIR /
 
-RUN rm -rf playwright
+RUN rm -rf /playwright
 
 LABEL org.opencontainers.image.source="https://github.com/dyrector-io/dyrectorio/tree/develop/distribution/images/playwright"
 
