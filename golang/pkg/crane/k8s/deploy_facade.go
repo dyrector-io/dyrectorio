@@ -295,7 +295,7 @@ func (d *DeployFacade) PostDeploy() error {
 	}
 
 	// Backup secrets to vault
-	if d.appConfig.SecretVault.BinaryAvailable && d.appConfig.SecretVault.ClientID != "" {
+	if d.appConfig.SecretVault.ClientID != "" {
 		wg := grpc.VaultWaitGroupFromContext(d.ctx)
 		if wg != nil {
 			wg.Add(1)
