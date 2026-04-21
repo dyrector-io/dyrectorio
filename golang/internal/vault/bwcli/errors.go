@@ -3,6 +3,7 @@ package bwcli
 import "errors"
 
 var (
+	ErrBinaryUnavailable     = errors.New("bwcli: binary unavailable, use dyrector.io's alpine based agents")
 	ErrUnauthorized          = errors.New("bwcli: unauthorized")
 	ErrLocked                = errors.New("bwcli: vault locked")
 	ErrNotFound              = errors.New("bwcli: not found")

@@ -25,6 +25,7 @@ type DeployFacade struct {
 	service        *Service
 	configmap      *configmap
 	ingress        *ingress
+	gateway        *gateway
 	params         *DeployFacadeParams
 	pvc            *PVC
 	ServiceMonitor *ServiceMonitor
@@ -61,6 +62,7 @@ func NewDeployFacade(params *DeployFacadeParams, cfg *config.Configuration) *Dep
 		configmap:      newConfigmap(params.Ctx, cfg),
 		service:        NewService(params.Ctx, k8sClient),
 		ingress:        newIngress(params.Ctx, k8sClient),
+		gateway:        newGateway(params.Ctx, k8sClient),
 		secret:         NewSecret(params.Ctx, k8sClient),
 		pvc:            NewPVC(params.Ctx, k8sClient),
 		ServiceMonitor: serviceMonitor,
@@ -213,40 +215,66 @@ func (d *DeployFacade) Deploy() error {
 	}
 
 	if d.params.ContainerConfig.Expose {
-		if len(d.params.ContainerConfig.ProxyHeaders) > 0 {
-			if err := d.configmap.deployIngressProxyHeaders(d.namespace.name,
-				d.params.ContainerConfig.Container,
-				d.params.ContainerConfig.ProxyHeaders...,
-			); err != nil {
-				log.Error().Err(err).Stack().Msg("Error with ingress proxy headers configmap")
-			}
-		}
-
-		if err := d.ingress.deployIngress(
-			&DeployIngressOptions{
-				namespace:     d.namespace.name,
-				containerName: d.params.ContainerConfig.Container,
-				name:          d.params.ContainerConfig.IngressName,
-				routing: routingOptions{
-					proxyBuffering: d.params.ContainerConfig.ProxyBuffering,
-					ingressHost:    d.params.ContainerConfig.IngressHost,
-					ingressPath:    d.params.ContainerConfig.IngressPath,
-					stripPrefix:    d.params.ContainerConfig.IngressStripPath,
-					uploadLimit:    d.params.ContainerConfig.IngressUploadLimit,
-					proxyHeaders:   d.params.ContainerConfig.ProxyHeaders,
-					corsHeaders:    d.params.ContainerConfig.CorsHeaders,
-					port:           d.params.ContainerConfig.IngressPort,
-					portList:       d.service.portsBound,
-					tls:            d.params.ContainerConfig.ExposeTLS,
-				},
-				annotations: d.params.ContainerConfig.Annotations.Ingress,
-				labels:      d.params.ContainerConfig.Labels.Ingress,
-			},
-		); err != nil {
-			log.Error().Err(err).Stack().Msg("Error with ingress")
-		}
+		d.deployExpose()
 	}
 	return nil
+}
+
+func (d *DeployFacade) deployExpose() {
+	if d.appConfig.Gateway.Name != "" {
+		if err := d.gateway.deployRoutes(&DeployGatewayOptions{
+			namespace:     d.namespace.name,
+			containerName: d.params.ContainerConfig.Container,
+			name:          d.params.ContainerConfig.IngressName,
+			routing: routingOptions{
+				ingressHost: d.params.ContainerConfig.IngressHost,
+				ingressPath: d.params.ContainerConfig.IngressPath,
+				stripPrefix: d.params.ContainerConfig.IngressStripPath,
+				port:        d.params.ContainerConfig.IngressPort,
+				portList:    d.service.portsBound,
+				tls:         d.params.ContainerConfig.ExposeTLS,
+			},
+			annotations:  d.params.ContainerConfig.Annotations.Gateway,
+			labels:       d.params.ContainerConfig.Labels.Gateway,
+			customRoutes: d.params.ContainerConfig.Experimental.CustomRoute,
+		}); err != nil {
+			log.Error().Err(err).Stack().Msg("Error with gateway HTTPRoute")
+		}
+		return
+	}
+
+	if len(d.params.ContainerConfig.ProxyHeaders) > 0 {
+		if err := d.configmap.deployIngressProxyHeaders(d.namespace.name,
+			d.params.ContainerConfig.Container,
+			d.params.ContainerConfig.ProxyHeaders...,
+		); err != nil {
+			log.Error().Err(err).Stack().Msg("Error with ingress proxy headers configmap")
+		}
+	}
+
+	if err := d.ingress.deployIngress(
+		&DeployIngressOptions{
+			namespace:     d.namespace.name,
+			containerName: d.params.ContainerConfig.Container,
+			name:          d.params.ContainerConfig.IngressName,
+			routing: routingOptions{
+				proxyBuffering: d.params.ContainerConfig.ProxyBuffering,
+				ingressHost:    d.params.ContainerConfig.IngressHost,
+				ingressPath:    d.params.ContainerConfig.IngressPath,
+				stripPrefix:    d.params.ContainerConfig.IngressStripPath,
+				uploadLimit:    d.params.ContainerConfig.IngressUploadLimit,
+				proxyHeaders:   d.params.ContainerConfig.ProxyHeaders,
+				corsHeaders:    d.params.ContainerConfig.CorsHeaders,
+				port:           d.params.ContainerConfig.IngressPort,
+				portList:       d.service.portsBound,
+				tls:            d.params.ContainerConfig.ExposeTLS,
+			},
+			annotations: d.params.ContainerConfig.Annotations.Ingress,
+			labels:      d.params.ContainerConfig.Labels.Ingress,
+		},
+	); err != nil {
+		log.Error().Err(err).Stack().Msg("Error with ingress")
+	}
 }
 
 func (d *DeployFacade) PostDeploy() error {
@@ -267,7 +295,7 @@ func (d *DeployFacade) PostDeploy() error {
 	}
 
 	// Backup secrets to vault
-	if d.appConfig.SecretVault.BinaryAvailable && d.appConfig.SecretVault.ClientID != "" {
+	if d.appConfig.SecretVault.ClientID != "" {
 		wg := grpc.VaultWaitGroupFromContext(d.ctx)
 		if wg != nil {
 			wg.Add(1)

@@ -133,6 +133,8 @@ type Markers struct {
 	Service map[string]string `json:"service"`
 	// k8s-only ingress annotations
 	Ingress map[string]string `json:"ingress"`
+	// k8s-only gateway annotations (HTTPRoute / TCPRoute)
+	Gateway map[string]string `json:"gateway"`
 }
 
 type ContainerState string
@@ -201,6 +203,72 @@ type ContainerConfig struct {
 type Experimental struct {
 	NodeSelector map[string]string                       `json:"nodeSelector"`
 	Tolerations  []*applyv1.TolerationApplyConfiguration `json:"tolerations" binding:"dive"`
+	CustomRoute  []CustomRoute                           `json:"customRoute"`
+}
+
+// CustomRoute defines a custom HTTP route rule for the Gateway API,
+// mirroring the helm chart route values structure.
+// Each entry maps to one HTTPRouteRule in the deployed HTTPRoute resource.
+type CustomRoute struct {
+	// Port is the backend service port for TCP routing. Defaults to the container's
+	// IngressPort when omitted.
+	Port *uint16 `json:"port,omitempty"`
+	// Name is the rule name. Defaults to "rule-N" when omitted.
+	Name string `json:"name,omitempty"`
+	// Path is the PathPrefix match for this rule (defaults to "/").
+	// Ignored when Paths is non-empty.
+	Path string `json:"path"`
+	// Timeouts configures request and backendRequest timeouts (e.g. "10s").
+	Timeouts string `json:"timeouts,omitempty"`
+	// Protocol selects the route type: "http" (default) or "tcp".
+	Protocol string `json:"protocol,omitempty"`
+	// SectionName pins the parentRef to a specific listener on the Gateway (TCP routes only).
+	SectionName string `json:"sectionName,omitempty"`
+	// Paths is a list of path matches for this rule. When provided, each entry
+	// produces one HTTPRouteMatch. Takes precedence over Path.
+	Paths []CustomRoutePath `json:"paths,omitempty"`
+	// Filters are applied to requests that match this rule.
+	Filters []CustomRouteFilter `json:"filters,omitempty"`
+	// HTTPSRedirect emits a RequestRedirect filter (HTTP 301 → https) instead
+	// of a backend ref. Filters are ignored when true.
+	HTTPSRedirect bool `json:"httpsRedirect,omitempty"`
+}
+
+// CustomRoutePath is a single path match entry within a CustomRoute.
+// Type is one of: "Exact", "PathPrefix" (default), "RegularExpression".
+type CustomRoutePath struct {
+	Type  string `json:"type,omitempty"`
+	Value string `json:"value"`
+}
+
+type CustomRouteFilter struct {
+	RequestHeaderModifier  *CustomRouteHeaderFilter    `json:"requestHeaderModifier,omitempty"`
+	ResponseHeaderModifier *CustomRouteHeaderFilter    `json:"responseHeaderModifier,omitempty"`
+	RequestRedirect        *CustomRouteRequestRedirect `json:"requestRedirect,omitempty"`
+	URLRewrite             *CustomRouteURLRewrite      `json:"urlRewrite,omitempty"`
+	Type                   string                      `json:"type"`
+}
+
+type CustomRouteHeaderFilter struct {
+	Set    []CustomRouteHeader `json:"set,omitempty"`
+	Add    []CustomRouteHeader `json:"add,omitempty"`
+	Remove []string            `json:"remove,omitempty"`
+}
+
+type CustomRouteHeader struct {
+	Name  string `json:"name"`
+	Value string `json:"value"`
+}
+
+type CustomRouteRequestRedirect struct {
+	Port       *int32 `json:"port,omitempty"`
+	StatusCode *int   `json:"statusCode,omitempty"`
+	Scheme     string `json:"scheme,omitempty"`
+	Hostname   string `json:"hostname,omitempty"`
+}
+
+type CustomRouteURLRewrite struct {
+	Hostname string `json:"hostname,omitempty"`
 }
 
 type Metrics struct {

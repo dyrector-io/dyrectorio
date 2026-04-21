@@ -25,7 +25,7 @@ env:
   CRUX_UI_WORKING_DIRECTORY: web/crux-ui
   KRATOS_WORKING_DIRECTORY: web/kratos
   GOLANG_WORKING_DIRECTORY: golang
-  GOLANGCI_LINT_VERSION: v2.0.2
+  GOLANGCI_LINT_VERSION: v2.4.0
 concurrency:
   group: ${{ github.workflow }}-${{ github.sha }}
   cancel-in-progress: true
@@ -56,7 +56,7 @@ jobs:
     runs-on: ubuntu-22.04
     container:
       # yamlfmt resides here because alpine doesn't provide yamlfmt package
-      image: ghcr.io/dyrector-io/dyrectorio/builder-images/golang:4
+      image: ghcr.io/dyrector-io/dyrectorio/builder-images/golang:5
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -133,7 +133,7 @@ jobs:
     runs-on: ubuntu-22.04
     needs: gather_changes
     container:
-      image: ghcr.io/dyrector-io/dyrectorio/builder-images/golang:4
+      image: ghcr.io/dyrector-io/dyrectorio/builder-images/golang:5
     defaults:
       run:
         working-directory: ${{ env.GOLANG_WORKING_DIRECTORY }}
@@ -157,7 +157,7 @@ jobs:
     runs-on: ubuntu-22.04
     needs: gather_changes
     container:
-      image: ghcr.io/dyrector-io/dyrectorio/builder-images/golang:4
+      image: ghcr.io/dyrector-io/dyrectorio/builder-images/golang:5
     defaults:
       run:
         working-directory: ${{ env.GOLANG_WORKING_DIRECTORY }}
@@ -191,7 +191,7 @@ jobs:
     runs-on: ubuntu-22.04
     needs: gather_changes
     container:
-      image: ghcr.io/dyrector-io/dyrectorio/builder-images/golang:4
+      image: ghcr.io/dyrector-io/dyrectorio/builder-images/golang:5
     defaults:
       run:
         working-directory: ${{ env.GOLANG_WORKING_DIRECTORY }}
@@ -252,7 +252,7 @@ jobs:
       - go_integration
       - gather_changes
     container:
-      image: ghcr.io/dyrector-io/dyrectorio/builder-images/golang:4
+      image: ghcr.io/dyrector-io/dyrectorio/builder-images/golang:5
     defaults:
       run:
         working-directory: ${{ env.GOLANG_WORKING_DIRECTORY }}
@@ -658,7 +658,7 @@ jobs:
       packages: write
     runs-on: ubuntu-22.04
     container:
-      image: ghcr.io/dyrector-io/dyrectorio/builder-images/golang:4
+      image: ghcr.io/dyrector-io/dyrectorio/builder-images/golang:5
     defaults:
       run:
         working-directory: ${{ env.GOLANG_WORKING_DIRECTORY }}

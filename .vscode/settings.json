@@ -15,8 +15,6 @@
         "formatting.gofumpt": true
     },
     "go.lintTool": "golangci-lint",
-    "[yaml]": {
-        "editor.defaultFormatter": "bluebrown.yamlfmt"
-    },
-    "makefile.configureOnOpen": false
+    "go.lintOnSave": "workspace",
+    "go.lintFlags": ["-c", ".golangci.yml"]
 }

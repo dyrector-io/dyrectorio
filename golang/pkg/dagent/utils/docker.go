@@ -458,7 +458,7 @@ func DeployImage(ctx context.Context,
 
 	dog.WriteInfo(fmt.Sprintf("Container deployed: %s", containerName))
 
-	if cfg.SecretVault.BinaryAvailable && cfg.SecretVault.ClientID != "" {
+	if cfg.SecretVault.ClientID != "" {
 		wg := grpc.VaultWaitGroupFromContext(ctx)
 		if wg != nil {
 			wg.Add(1)
@@ -489,8 +489,9 @@ func saveSecretsToVault(ctx context.Context, dog *dogger.DeploymentLogger,
 	prefix, name string, secrets map[string]string, vaultCfg *internalConfig.Vault,
 ) error {
 	if !bool(vaultCfg.BinaryAvailable) {
-		return nil
+		return bwcli.ErrBinaryUnavailable
 	}
+
 	vault := bwcli.New(&bwcli.Config{Logger: log.Logger})
 	defer vault.Cleanup()
 

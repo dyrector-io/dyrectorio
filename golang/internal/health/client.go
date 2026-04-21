@@ -1,6 +1,7 @@
 package health
 
 import (
+	"context"
 	"encoding/json"
 	"net"
 
@@ -19,7 +20,7 @@ func GetHealthy() (bool, error) {
 }
 
 func GetStatus() (*Status, error) {
-	conn, err := net.Dial("unix", getSocketPath())
+	conn, err := (&net.Dialer{}).DialContext(context.Background(), "unix", getSocketPath())
 	if err != nil {
 		return nil, err
 	}

@@ -119,15 +119,15 @@ func (s *Secret) getSecretClient(namespace string) (v1.SecretInterface, error) {
 }
 
 func (s *Secret) UpsertOpaqueSecrets(ctx context.Context, values map[string][]byte) (
-	version string, err error,
+	resourceVersion string, err error,
 ) {
 	namespace := s.appConfig.Namespace
 	name := s.appConfig.SecretName
 
-	secrets, version, err := s.GetSecret(namespace, name)
+	secrets, resourceVersion, err := s.GetSecret(namespace, name)
 	if err != nil {
 		if !errors.IsNotFound(err) {
-			return version, err
+			return resourceVersion, err
 		}
 
 		secrets = map[string][]byte{}
@@ -141,7 +141,7 @@ func (s *Secret) UpsertOpaqueSecrets(ctx context.Context, values map[string][]by
 }
 
 func (s *Secret) applyOpaqueSecrets(ctx context.Context, values map[string][]byte) (
-	version string, err error,
+	resourceVersion string, err error,
 ) {
 	namespace := s.appConfig.Namespace
 	name := s.appConfig.SecretName
@@ -206,7 +206,7 @@ func (s *Secret) GetOrCreatePrivateKey() (string, error) {
 	}
 
 	var privateKey string
-	privateKey, version, err := s.getSecretByKey(commonConfig.PrivateKeyFileName)
+	privateKey, resourceVersion, err := s.getSecretByKey(commonConfig.PrivateKeyFileName)
 	if err != nil {
 		return "", fmt.Errorf("k8s stored secret %s/%s was on error: %w", namespace, name, err)
 	}
@@ -226,7 +226,8 @@ func (s *Secret) GetOrCreatePrivateKey() (string, error) {
 	}
 
 	if isExpired {
-		log.Warn().Str("namespace", namespace).Str("name", name).Str("resourceVersion", version).Msg("k8s stored secret was expired. Renewing...")
+		log.Warn().Str("namespace", namespace).Str("name", name).
+			Str("resourceVersion", resourceVersion).Msg("k8s stored secret was expired. Renewing...")
 		return privateKey, s.addValidSecret(commonConfig.PrivateKeyFileName, privateKey)
 	}
 
@@ -260,7 +261,7 @@ func (s *Secret) addValidSecret(key, value string) error {
 }
 
 func (s *Secret) getSecretByKey(key string) (
-	value string, version string, err error,
+	value string, resourceVersion string, err error,
 ) {
 	namespace := s.appConfig.Namespace
 	name := s.appConfig.SecretName
@@ -269,13 +270,13 @@ func (s *Secret) getSecretByKey(key string) (
 		return "", "", fmt.Errorf("secret name or namespace can't be empty")
 	}
 
-	objects, version, err := s.GetSecret(namespace, name)
+	objects, resourceVersion, err := s.GetSecret(namespace, name)
 	if err != nil {
 		if errors.IsNotFound(err) {
 			return "", "", nil
 		}
 
-		return "", version, fmt.Errorf("k8s stored secret %s/%s was on error: %w", namespace, name, err)
+		return "", resourceVersion, fmt.Errorf("k8s stored secret %s/%s was on error: %w", namespace, name, err)
 	}
 
 	secretContent := ""
@@ -286,7 +287,7 @@ func (s *Secret) getSecretByKey(key string) (
 		}
 	}
 
-	return secretContent, version, nil
+	return secretContent, resourceVersion, nil
 }
 
 // handleDockerCfgJSONContent serializes a ~/.docker/config.json file
@@ -311,7 +312,7 @@ func encodeDockerConfigFieldAuth(username, password string) string {
 }
 
 func (s *Secret) GetSecret(namespace, name string) (
-	secretFiles map[string][]byte, version string, err error,
+	secretFiles map[string][]byte, resourceVersion string, err error,
 ) {
 	cli, err := s.getSecretClient(namespace)
 	if err != nil {
@@ -328,7 +329,7 @@ func (s *Secret) GetSecret(namespace, name string) (
 func (s *Secret) SaveSecretsToVault(ctx context.Context, namespace, containerName string, secrets map[string]string) (bool, error) {
 	vaultCfg := s.appConfig.SecretVault
 	if !bool(vaultCfg.BinaryAvailable) {
-		return false, nil
+		return false, bwcli.ErrBinaryUnavailable
 	}
 
 	// Decrypt secrets

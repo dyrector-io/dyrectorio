@@ -225,7 +225,7 @@ func checkForBoundPorts(state *State, args *ArgsFlags) {
 }
 
 func checkPort(portNum uint, servicePort string) error {
-	ln, err := net.Listen("tcp", fmt.Sprintf(":%d", portNum))
+	ln, err := (&net.ListenConfig{}).Listen(context.Background(), "tcp", fmt.Sprintf(":%d", portNum))
 	if err != nil {
 		log.Error().Str("service", servicePort).Uint("port", portNum).Msg("Couldn't bind to port for the service")
 		return fmt.Errorf("can`t bind, %w", err)

@@ -109,6 +109,10 @@ linters:
       - linters:
           - mnd
         path: _test\.go
+      - linters:
+          - revive
+        path: (internal/common|internal/util|pkg/dagent/utils)/
+        text: "avoid meaningless package names"
     paths:
       - internal/cache
       - third_party$

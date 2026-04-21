@@ -20,6 +20,7 @@ type DeleteFacade struct {
 	service    *Service
 	configmap  *configmap
 	ingress    *ingress
+	gateway    *gateway
 	pvc        *PVC
 	appConfig  *config.Configuration
 	name       string
@@ -36,6 +37,7 @@ func NewDeleteFacade(ctx context.Context, namespace, name string, cfg *config.Co
 		configmap:  newConfigmap(ctx, cfg),
 		service:    NewService(ctx, k8sClient),
 		ingress:    newIngress(ctx, k8sClient),
+		gateway:    newGateway(ctx, k8sClient),
 		pvc:        NewPVC(ctx, k8sClient),
 		appConfig:  cfg,
 	}
@@ -59,6 +61,10 @@ func (d *DeleteFacade) DeleteServices() error {
 
 func (d *DeleteFacade) DeleteIngresses() error {
 	return d.ingress.deleteIngress(d.namespace.name, d.name)
+}
+
+func (d *DeleteFacade) DeleteHTTPRoutes() error {
+	return d.gateway.deleteHTTPRoute(d.namespace.name, d.name)
 }
 
 // hard-delete if called with prefix name only without container name
@@ -115,6 +121,11 @@ func Delete(c context.Context, prefix, name string) error {
 	err = del.DeleteIngresses()
 	if !errors.IsNotFound(err) && err != nil {
 		log.Error().Err(err).Stack().Msg("Delete ingress error")
+	}
+
+	err = del.DeleteHTTPRoutes()
+	if !errors.IsNotFound(err) && err != nil {
+		log.Error().Err(err).Stack().Msg("Delete HTTPRoute error")
 	}
 
 	return nil
