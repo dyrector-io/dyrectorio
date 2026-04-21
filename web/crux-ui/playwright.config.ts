@@ -42,6 +42,13 @@ const config: PlaywrightTestConfig = {
   retries: 0,
   reporter: CI ? 'github' : 'list',
   use: {
+    launchOptions: CI
+      ? {
+          args: ['--headless=new', '--unsafely-treat-insecure-origin-as-secure=http://dyo-e2e_traefik:8000'],
+          headless: false,
+        }
+      : undefined,
+
     // Use baseURL so to make navigations relative.
     // More information: https://playwright.dev/docs/api/class-testoptions#test-options-base-url
     baseURL: BASE_URL,
