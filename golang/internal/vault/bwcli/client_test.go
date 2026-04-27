@@ -76,6 +76,12 @@ func (f *fakeRunner) Run(ctx context.Context, cmd string, args []string, env map
 	return RunResult{Stdout: step.stdout, StdErr: step.stderr, ExitCode: step.exitCode, Err: step.err}
 }
 
+// newTestClient creates a BWClient with a fake runner and the given logger,
+// using empty HostURL/ClientID (fine for unit tests that don't hit the disk path logic).
+func newTestClient(fr *fakeRunner, logger *zerolog.Logger) *BWClient {
+	return New(context.Background(), &Config{BWPath: "bw"}, fr, logger)
+}
+
 func TestStatus_ParsesJSON(t *testing.T) {
 	fr := &fakeRunner{
 		steps: []fakeStep{
@@ -91,14 +97,10 @@ func TestStatus_ParsesJSON(t *testing.T) {
 	var buf bytes.Buffer
 	logger := zerolog.New(&buf).Level(zerolog.DebugLevel)
 
-	c := New(&Config{
-		BWPath:   "bw",
-		Logger:   logger,
-		Runner:   fr,
-		ExtraEnv: map[string]string{"BW_DATA_PATH": "/tmp/bwdata"},
-	})
+	c := newTestClient(fr, &logger)
+	defer c.Cleanup()
 
-	st, err := c.Status(context.Background())
+	st, err := c.Status()
 	if err != nil {
 		t.Fatalf("expected nil err, got %v", err)
 	}
@@ -126,9 +128,11 @@ func TestListItems_SetsSessionEnv(t *testing.T) {
 		},
 	}
 
-	c := New(&Config{BWPath: "bw", Logger: zerolog.Nop(), Runner: fr})
+	noopLogger := zerolog.Nop()
+	c := newTestClient(fr, &noopLogger)
+	defer c.Cleanup()
 
-	items, err := c.ListItems(context.Background(), "SESSION123")
+	items, err := c.ListItems("SESSION123")
 	if err != nil {
 		t.Fatalf("expected nil err, got %v", err)
 	}
@@ -163,8 +167,11 @@ func TestErrorMapping(t *testing.T) {
 					},
 				},
 			}
-			c := New(&Config{BWPath: "bw", Logger: zerolog.Nop(), Runner: fr})
-			_, err := c.ListItems(context.Background(), "S")
+			noopLogger := zerolog.Nop()
+			c := newTestClient(fr, &noopLogger)
+			defer c.Cleanup()
+
+			_, err := c.ListItems("S")
 			if !errors.Is(err, tt.want) {
 				t.Fatalf("expected errors.Is(%v), got %v", tt.want, err)
 			}
@@ -183,12 +190,15 @@ func TestTimeoutMapping(t *testing.T) {
 			},
 		},
 	}
-	c := New(&Config{BWPath: "bw", Logger: zerolog.Nop(), Runner: fr})
 
 	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Nanosecond)
-	cancel()
+	defer cancel()
 
-	_, err := c.Status(ctx)
+	noopLogger := zerolog.Nop()
+	c := New(ctx, &Config{BWPath: "bw"}, fr, &noopLogger)
+	defer c.Cleanup()
+
+	_, err := c.Status()
 	if !errors.Is(err, ErrTimeout) {
 		t.Fatalf("expected ErrTimeout, got %v", err)
 	}
@@ -208,9 +218,10 @@ func TestLogsDoNotLeakSecrets(t *testing.T) {
 	var buf bytes.Buffer
 	logger := zerolog.New(&buf).Level(zerolog.DebugLevel)
 
-	c := New(&Config{BWPath: "bw", Logger: logger, Runner: fr})
+	c := newTestClient(fr, &logger)
+	defer c.Cleanup()
 
-	session, err := c.Unlock(context.Background(), "MASTER_PASSWORD_123")
+	session, err := c.Unlock("MASTER_PASSWORD_123")
 	if err != nil {
 		t.Fatalf("unexpected err: %v", err)
 	}
@@ -268,9 +279,11 @@ func TestIntegrationLikeFlow_StatusUnlockSyncList(t *testing.T) {
 		},
 	}
 
-	c := New(&Config{BWPath: "bw", Logger: zerolog.Nop(), Runner: fr})
+	noopLogger := zerolog.Nop()
+	c := newTestClient(fr, &noopLogger)
+	defer c.Cleanup()
 
-	st, err := c.Status(context.Background())
+	st, err := c.Status()
 	if err != nil {
 		t.Fatalf("status err: %v", err)
 	}
@@ -278,16 +291,16 @@ func TestIntegrationLikeFlow_StatusUnlockSyncList(t *testing.T) {
 		t.Fatalf("unexpected status: %+v", st)
 	}
 
-	session, err := c.Unlock(context.Background(), "pw")
+	session, err := c.Unlock("pw")
 	if err != nil {
 		t.Fatalf("unlock err: %v", err)
 	}
 
-	if err := c.Sync(context.Background(), session); err != nil {
+	if err := c.Sync(session); err != nil {
 		t.Fatalf("sync err: %v", err)
 	}
 
-	items, err := c.ListItems(context.Background(), session)
+	items, err := c.ListItems(session)
 	if err != nil {
 		t.Fatalf("list err: %v", err)
 	}
