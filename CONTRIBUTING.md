@@ -107,7 +107,7 @@ The develop branch is always fast-forward mergable to main.
 PR titles must follow the conventional commit guidelines.
 
 Release: a release commit is made to develop, package versions are bumped, develop is fast-forward merged into main.
-Hotfix: in rare occassions, a hotfix/\*\* branch is created from main and the PR targets the main branch,
+Hotfix: in rare occasions, a hotfix/\*\* branch is created from main and the PR targets the main branch,
 develop must be rebased to main -- using rebase-onto.
 
 ## Submit a Pull Request
