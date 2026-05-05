@@ -321,8 +321,17 @@ export class Agent {
   }
 
   onDeploymentFinished(deployment: Deployment): DeploymentStatusEnum {
-    this.deployments.delete(deployment.id)
-    return deployment.getStatus()
+    const status = deployment.getStatus()
+    if (status === 'successful' || status === 'failed') {
+      this.deployments.delete(deployment.id)
+    }
+    return status
+  }
+
+  abandonDeployment(deployment: Deployment): void {
+    if (this.deployments.get(deployment.id) === deployment) {
+      this.deployments.delete(deployment.id)
+    }
   }
 
   onContainerStateStreamStarted(prefix: string): [ContainerStatusWatcher, ContainerStatusStreamCompleter] {

@@ -16,6 +16,7 @@ import {
   of,
   startWith,
   takeUntil,
+  tap,
 } from 'rxjs'
 import { SemVer, coerce } from 'semver'
 import { Agent, AgentConnectionMessage, AgentTokenReplacement } from 'src/domain/agent'
@@ -210,21 +211,57 @@ export default class AgentService {
       return of(Empty)
     }
 
+    this.logger.verbose(`Deployment status stream opened: ${deploymentId}`)
+
     return request.pipe(
+      tap({
+        error: err => this.logger.verbose(`Deployment request stream error: ${(err as Error).message}`),
+        complete: () => this.logger.verbose(`Deployment request stream completed: ${deploymentId}`),
+      }),
       concatMap(it => {
         this.logger.verbose(`Deployment update - ${deploymentId}`)
 
         const events = deployment.onUpdate(it)
-        return from(this.createDeploymentEvents(deployment.id, deployment.tries, events)).pipe(map(() => Empty))
+        return from(this.createDeploymentEvents(deployment.id, deployment.tries, events)).pipe(
+          map(() => {
+            this.logger.verbose(`Emitting deployment response: ${deploymentId}`)
+            return Empty
+          }),
+        )
       }),
       catchError(async (err: Error) => {
         this.logger.error(`Error during deployment: ${err.message}`, err.stack)
         return EMPTY
       }),
       finalize(async () => {
-        this.logger.verbose(`Deployment finished - ${deploymentId}`)
+        this.logger.verbose(`Deployment finished - ${deploymentId} status: ${deployment.getStatus()}`)
 
         const status = agent.onDeploymentFinished(deployment)
+        if (status !== 'successful' && status !== 'failed') {
+          // Stream died mid-deployment (e.g. proxy timeout). Keep the deployment
+          // in the agent map so crane's reconnect finds the same object.
+          this.logger.warn(`Deployment stream disconnected without final status, awaiting reconnect: ${deploymentId}`)
+          setTimeout(async () => {
+            if (agent.getDeployment(deploymentId) === deployment) {
+              // Crane never reconnected — clean up and mark failed.
+              agent.abandonDeployment(deployment)
+              await this.deployService.finishDeployment(agent.id, deployment, 'failed')
+              await this.notificationService.sendNotification({
+                teamId: deployment.notification.teamId,
+                messageType: 'deploy-failed',
+                message: {
+                  subject: deployment.notification.projectName,
+                  version: deployment.notification.versionName,
+                  node: deployment.notification.nodeName,
+                  owner: deployment.notification.actor,
+                } as DeployMessage,
+              })
+              this.logger.warn(`Deployment reconnect timed out, marking as failed: ${deploymentId}`)
+            }
+          }, 5 * 60 * 1000)
+          return
+        }
+
         await this.deployService.finishDeployment(agent.id, deployment, status)
 
         const messageType: NotificationMessageType =

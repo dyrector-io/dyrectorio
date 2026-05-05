@@ -6,6 +6,7 @@ services:
       - --providers.docker=true
       - --providers.docker.exposedbydefault=false
       - --entrypoints.web.address=:80
+      - --entrypoints.web.transport.respondingTimeouts.readTimeout=0
     ports:
       - "${EXTERNAL_PORT:-80}:80"
     volumes:

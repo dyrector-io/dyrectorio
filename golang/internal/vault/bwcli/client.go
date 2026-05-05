@@ -107,6 +107,7 @@ func New(ctx context.Context, cfg *Config, runner Runner, logger *zerolog.Logger
 		l.Warn().Msgf("bw data path setup failed: %v", err)
 		return nil
 	}
+	l.Trace().Msgf("bw temporal datapath: %s", bwTmpDataPath)
 	c.ExtraEnv = cloneMap(cfg.ExtraEnv)
 	c.ExtraEnv["BW_DATA_PATH"] = bwTmpDataPath
 	c.ExtraEnv["BW_SERVER_URL"] = c.HostURL
@@ -135,9 +136,6 @@ func New(ctx context.Context, cfg *Config, runner Runner, logger *zerolog.Logger
 func (c *BWClient) EnsureServer() error {
 	res := c.run("", []string{"config", "server"}, c.cfg.ExtraEnv)
 	if res.Err != nil {
-		// If bw can't read config yet (fresh BW_DATA_PATH), we can attempt to set it.
-		// But most of the time this command succeeds.
-		// Fall through to set.
 		c.log.Trace().Err(res.Err).Msgf("server config read, ignored error")
 	} else {
 		current := strings.TrimSpace(string(res.Stdout))
