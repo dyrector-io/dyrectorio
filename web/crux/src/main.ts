@@ -136,9 +136,7 @@ const serve = async () => {
         'grpc.http2.min_ping_interval_without_data_ms': Number(
           configService.get('HTTP2_MINPINGINTERVAL_MS') ?? 20 * 1000,
         ),
-        'grpc.http2.min_time_between_pings_ms': Number(
-          configService.get('HTTP2_MINTIMEBETWEENPINGS_MS') ?? 10 * 1000,
-        ),
+        'grpc.http2.min_time_between_pings_ms': Number(configService.get('HTTP2_MINTIMEBETWEENPINGS_MS') ?? 10 * 1000),
       },
       // tls termination occurs at the reverse proxy
       credentials: ServerCredentials.createInsecure(),
