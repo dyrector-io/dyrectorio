@@ -57,6 +57,8 @@ import { DagentTraefikOptionsDto, NodeConnectionStatus, NodeScriptTypeDto } from
 import AgentConnectionStrategyProvider from './agent.connection-strategy.provider'
 import { AgentKickReason } from './agent.dto'
 
+const DEPLOYMENT_STATUS_AGENT_RECONNECT_TIMEOUT_MS = 5 * 60 * 1000
+
 @Injectable()
 export default class AgentService {
   private readonly logger = new Logger(AgentService.name)
@@ -260,7 +262,7 @@ export default class AgentService {
                 this.logger.warn(`Deployment reconnect timed out, marking as failed: ${deploymentId}`)
               }
             },
-            5 * 60 * 1000,
+           DEPLOYMENT_STATUS_AGENT_RECONNECT_TIMEOUT_MS,
           )
           return
         }
