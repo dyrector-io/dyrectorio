@@ -51,13 +51,11 @@ import PrismaService from 'src/services/prisma.service'
 import GrpcNodeConnection from 'src/shared/grpc-node-connection'
 import AgentMetrics from 'src/shared/metrics/agent.metrics'
 import { getAgentVersionFromPackage, getCommitHash, getPackageVersion } from 'src/shared/package'
-import { AGENT_SUPPORTED_MINIMUM_VERSION } from '../../shared/const'
+import { AGENT_DEPLOYMENT_STATUS_RECONNECT_TIMEOUT_MS, AGENT_SUPPORTED_MINIMUM_VERSION } from '../../shared/const'
 import DeployService from '../deploy/deploy.service'
 import { DagentTraefikOptionsDto, NodeConnectionStatus, NodeScriptTypeDto } from '../node/node.dto'
 import AgentConnectionStrategyProvider from './agent.connection-strategy.provider'
 import { AgentKickReason } from './agent.dto'
-
-const DEPLOYMENT_STATUS_AGENT_RECONNECT_TIMEOUT_MS = 5 * 60 * 1000
 
 @Injectable()
 export default class AgentService {
@@ -260,7 +258,7 @@ export default class AgentService {
               })
               this.logger.warn(`Deployment reconnect timed out, marking as failed: ${deploymentId}`)
             }
-          }, DEPLOYMENT_STATUS_AGENT_RECONNECT_TIMEOUT_MS)
+          }, AGENT_DEPLOYMENT_STATUS_RECONNECT_TIMEOUT_MS)
           return
         }
 

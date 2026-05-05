@@ -20,6 +20,8 @@ export const TEAM_INVITATION_EXPIRATION = 7 * DAY_IN_MILLIS
 export const JWT_EXPIRATION_MILLIS = 10 * 60 * 1000 // 10 minutes
 export const AGENT_DEFAULT_CALLBACK_TIMEOUT = 5000
 export const AGENT_STREAM_TIMEOUT = 60_000
+export const AGENT_DEPLOYMENT_STATUS_RECONNECT_TIMEOUT_MS = 5 * 60 * 1000 // 5m
+
 export const GET_CONTAINER_LOG_DEFAULT_TAKE = 100
 
 // NOTE(@m8vago): This should be incremented, when a new release includes a proto file change
