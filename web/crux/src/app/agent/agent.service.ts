@@ -243,27 +243,24 @@ export default class AgentService {
           // Stream died mid-deployment (e.g. proxy timeout). Keep the deployment
           // in the agent map so crane's reconnect finds the same object.
           this.logger.warn(`Deployment stream disconnected without final status, awaiting reconnect: ${deploymentId}`)
-          setTimeout(
-            async () => {
-              if (agent.getDeployment(deploymentId) === deployment) {
-                // Crane never reconnected — clean up and mark failed.
-                agent.abandonDeployment(deployment)
-                await this.deployService.finishDeployment(agent.id, deployment, 'failed')
-                await this.notificationService.sendNotification({
-                  teamId: deployment.notification.teamId,
-                  messageType: 'deploy-failed',
-                  message: {
-                    subject: deployment.notification.projectName,
-                    version: deployment.notification.versionName,
-                    node: deployment.notification.nodeName,
-                    owner: deployment.notification.actor,
-                  } as DeployMessage,
-                })
-                this.logger.warn(`Deployment reconnect timed out, marking as failed: ${deploymentId}`)
-              }
-            },
-           DEPLOYMENT_STATUS_AGENT_RECONNECT_TIMEOUT_MS,
-          )
+          setTimeout(async () => {
+            if (agent.getDeployment(deploymentId) === deployment) {
+              // Crane never reconnected — clean up and mark failed.
+              agent.abandonDeployment(deployment)
+              await this.deployService.finishDeployment(agent.id, deployment, 'failed')
+              await this.notificationService.sendNotification({
+                teamId: deployment.notification.teamId,
+                messageType: 'deploy-failed',
+                message: {
+                  subject: deployment.notification.projectName,
+                  version: deployment.notification.versionName,
+                  node: deployment.notification.nodeName,
+                  owner: deployment.notification.actor,
+                } as DeployMessage,
+              })
+              this.logger.warn(`Deployment reconnect timed out, marking as failed: ${deploymentId}`)
+            }
+          }, DEPLOYMENT_STATUS_AGENT_RECONNECT_TIMEOUT_MS)
           return
         }
 
