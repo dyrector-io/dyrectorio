@@ -1619,11 +1619,7 @@ export interface AgentController {
 
   /** streams */
 
-  deploymentStatus(
-    request: Observable<DeploymentStatusMessage>,
-    metadata: Metadata,
-    ...rest: any
-  ): Promise<Empty> | Observable<Empty> | Empty
+  deploymentStatus(request: Observable<DeploymentStatusMessage>, metadata: Metadata, ...rest: any): Observable<Empty>
 
   containerState(
     request: Observable<ContainerStateListMessage>,

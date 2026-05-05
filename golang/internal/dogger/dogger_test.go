@@ -26,7 +26,7 @@ func (tStream *AgentTestStream) Send(message *common.DeploymentStatusMessage) er
 	return nil
 }
 
-func (tStream *AgentTestStream) CloseAndRecv() (*common.Empty, error) {
+func (tStream *AgentTestStream) Recv() (*common.Empty, error) {
 	return nil, nil
 }
 

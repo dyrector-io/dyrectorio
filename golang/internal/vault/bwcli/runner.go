@@ -6,9 +6,11 @@ import (
 	"context"
 	"errors"
 	"maps"
+	"os"
 	"os/exec"
 	"slices"
 	"sort"
+	"strings"
 )
 
 // Runner abstracts execution so unit tests can inject a fake.
@@ -66,12 +68,14 @@ func (r *ExecRunner) Run(ctx context.Context, cmd string, args []string, env map
 	return RunResult{Stdout: stdoutBuf.Bytes(), StdErr: stderrBuf.Bytes(), ExitCode: exitCode, Err: err}
 }
 
-// mergeEnv returns an environment suitable for exec.Cmd.Env.
-// Builds env from base + overrides (does not inherit process env).
-// This is fine because bw typically only needs BW_* variables.
-// If additional env vars are needed, provide them via BaseEnv.
+// mergeEnv returns an environment suitable for exec.Cmd.Env merging with os.Environ
 func mergeEnv(base, overrides map[string]string) []string {
 	out := map[string]string{}
+	for _, e := range os.Environ() {
+		if k, v, ok := strings.Cut(e, "="); ok {
+			out[k] = v
+		}
+	}
 	maps.Copy(out, base)
 	maps.Copy(out, overrides)
 

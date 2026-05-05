@@ -22,10 +22,10 @@ import (
 // Usage example:
 //
 //	logger := zerolog.New(os.Stdout).With().Timestamp().Logger()
-//	c := bwcli.New(&bwcli.Config{Logger: logger})
+//	c := bwcli.New(&bwcli.Config{HostURL: "https://vault.example.com", ClientID: "user.xxx"}, nil, logger)
+//	defer c.Cleanup()
 //
-//	st, err := c.Status(ctx)
-//	if err != nil { ... }
+//	if err := c.LoginAPIKey(ctx); err != nil { ... }
 //
 //	session, err := c.Unlock(ctx, "master-password") // session string
 //	if err != nil { ... }
@@ -42,21 +42,21 @@ const (
 )
 
 type Config struct {
-	Runner   Runner
-	ExtraEnv map[string]string
-	BWPath   string
-	WorkDir  string
-	HostURL  string
-	Logger   zerolog.Logger
+	ExtraEnv     map[string]string
+	BWPath       string
+	WorkDir      string
+	HostURL      string
+	ClientID     string
+	ClientSecret string
+	Password     string
 }
 
-type Client struct {
+type BWClient struct {
+	ctx             context.Context
 	runner          Runner
-	extraEnv        map[string]string
-	bwPath          string
-	workDir         string
 	releasePathLock func()
-	log             zerolog.Logger
+	cfg             *Config
+	log             *zerolog.Logger
 }
 
 // vaultPathLocks serializes concurrent access to the same BW_DATA_PATH.
@@ -79,90 +79,87 @@ func bwDataPath(serverURL, userID string) (string, error) {
 	return dir, nil
 }
 
-// Cleanup releases the per-path lock acquired by ConfigureAgentTempDir.
-// Always call this with defer after creating a Client for a vault operation.
-func (c *Client) Cleanup() {
+// Cleanup releases the per-path lock acquired during New.
+// Always call this with defer after creating a BWClient.
+func (c *BWClient) Cleanup() {
 	if c.releasePathLock != nil {
 		c.releasePathLock()
 		c.releasePathLock = nil
 	}
 }
 
-func New(cfg *Config) *Client {
-	bw := cfg.BWPath
-	if bw == "" {
-		bw = DefaultBwBinary
-	}
-
-	l := cfg.Logger
+func New(ctx context.Context, cfg *Config, runner Runner, logger *zerolog.Logger) *BWClient {
+	l := logger
 	// fallback logger is noop
 	if l.GetLevel() == zerolog.NoLevel {
-		l = zerolog.Nop()
+		noopLog := zerolog.Nop()
+		l = &noopLog
 	}
 
-	r := cfg.Runner
+	// Work on a shallow copy so we don't mutate the caller's Config.
+	c := *cfg
+	if c.BWPath == "" {
+		c.BWPath = DefaultBwBinary
+	}
+
+	bwTmpDataPath, err := bwDataPath(c.HostURL, c.ClientID)
+	if err != nil {
+		l.Warn().Msgf("bw data path setup failed: %v", err)
+		return nil
+	}
+	l.Trace().Msgf("bw temporal datapath: %s", bwTmpDataPath)
+	c.ExtraEnv = cloneMap(cfg.ExtraEnv)
+	c.ExtraEnv["BW_DATA_PATH"] = bwTmpDataPath
+	c.ExtraEnv["BW_SERVER_URL"] = c.HostURL
+	c.ExtraEnv["BW_CLIENTID"] = c.ClientID
+	c.ExtraEnv["BW_CLIENTSECRET"] = c.ClientSecret
+
+	r := runner
 	if r == nil {
 		r = &ExecRunner{
-			WorkDir: cfg.WorkDir,
-			BaseEnv: cfg.ExtraEnv,
+			WorkDir: c.WorkDir,
+			BaseEnv: c.ExtraEnv,
 		}
 	}
 
-	return &Client{
-		bwPath:   bw,
-		log:      l,
-		runner:   r,
-		workDir:  cfg.WorkDir,
-		extraEnv: cloneMap(cfg.ExtraEnv),
+	return &BWClient{
+		ctx:             ctx,
+		runner:          r,
+		cfg:             &c,
+		log:             l,
+		releasePathLock: acquireVaultPath(bwTmpDataPath),
 	}
 }
 
 // EnsureServer ensures bw is configured to use serverURL.
 // If the current server differs, it logs out (required by bw) and updates it.
-func (c *Client) EnsureServer(ctx context.Context, serverURL string, env map[string]string) error {
-	res := c.run(ctx, "", []string{"config", "server"}, env)
+func (c *BWClient) EnsureServer() error {
+	res := c.run("", []string{"config", "server"}, c.cfg.ExtraEnv)
 	if res.Err != nil {
-		// If bw can't read config yet (fresh BW_DATA_PATH), we can attempt to set it.
-		// But most of the time this command succeeds.
-		// Fall through to set.
 		c.log.Trace().Err(res.Err).Msgf("server config read, ignored error")
 	} else {
 		current := strings.TrimSpace(string(res.Stdout))
-		if current == "" || equalServerURL(current, serverURL) {
+		if current == "" || equalServerURL(current, c.cfg.HostURL) {
 			c.log.Trace().Msgf("bw server URL in config identical")
 			return nil
 		}
 
 		// 2) Different server → bw requires logout before changing server config.
-		_ = c.LogoutWithEnv(ctx, env) // ignore not logged in
+		_ = c.LogoutWithEnv(c.cfg.ExtraEnv) // ignore not logged in
 	}
-	return c.run(ctx, "", []string{"config", "server", serverURL}, env).Err
+	return c.run("", []string{"config", "server", c.cfg.HostURL}, c.cfg.ExtraEnv).Err
 }
 
-func (c *Client) ConfigureAgentTempDir(serverURL, userID string) error {
-	dir, err := bwDataPath(serverURL, userID)
-	if err != nil {
-		return err
-	}
-	c.releasePathLock = acquireVaultPath(dir)
-	if c.extraEnv == nil {
-		c.extraEnv = map[string]string{}
-	}
-	c.extraEnv["BW_DATA_PATH"] = dir
-	c.extraEnv["BW_SERVER_URL"] = serverURL
-	return nil
-}
-
-func (c *Client) LogoutWithEnv(ctx context.Context, env map[string]string) error {
-	res := c.run(ctx, "", []string{"logout"}, env)
+func (c *BWClient) LogoutWithEnv(env map[string]string) error {
+	res := c.run("", []string{"logout"}, env)
 	if errors.Is(res.Err, ErrUnauthorized) {
 		return nil
 	}
 	return res.Err
 }
 
-func (c *Client) Status(ctx context.Context) (Status, error) {
-	res := c.run(ctx, "", []string{"status"}, nil)
+func (c *BWClient) Status() (Status, error) {
+	res := c.run("", []string{"status"}, nil)
 	if res.Err != nil {
 		return Status{}, res.Err
 	}
@@ -174,8 +171,8 @@ func (c *Client) Status(ctx context.Context) (Status, error) {
 	return st, nil
 }
 
-func (c *Client) encode(ctx context.Context, session string, jsonPayload []byte) (string, error) {
-	res := c.run(ctx, session, []string{"encode"}, nil, withStdin(jsonPayload))
+func (c *BWClient) encode(session string, jsonPayload []byte) (string, error) {
+	res := c.run(session, []string{"encode"}, nil, withStdin(jsonPayload))
 	if res.Err != nil {
 		return "", res.Err
 	}
@@ -190,28 +187,18 @@ func equalServerURL(a, b string) bool {
 
 // LoginAPIKey logs in using Bitwarden API key values.
 // This method does NOT store session; it just performs login.
-func (c *Client) LoginAPIKey(ctx context.Context, serverURL, clientID, clientSecret string) error {
-	if err := c.ConfigureAgentTempDir(serverURL, clientID); err != nil {
+func (c *BWClient) LoginAPIKey() error {
+	if err := c.EnsureServer(); err != nil {
 		return err
 	}
-
-	env := map[string]string{
-		"BW_CLIENTID":     clientID,
-		"BW_CLIENTSECRET": clientSecret,
-	}
-
-	err := c.EnsureServer(ctx, serverURL, env)
-	if err != nil {
-		return err
-	}
-	return c.run(ctx, "", []string{"login", "--apikey"}, env).Err
+	return c.run("", []string{"login", "--apikey"}, c.cfg.ExtraEnv).Err
 }
 
 // Unlock unlocks the vault and returns the session token (bw unlock --raw).
 // The session MUST be passed per command via BW_SESSION env by the caller.
-func (c *Client) Unlock(ctx context.Context, masterPassword string) (string, error) {
+func (c *BWClient) Unlock(masterPassword string) (string, error) {
 	stdin := []byte(masterPassword + "\n")
-	res := c.run(ctx, "", []string{"unlock", "--raw"}, nil, withStdin(stdin))
+	res := c.run("", []string{"unlock", "--raw"}, nil, withStdin(stdin))
 	if res.Err != nil {
 		return "", res.Err
 	}
@@ -223,12 +210,12 @@ func (c *Client) Unlock(ctx context.Context, masterPassword string) (string, err
 	return session, nil
 }
 
-func (c *Client) Sync(ctx context.Context, session string) error {
-	return c.run(ctx, session, []string{"sync"}, nil).Err
+func (c *BWClient) Sync(session string) error {
+	return c.run(session, []string{"sync"}, nil).Err
 }
 
-func (c *Client) ListItems(ctx context.Context, session string) ([]Item, error) {
-	res := c.run(ctx, session, []string{"list", "items"}, nil)
+func (c *BWClient) ListItems(session string) ([]Item, error) {
+	res := c.run(session, []string{"list", "items"}, nil)
 	if res.Err != nil {
 		return nil, res.Err
 	}
@@ -241,8 +228,8 @@ func (c *Client) ListItems(ctx context.Context, session string) ([]Item, error) 
 	})
 }
 
-func (c *Client) GetItem(ctx context.Context, session, itemID string) (Item, error) {
-	res := c.run(ctx, session, []string{"get", "item", itemID}, nil)
+func (c *BWClient) GetItem(session, itemID string) (Item, error) {
+	res := c.run(session, []string{"get", "item", itemID}, nil)
 	if res.Err != nil {
 		return Item{}, res.Err
 	}
@@ -264,18 +251,18 @@ func (c *Client) GetItem(ctx context.Context, session, itemID string) (Item, err
 	return it, nil
 }
 
-func (c *Client) CreateItem(ctx context.Context, session string, item *Item) (Item, error) {
+func (c *BWClient) CreateItem(session string, item *Item) (Item, error) {
 	payload, err := json.Marshal(item)
 	if err != nil {
 		return Item{}, fmt.Errorf("marshal item: %w", err)
 	}
 
-	encoded, err := c.encode(ctx, session, payload)
+	encoded, err := c.encode(session, payload)
 	if err != nil {
 		return Item{}, err
 	}
 
-	res := c.run(ctx, session, []string{"create", "item", encoded}, nil)
+	res := c.run(session, []string{"create", "item", encoded}, nil)
 	if res.Err != nil {
 		return Item{}, res.Err
 	}
@@ -292,8 +279,7 @@ func (c *Client) CreateItem(ctx context.Context, session string, item *Item) (It
 	return created, nil
 }
 
-func (c *Client) UpsertSecureNote(
-	ctx context.Context,
+func (c *BWClient) UpsertSecureNote(
 	session string,
 	name string,
 	notes string,
@@ -314,10 +300,10 @@ func (c *Client) UpsertSecureNote(
 	}
 
 	// Find existing by name directly.
-	existing, err := c.GetItem(ctx, session, name)
+	existing, err := c.GetItem(session, name)
 	if errors.Is(err, ErrMultipleResults) {
 		// bw fuzzy-matched multiple items — resolve by exact name via list.
-		existing, err = c.findItemByExactName(ctx, session, name)
+		existing, err = c.findItemByExactName(session, name)
 	}
 	if err != nil && !errors.Is(err, ErrNotFound) {
 		return Item{}, false, err
@@ -326,7 +312,7 @@ func (c *Client) UpsertSecureNote(
 	// Update existing
 	if err == nil {
 		applyAuthoritativeSecureNote(&existing, name, notes, orgID, collectionIDs, hiddenFields)
-		edited, editErr := c.EditItem(ctx, session, existing.ID, &existing)
+		edited, editErr := c.EditItem(session, existing.ID, &existing)
 		if editErr == nil {
 			c.log.Info().Str("name", name).Int("fields", len(hiddenFields)).Msg("vault note updated")
 		}
@@ -338,15 +324,15 @@ func (c *Client) UpsertSecureNote(
 	var base Item
 	applyAuthoritativeSecureNote(&base, name, notes, orgID, collectionIDs, hiddenFields)
 
-	created, err := c.CreateItem(ctx, session, &base) // CreateItem must encode+create
+	created, err := c.CreateItem(session, &base) // CreateItem must encode+create
 	if err == nil {
 		c.log.Info().Str("name", name).Int("fields", len(hiddenFields)).Msg("vault note created")
 	}
 	return created, true, err
 }
 
-func (c *Client) findItemByExactName(ctx context.Context, session, name string) (Item, error) {
-	items, err := c.ListItems(ctx, session)
+func (c *BWClient) findItemByExactName(session, name string) (Item, error) {
+	items, err := c.ListItems(session)
 	if err != nil {
 		return Item{}, err
 	}
@@ -400,18 +386,18 @@ func applyAuthoritativeSecureNote(it *Item, name, notes, orgID string, collectio
 	}
 }
 
-func (c *Client) EditItem(ctx context.Context, session, itemID string, item *Item) (Item, error) {
+func (c *BWClient) EditItem(session, itemID string, item *Item) (Item, error) {
 	payload, err := json.Marshal(item)
 	if err != nil {
 		return Item{}, fmt.Errorf("marshal item: %w", err)
 	}
 
-	encoded, err := c.encode(ctx, session, payload)
+	encoded, err := c.encode(session, payload)
 	if err != nil {
 		return Item{}, err
 	}
 
-	res := c.run(ctx, session, []string{"edit", "item", itemID, encoded}, nil)
+	res := c.run(session, []string{"edit", "item", itemID, encoded}, nil)
 	if res.Err != nil {
 		return Item{}, res.Err
 	}
@@ -427,8 +413,8 @@ func (c *Client) EditItem(ctx context.Context, session, itemID string, item *Ite
 	return edited, nil
 }
 
-func (c *Client) ListOrganizations(ctx context.Context, session string) ([]Organization, error) {
-	res := c.run(ctx, session, []string{"list", "organizations"}, nil)
+func (c *BWClient) ListOrganizations(session string) ([]Organization, error) {
+	res := c.run(session, []string{"list", "organizations"}, nil)
 	if res.Err != nil {
 		return nil, res.Err
 	}
@@ -437,13 +423,13 @@ func (c *Client) ListOrganizations(ctx context.Context, session string) ([]Organ
 	})
 }
 
-func (c *Client) ListCollections(ctx context.Context, session, organizationID string) ([]Collection, error) {
+func (c *BWClient) ListCollections(session, organizationID string) ([]Collection, error) {
 	args := []string{"list", "collections"}
 	if organizationID != "" {
 		args = append(args, "--organizationid", organizationID)
 	}
 
-	res := c.run(ctx, session, args, nil)
+	res := c.run(session, args, nil)
 	if res.Err != nil {
 		return nil, res.Err
 	}
@@ -454,18 +440,18 @@ func (c *Client) ListCollections(ctx context.Context, session, organizationID st
 
 // UpsertItemByName lists items once and then chooses create vs edit.
 // Returns (item, created, error).
-func (c *Client) UpsertItemByName(ctx context.Context, session string, item *Item) (Item, bool, error) {
-	items, err := c.ListItems(ctx, session)
+func (c *BWClient) UpsertItemByName(session string, item *Item) (Item, bool, error) {
+	items, err := c.ListItems(session)
 	if err != nil {
 		return Item{}, false, err
 	}
 	for i := range items {
 		if items[i].Name == item.Name && item.Name != "" {
-			edited, err := c.EditItem(ctx, session, items[i].ID, item)
+			edited, err := c.EditItem(session, items[i].ID, item)
 			return edited, false, err
 		}
 	}
-	created, createErr := c.CreateItem(ctx, session, item)
+	created, createErr := c.CreateItem(session, item)
 	return created, true, createErr
 }
 
@@ -481,30 +467,30 @@ func withStdin(b []byte) runOpt {
 	return func(o *runOptions) { o.stdin = b }
 }
 
-func (c *Client) run(ctx context.Context, session string, args []string, env map[string]string, opts ...runOpt) RunResult {
+func (c *BWClient) run(session string, args []string, env map[string]string, opts ...runOpt) RunResult {
 	o := &runOptions{}
 	for _, opt := range opts {
 		opt(o)
 	}
-	finalEnv := cloneMap(c.extraEnv)
+	finalEnv := cloneMap(c.cfg.ExtraEnv)
 	maps.Copy(finalEnv, env)
 	if session != "" {
 		finalEnv["BW_SESSION"] = session
 	}
 
 	start := time.Now()
-	res := c.runner.Run(ctx, c.bwPath, args, finalEnv, o.stdin)
+	res := c.runner.Run(c.ctx, c.cfg.BWPath, args, finalEnv, o.stdin)
 	dur := time.Since(start)
 
 	evt := c.log.Debug().
-		Str("bin", c.bwPath).
+		Str("bin", c.cfg.BWPath).
 		Str("op", safeOpName(args)).
 		Int("exit_code", res.ExitCode).
 		Dur("duration", dur)
 
 	if res.Err != nil {
 		evt = c.log.Warn().
-			Str("bin", c.bwPath).
+			Str("bin", c.cfg.BWPath).
 			Str("op", safeOpName(args)).
 			Int("exit_code", res.ExitCode).
 			Dur("duration", dur)

@@ -572,6 +572,37 @@ func deployImages(
 	return nil
 }
 
+func retryFinalStatus(ctx context.Context, deploymentID string,
+	finalStatus common.DeploymentStatus, appConfig *config.CommonConfiguration,
+) {
+	retryCtx := metadata.AppendToOutgoingContext(context.WithoutCancel(ctx), "dyo-deployment-id", deploymentID)
+	retryCtx, cancel := context.WithTimeout(retryCtx, appConfig.DefaultTimeout)
+	defer cancel()
+
+	stream, err := grpcConn.Client.DeploymentStatus(retryCtx, grpc.WaitForReady(true))
+	if err != nil {
+		log.Error().Err(err).Str("deployment", deploymentID).Msg("Status reconnect failed")
+		return
+	}
+	retryDog := dogger.NewDeploymentLogger(retryCtx, &deploymentID, stream, appConfig)
+	retryDog.WriteDeploymentStatus(finalStatus)
+	if closeErr := stream.CloseSend(); closeErr != nil {
+		log.Error().Err(closeErr).Str("deployment", deploymentID).Msg("Status reconnect close error")
+	}
+	drainStatusStream(stream, deploymentID)
+}
+
+func drainStatusStream(stream agent.Agent_DeploymentStatusClient, deploymentID string) {
+	recvCount := 0
+	for {
+		if _, recvErr := stream.Recv(); recvErr != nil {
+			log.Trace().Err(recvErr).Str("deployment", deploymentID).Int("recv_count", recvCount).Msg("Deployment status stream drain done")
+			break
+		}
+		recvCount++
+	}
+}
+
 func executeDeployRequest(
 	ctx context.Context, req *agent.DeployRequest,
 	deploy DeployFunc, deploySecrets DeploySharedSecretsFunc, appConfig *config.CommonConfiguration,
@@ -597,6 +628,7 @@ func executeDeployRequest(
 		log.Error().Stack().Err(err).Str("deployment", req.Id).Msg("Status connect error")
 		return
 	}
+	log.Trace().Str("deployment", req.Id).Time("opened_at", time.Now()).Msg("Deployment status stream opened")
 
 	dog := dogger.NewDeploymentLogger(streamCtx, &req.Id, statusStream, appConfig)
 
@@ -604,9 +636,10 @@ func executeDeployRequest(
 
 	if len(req.Requests) < 1 {
 		dog.WriteDeploymentStatus(common.DeploymentStatus_PREPARING, "There were no images to deploy.")
-		if _, closeErr := statusStream.CloseAndRecv(); closeErr != nil {
+		if closeErr := statusStream.CloseSend(); closeErr != nil {
 			log.Error().Stack().Err(closeErr).Str("deployment", req.Id).Msg("Status close error")
 		}
+		drainStatusStream(statusStream, req.Id)
 		streamCancel()
 		return
 	}
@@ -620,8 +653,15 @@ func executeDeployRequest(
 
 	closeStream := func(status common.DeploymentStatus) {
 		dog.WriteDeploymentStatus(status)
-		if _, closeErr := statusStream.CloseAndRecv(); closeErr != nil {
-			log.Error().Stack().Err(closeErr).Str("deployment", req.Id).Msg("Status close error")
+		if dog.IsStreamAlive() {
+			log.Trace().Str("deployment", req.Id).Msg("Calling CloseSend on deployment status stream")
+			if closeErr := statusStream.CloseSend(); closeErr != nil {
+				log.Error().Stack().Err(closeErr).Str("deployment", req.Id).Msg("Status close error")
+			}
+			drainStatusStream(statusStream, req.Id)
+		} else {
+			log.Warn().Str("deployment", req.Id).Msg("Status stream died before completion, reconnecting")
+			retryFinalStatus(ctx, req.Id, status, appConfig)
 		}
 		streamCancel()
 	}
@@ -836,12 +876,13 @@ func executeVersionDeployLegacyRequest(
 		// Wait for vault goroutines before writing final status and closing the stream.
 		tracker.Wait()
 		dog.WriteDeploymentStatus(deployStatus)
-		if _, closeErr := statusStream.CloseAndRecv(); closeErr != nil {
+		if closeErr := statusStream.CloseSend(); closeErr != nil {
 			log.Error().Stack().Err(closeErr).
 				Str("deployment", req.RequestId).
 				Str("deployImageRequestId", deployImageRequest.RequestID).
 				Msg("Status close err")
 		}
+		drainStatusStream(statusStream, req.RequestId)
 		streamCancel()
 	}()
 

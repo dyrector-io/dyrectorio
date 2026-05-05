@@ -4,6 +4,8 @@ import (
 	"os/exec"
 	"time"
 
+	"github.com/rs/zerolog"
+
 	"github.com/dyrector-io/dyrectorio/golang/internal/vault/bwcli"
 )
 
@@ -39,12 +41,15 @@ type CommonConfiguration struct {
 	DefaultVolumeSize        string        `yaml:"defaultVolumeSize"        env:"DEFAULT_VOLUME_SIZE"         env-default:"1G"`
 	ImportContainerImage     string        `yaml:"importContainerImage"     env:"IMPORT_CONTAINER_IMAGE"      env-default:"rclone/rclone:1.57.0"` //nolint:lll
 	SecretVault              Vault         `yaml:"vault" env-prefix:"VAULT_"`
-	GrpcKeepalive            time.Duration `yaml:"grpcKeepalive"            env:"GRPC_KEEPALIVE"              env-default:"30s"`
+	GrpcKeepalive            time.Duration `yaml:"grpcKeepalive"            env:"GRPC_KEEPALIVE"              env-default:"32s"`
 	DefaultTimeout           time.Duration `yaml:"defaultTimeout"           env:"DEFAULT_TIMEOUT"             env-default:"20s"`
 	ReadHeaderTimeout        time.Duration `yaml:"readHeaderTimeout"        env:"READ_HEADER_TIMEOUT"         env-default:"15s"`
 	DebugUpdateUseContainers bool          `yaml:"debugUpdateUseContainers" env:"DEBUG_UPDATE_USE_CONTAINERS" env-default:"true"`
 	DebugUpdateAlways        bool          `yaml:"debugUpdateAlways"        env:"DEBUG_UPDATE_ALWAYS"         env-default:"false"`
 	Debug                    bool          `yaml:"debug"                    env:"DEBUG"                       env-default:"false"`
+
+	// Valid values: trace, debug, info, warn, error, fatal, panic, disabled
+	LogLevel LogLevel `yaml:"logLevel"                 env:"LOG_LEVEL"                   env-default:"info"`
 }
 
 const (
@@ -52,6 +57,18 @@ const (
 	ConnectionTokenFileName = "token.jwt"
 	NonceBlacklistFileName  = "token-nonce.blacklist"
 )
+
+// LogLevel parses LOG_LEVEL and applies it as the zerolog global level.
+type LogLevel struct{}
+
+func (l *LogLevel) SetValue(s string) error {
+	lvl, err := zerolog.ParseLevel(s)
+	if err != nil {
+		return err
+	}
+	zerolog.SetGlobalLevel(lvl)
+	return nil
+}
 
 // BinaryAvailability is a bool-like type that automatically checks whether
 // the "bw" CLI binary is available on the system

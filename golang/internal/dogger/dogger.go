@@ -67,6 +67,13 @@ func (dog *DeploymentLogger) SetRequestID(requestID string) {
 	dog.requestID = requestID
 }
 
+// IsStreamAlive reports whether the underlying gRPC stream is still usable.
+func (dog *DeploymentLogger) IsStreamAlive() bool {
+	dog.streamMu.Lock()
+	defer dog.streamMu.Unlock()
+	return dog.stream != nil
+}
+
 // send is the single point for all stream.Send calls.
 // It is thread-safe and self-disabling: after the first Send error the stream
 // is nilled so subsequent calls are silent no-ops.
@@ -80,6 +87,8 @@ func (dog *DeploymentLogger) send(msg *common.DeploymentStatusMessage) {
 	if err := dog.stream.Send(msg); err != nil {
 		log.Error().Err(err).Str("deployment", dog.deploymentID).Msg("Deployment stream send error")
 		dog.stream = nil
+	} else {
+		log.Trace().Str("deployment", dog.deploymentID).Msg("Deployment stream send ok")
 	}
 }
 

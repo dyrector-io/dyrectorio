@@ -30,7 +30,7 @@ service Agent {
 
   // streams
   rpc DeploymentStatus(stream common.DeploymentStatusMessage)
-      returns (common.Empty);
+      returns (stream common.Empty);
   rpc ContainerState(stream common.ContainerStateListMessage)
       returns (common.Empty);
   rpc ContainerLogStream(stream common.ContainerLogMessage)

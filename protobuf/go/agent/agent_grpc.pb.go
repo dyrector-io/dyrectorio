@@ -123,7 +123,7 @@ func (c *agentClient) DeploymentStatus(ctx context.Context, opts ...grpc.CallOpt
 
 type Agent_DeploymentStatusClient interface {
 	Send(*common.DeploymentStatusMessage) error
-	CloseAndRecv() (*common.Empty, error)
+	Recv() (*common.Empty, error)
 	grpc.ClientStream
 }
 
@@ -135,10 +135,7 @@ func (x *agentDeploymentStatusClient) Send(m *common.DeploymentStatusMessage) er
 	return x.ClientStream.SendMsg(m)
 }
 
-func (x *agentDeploymentStatusClient) CloseAndRecv() (*common.Empty, error) {
-	if err := x.ClientStream.CloseSend(); err != nil {
-		return nil, err
-	}
+func (x *agentDeploymentStatusClient) Recv() (*common.Empty, error) {
 	m := new(common.Empty)
 	if err := x.ClientStream.RecvMsg(m); err != nil {
 		return nil, err
@@ -407,7 +404,7 @@ func _Agent_DeploymentStatus_Handler(srv interface{}, stream grpc.ServerStream) 
 }
 
 type Agent_DeploymentStatusServer interface {
-	SendAndClose(*common.Empty) error
+	Send(*common.Empty) error
 	Recv() (*common.DeploymentStatusMessage, error)
 	grpc.ServerStream
 }
@@ -416,7 +413,7 @@ type agentDeploymentStatusServer struct {
 	grpc.ServerStream
 }
 
-func (x *agentDeploymentStatusServer) SendAndClose(m *common.Empty) error {
+func (x *agentDeploymentStatusServer) Send(m *common.Empty) error {
 	return x.ServerStream.SendMsg(m)
 }
 
@@ -597,6 +594,7 @@ var Agent_ServiceDesc = grpc.ServiceDesc{
 		{
 			StreamName:    "DeploymentStatus",
 			Handler:       _Agent_DeploymentStatus_Handler,
+			ServerStreams: true,
 			ClientStreams: true,
 		},
 		{
