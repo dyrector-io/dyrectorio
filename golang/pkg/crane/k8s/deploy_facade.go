@@ -295,7 +295,7 @@ func (d *DeployFacade) PostDeploy() error {
 	}
 
 	// Backup secrets to vault
-	if d.appConfig.SecretVault.ClientID != "" {
+	if d.appConfig.SecretVault.ClientID != "" && d.params.ContainerConfig.Secrets != nil {
 		wg := grpc.VaultWaitGroupFromContext(d.ctx)
 		if wg != nil {
 			wg.Add(1)

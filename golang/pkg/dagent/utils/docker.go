@@ -458,7 +458,7 @@ func DeployImage(ctx context.Context,
 
 	dog.WriteInfo(fmt.Sprintf("Container deployed: %s", containerName))
 
-	if cfg.SecretVault.ClientID != "" {
+	if cfg.SecretVault.ClientID != "" && deployImageRequest.ContainerConfig.Secrets != nil {
 		wg := grpc.VaultWaitGroupFromContext(ctx)
 		if wg != nil {
 			wg.Add(1)
