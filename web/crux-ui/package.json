@@ -48,7 +48,7 @@
     "react-simple-code-editor": "^0.13.1",
     "sharp": "^0.33.2",
     "swr": "^2.2.0",
-    "uuid": "^14.0.0",
+    "uuid": "^11.1.1",
     "yup": "^1.2.0"
   },
   "devDependencies": {
