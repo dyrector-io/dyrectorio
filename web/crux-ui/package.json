@@ -35,7 +35,7 @@
     "clsx": "^2.0.0",
     "formik": "^2.4.3",
     "js-yaml": "^4.1.1",
-    "next": "^15.5.6",
+    "next": "^15.5.16",
     "next-translate": "^2.6.2",
     "openpgp": "^6.3.0",
     "posthog-js": "^1.85.2",
@@ -48,7 +48,7 @@
     "react-simple-code-editor": "^0.13.1",
     "sharp": "^0.33.2",
     "swr": "^2.2.0",
-    "uuid": "^9.0.0",
+    "uuid": "^11.1.1",
     "yup": "^1.2.0"
   },
   "devDependencies": {
@@ -64,7 +64,6 @@
     "@types/react": "^18.2.64",
     "@types/react-datepicker": "^4.15.0",
     "@types/react-google-recaptcha": "^2.1.5",
-    "@types/uuid": "^9.0.2",
     "autoprefixer": "^10.4.14",
     "dotenv": "^16.3.1",
     "eslint": "^9.39.4",
