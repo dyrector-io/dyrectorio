@@ -11,6 +11,7 @@ import { QA_DIALOG_LABEL_DELETE_IMAGE, QA_MODAL_LABEL_IMAGE_TAGS } from 'quality
 import { useState } from 'react'
 import EditImageTags from './images/edit-image-tags'
 import { VerionState, VersionActions, selectTagsOfImage } from './use-version-state'
+import ImageTagInput from './images/image-tag-input'
 
 interface VersionViewListProps {
   state: VerionState
@@ -50,6 +51,7 @@ const VersionViewList = (props: VersionViewListProps) => {
   }
 
   const imageTags = tagsModalTarget ? selectTagsOfImage(state, tagsModalTarget) : null
+  const onTagSelected = it => actions.selectTagForImage(tagsModalTarget, it)
 
   return (
     <>
@@ -135,12 +137,16 @@ const VersionViewList = (props: VersionViewListProps) => {
           onClose={() => setTagsModalTarget(null)}
           qaLabel={QA_MODAL_LABEL_IMAGE_TAGS}
         >
-          <EditImageTags
-            loadingTags={tagsModalTarget.registry.type === 'unchecked' ? false : !imageTags}
-            selected={tagsModalTarget.tag}
-            tags={tagsModalTarget.registry.type === 'unchecked' ? null : imageTags}
-            onTagSelected={it => actions.selectTagForImage(tagsModalTarget, it)}
-          />
+          {tagsModalTarget.registry.type === 'unchecked' ? (
+            <ImageTagInput value={tagsModalTarget.tag} onTagSelected={onTagSelected} />
+          ) : (
+            <EditImageTags
+              selected={tagsModalTarget.tag}
+              tags={imageTags ?? []}
+              loadingTags={!imageTags}
+              onTagSelected={onTagSelected}
+            />
+          )}
         </DyoModal>
       )}
     </>

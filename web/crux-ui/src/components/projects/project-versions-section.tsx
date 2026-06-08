@@ -8,17 +8,7 @@ import useTranslation from 'next-translate/useTranslation'
 import { QA_DIALOG_LABEL_SET_AS_DEFAULT } from 'quality-assurance'
 import VersionCard from './versions/version-card'
 
-const sortVersions = (one: Version, other: Version) => {
-  if (one.default) {
-    return -1
-  }
-
-  if (other.default) {
-    return 1
-  }
-
-  return sortDate(one.audit.updatedAt, other.audit.updatedAt)
-}
+const sortVersions = (one: Version, other: Version) => sortDate(one.audit.updatedAt, other.audit.updatedAt)
 
 type ProjectVersionsSectionProps = {
   projectId: string

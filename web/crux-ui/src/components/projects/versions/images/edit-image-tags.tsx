@@ -12,18 +12,15 @@ import useTranslation from 'next-translate/useTranslation'
 import { useEffect, useMemo, useState } from 'react'
 import TagSortToggle, { TagSortState } from './tag-sort-toggle'
 
-type ImageTagInputProps = {
+type SelectImageTagListProps = {
   disabled?: boolean
   selected: string
   onTagSelected: (tag: string) => void
-}
-
-type SelectImageTagListProps = ImageTagInputProps & {
   tags: RegistryImageTag[]
   loadingTags: boolean
 }
 
-const SelectImageTagList = (props: SelectImageTagListProps) => {
+const EditImageTags = (props: SelectImageTagListProps) => {
   const { disabled, tags, selected: propsSelected, onTagSelected, loadingTags } = props
 
   const { t } = useTranslation('images')
@@ -109,7 +106,7 @@ const SelectImageTagList = (props: SelectImageTagListProps) => {
           {selected ? null : <DyoMessage messageType="info" message={t('selectTag')} />}
           <div className="flex flex-col max-h-96 overflow-y-auto mt-2">
             {sortedItems.slice(pageStart, pageStart + pagination.pageSize).map((it, index) => (
-              <div className="flex flex-row gap-2 justify-between">
+              <div key={it.name} className="flex flex-row gap-2 justify-between">
                 <DyoRadioButton
                   key={`tag-${it}`}
                   disabled={disabled}
@@ -143,42 +140,6 @@ const SelectImageTagList = (props: SelectImageTagListProps) => {
       )}
     </div>
   )
-}
-
-const ImageTagInput = (props: ImageTagInputProps) => {
-  const { disabled, selected: propsSelected, onTagSelected } = props
-
-  const { t } = useTranslation('images')
-
-  const [selected, setSelected] = useState(propsSelected ?? '')
-
-  return (
-    <div className="flex flex-col mt-6 mb-8">
-      <DyoInput
-        label={t('tag')}
-        labelClassName="mb-2.5"
-        placeholder={t('tag')}
-        disabled={disabled}
-        value={selected}
-        onChange={e => {
-          const { value } = e.target
-          setSelected(value)
-          if (value?.length > 0) {
-            onTagSelected(value)
-          }
-        }}
-        messageType="info"
-        message={!selected.length && t('tagRequired')}
-      />
-
-      <p className="text-light-eased ml-4 mt-2">{t('uncheckedRegistryExplanation')}</p>
-    </div>
-  )
-}
-
-const EditImageTags = (props: SelectImageTagListProps) => {
-  const { tags } = props
-  return tags ? <SelectImageTagList {...props} /> : <ImageTagInput {...props} />
 }
 
 export default EditImageTags

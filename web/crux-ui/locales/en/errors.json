@@ -25,6 +25,7 @@
   "registryRateLimit": "Rate limit reached, please try again later",
   "registryUnauthorized": "Unauthorized",
   "deployRequiredSecrets": "The following instances have missing required secrets: {{instances}}",
+  "deployConfigBundleConflict": "Unresolved conflicts between config bundles in: {{keys}}",
 
   "yup": {
     "mixed": {

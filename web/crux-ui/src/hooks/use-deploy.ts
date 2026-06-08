@@ -136,6 +136,15 @@ export const useDeploy = (opts: UseDeployOptions): UseDeployAction => {
         return
       }
 
+      if (property === 'configBundles') {
+        const keys = value as string[]
+        toast.error(t('errors:deployConfigBundleConflict', { keys }), {
+          className: toastClassName,
+        })
+
+        return
+      }
+
       if (property === 'protectedDeploymentId') {
         const confirmed = await confirm({
           qaLabel: QA_DIALOG_LABEL_DEPLOY_PROTECTED,

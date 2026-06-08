@@ -104,7 +104,7 @@ export default class JwtAuthGuard extends AuthGuard('jwt') {
     if (path !== '/api') {
       return
     }
-    const [paramName, token] = paramsString.split('=')
+    const [paramName, token] = paramsString?.split('=') ?? []
     if (paramName !== 'token' || !token) {
       return
     }
