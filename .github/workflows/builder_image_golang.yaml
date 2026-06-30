@@ -1,7 +1,7 @@
 name: builder_image_golang
 on:
-  # push:
-  #   paths: [distribution/images/builder-golang/**, .github/workflows/image-builder-golang.yml]
+  push:
+    paths: [distribution/images/builder-golang/**, .github/workflows/image-builder-golang.yml]
   pull_request:
     paths: [distribution/images/builder-golang/**, .github/workflows/image-builder-golang.yml]
 permissions:
