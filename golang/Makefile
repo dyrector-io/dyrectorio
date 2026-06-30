@@ -16,12 +16,12 @@ LDFLAGS := -ldflags "-X '${PACKAGE}/internal/version.BuildTimestamp=${BUILD_TIME
 # default tag is latest for building
 image_version ?= latest
 
-GOAIR=v1.61.7
-GOSEC=v2.22.2
-GOLANGCI=v2.4.0
-GOFUMPT=v0.7.0
-YAMLFMT=v0.16.0
-FIELDALIGN=v0.31.0
+GOAIR=v1.65.3
+GOSEC=v2.27.1
+GOLANGCI=v2.12.2
+GOFUMPT=v0.10.0
+YAMLFMT=v0.21.0
+FIELDALIGN=v0.47.0
 
 # support for: linux darwin windows
 GOOS?=linux

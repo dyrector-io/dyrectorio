@@ -10,6 +10,11 @@ import (
 	"github.com/dyrector-io/dyrectorio/golang/internal/version"
 )
 
+const (
+	appName       = "dyo"
+	defaultPrefix = "dyo-stable"
+)
+
 // flags
 const (
 	FlagDisableCrux        = "disable-crux"
@@ -33,9 +38,9 @@ const (
 //nolint:funlen
 func InitCLI() *ucli.App {
 	return &ucli.App{
-		Name:     "dyo",
+		Name:     appName,
 		Version:  version.BuildVersion(),
-		HelpName: "dyo",
+		HelpName: appName,
 		Usage:    "cli tool for deploying a complete dyrector.io stack locally, for demonstration, testing, or development purposes",
 
 		Commands: []*ucli.Command{
@@ -130,9 +135,9 @@ func InitCLI() *ucli.App {
 			},
 			&ucli.StringFlag{
 				Name:        FlagPrefix,
-				Value:       "dyo-stable",
+				Value:       defaultPrefix,
 				Aliases:     []string{"p"},
-				DefaultText: "dyo-stable",
+				DefaultText: defaultPrefix,
 				Usage:       "prefix that is preprended to container names",
 				Required:    false,
 				EnvVars:     []string{"PREFIX"},

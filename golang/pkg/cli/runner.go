@@ -130,7 +130,7 @@ func StopContainers(ctx context.Context, args *ArgsFlags) {
 	if args.Prefix != "" {
 		prefixes = args.Prefix
 	} else {
-		prefixes = "dyo-stable"
+		prefixes = defaultPrefix
 	}
 
 	for _, prefix := range strings.Split(prefixes, ",") {

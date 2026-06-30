@@ -202,8 +202,30 @@ type ContainerConfig struct {
 
 type Experimental struct {
 	NodeSelector map[string]string                       `json:"nodeSelector"`
+	Job          *Job                                    `json:"job,omitempty"`
 	Tolerations  []*applyv1.TolerationApplyConfiguration `json:"tolerations" binding:"dive"`
 	CustomRoute  []CustomRoute                           `json:"customRoute"`
+}
+
+type Job struct {
+	Triggers                   []JobTriggers `json:"triggers"`
+	PollingInterval            uint16        `json:"pollingInterval"`
+	MaxReplicaCount            uint16        `json:"maxReplicaCount"`
+	SuccessfulJobsHistoryLimit uint16        `json:"successfulJobsHistoryLimit"`
+	FailedJobsHistoryLimit     uint16        `json:"failedJobsHistoryLimit"`
+	Parallelism                uint16        `json:"parallelism"`
+	Completions                uint16        `json:"completions"`
+	BackoffLimit               uint16        `json:"backoffLimit"`
+}
+
+type JobTriggers struct {
+	Type                  string `json:"type"`
+	Protocol              string `json:"protocol"`
+	Mode                  string `json:"mode"`
+	QueueName             string `json:"queueName"`
+	Value                 string `json:"value"`
+	AuthSecretName        string `json:"authSecretName"`
+	ExcludeUnacknowledged bool   `json:"excludeUnacknowledged"`
 }
 
 // CustomRoute defines a custom HTTP route rule for the Gateway API,

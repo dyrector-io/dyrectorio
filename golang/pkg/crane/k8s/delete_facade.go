@@ -21,6 +21,7 @@ type DeleteFacade struct {
 	configmap  *configmap
 	ingress    *ingress
 	gateway    *gateway
+	job        *job
 	pvc        *PVC
 	appConfig  *config.Configuration
 	name       string
@@ -28,6 +29,12 @@ type DeleteFacade struct {
 
 func NewDeleteFacade(ctx context.Context, namespace, name string, cfg *config.Configuration) *DeleteFacade {
 	k8sClient := NewClient(cfg)
+
+	// best-effort: the job facade stays nil when KEDA is not installed
+	scaledJob, err := newScaledJob(ctx, k8sClient)
+	if err != nil {
+		log.Debug().Err(err).Msg("scaled job client unavailable for delete")
+	}
 
 	return &DeleteFacade{
 		ctx:        ctx,
@@ -38,6 +45,7 @@ func NewDeleteFacade(ctx context.Context, namespace, name string, cfg *config.Co
 		service:    NewService(ctx, k8sClient),
 		ingress:    newIngress(ctx, k8sClient),
 		gateway:    newGateway(ctx, k8sClient),
+		job:        scaledJob,
 		pvc:        NewPVC(ctx, k8sClient),
 		appConfig:  cfg,
 	}
@@ -67,6 +75,10 @@ func (d *DeleteFacade) DeleteHTTPRoutes() error {
 	return d.gateway.deleteHTTPRoute(d.namespace.name, d.name)
 }
 
+func (d *DeleteFacade) DeleteScaledJob() error {
+	return d.job.deleteScaledJob(d.namespace.name, d.name)
+}
+
 // hard-delete if called with prefix name only without container name
 func DeleteMultiple(c context.Context, request *common.DeleteContainersRequest) error {
 	cfg := grpc.GetConfigFromContext(c).(*config.Configuration)
@@ -90,21 +102,20 @@ func Delete(c context.Context, prefix, name string) error {
 
 	del := NewDeleteFacade(c, prefix, name, cfg)
 
-	// delete deployment is necessary while others are optional
-	// deployments contain containers
+	// The workload is either a Deployment or a KEDA ScaledJob, deleting both
 	err := del.DeleteDeployment()
-	if errors.IsNotFound(err) {
-		log.Fatal().Err(err).Stack().
-			Str("prefix", prefix).
-			Str("name", name).
-			Msg("Failed to delete container (not found)")
-		return err
-	} else if err != nil {
-		log.Fatal().Err(err).Stack().
+	if err != nil && !errors.IsNotFound(err) {
+		log.Error().Err(err).Stack().
 			Str("prefix", prefix).
 			Str("name", name).
 			Msg("Failed to delete container")
 		return err
+	}
+
+	// KEDA ScaledJob (best-effort, only present for job deployments)
+	err = del.DeleteScaledJob()
+	if err != nil && !errors.IsNotFound(err) {
+		log.Error().Err(err).Stack().Msg("Delete scaled job error")
 	}
 
 	// optional deletes, each deploy request overwrites/redeploys them anyway

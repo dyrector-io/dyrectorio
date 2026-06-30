@@ -39,6 +39,12 @@ const (
 	ArbitraryErrorMaxLength = 200
 	DefaultBwBinary         = "bw"
 	vaultDirPerm            = 0o700
+
+	cmdConfig = "config"
+	cmdUnlock = "unlock"
+	cmdList   = "list"
+	cmdItem   = "item"
+	cmdServer = "server"
 )
 
 type Config struct {
@@ -134,7 +140,7 @@ func New(ctx context.Context, cfg *Config, runner Runner, logger *zerolog.Logger
 // EnsureServer ensures bw is configured to use serverURL.
 // If the current server differs, it logs out (required by bw) and updates it.
 func (c *BWClient) EnsureServer() error {
-	res := c.run("", []string{"config", "server"}, c.cfg.ExtraEnv)
+	res := c.run("", []string{cmdConfig, cmdServer}, c.cfg.ExtraEnv)
 	if res.Err != nil {
 		c.log.Trace().Err(res.Err).Msgf("server config read, ignored error")
 	} else {
@@ -147,7 +153,7 @@ func (c *BWClient) EnsureServer() error {
 		// 2) Different server → bw requires logout before changing server config.
 		_ = c.LogoutWithEnv(c.cfg.ExtraEnv) // ignore not logged in
 	}
-	return c.run("", []string{"config", "server", c.cfg.HostURL}, c.cfg.ExtraEnv).Err
+	return c.run("", []string{cmdConfig, cmdServer, c.cfg.HostURL}, c.cfg.ExtraEnv).Err
 }
 
 func (c *BWClient) LogoutWithEnv(env map[string]string) error {
@@ -198,7 +204,7 @@ func (c *BWClient) LoginAPIKey() error {
 // The session MUST be passed per command via BW_SESSION env by the caller.
 func (c *BWClient) Unlock(masterPassword string) (string, error) {
 	stdin := []byte(masterPassword + "\n")
-	res := c.run("", []string{"unlock", "--raw"}, nil, withStdin(stdin))
+	res := c.run("", []string{cmdUnlock, "--raw"}, nil, withStdin(stdin))
 	if res.Err != nil {
 		return "", res.Err
 	}
@@ -215,7 +221,7 @@ func (c *BWClient) Sync(session string) error {
 }
 
 func (c *BWClient) ListItems(session string) ([]Item, error) {
-	res := c.run(session, []string{"list", "items"}, nil)
+	res := c.run(session, []string{cmdList, "items"}, nil)
 	if res.Err != nil {
 		return nil, res.Err
 	}
@@ -229,7 +235,7 @@ func (c *BWClient) ListItems(session string) ([]Item, error) {
 }
 
 func (c *BWClient) GetItem(session, itemID string) (Item, error) {
-	res := c.run(session, []string{"get", "item", itemID}, nil)
+	res := c.run(session, []string{"get", cmdItem, itemID}, nil)
 	if res.Err != nil {
 		return Item{}, res.Err
 	}
@@ -262,7 +268,7 @@ func (c *BWClient) CreateItem(session string, item *Item) (Item, error) {
 		return Item{}, err
 	}
 
-	res := c.run(session, []string{"create", "item", encoded}, nil)
+	res := c.run(session, []string{"create", cmdItem, encoded}, nil)
 	if res.Err != nil {
 		return Item{}, res.Err
 	}
@@ -397,7 +403,7 @@ func (c *BWClient) EditItem(session, itemID string, item *Item) (Item, error) {
 		return Item{}, err
 	}
 
-	res := c.run(session, []string{"edit", "item", itemID, encoded}, nil)
+	res := c.run(session, []string{"edit", cmdItem, itemID, encoded}, nil)
 	if res.Err != nil {
 		return Item{}, res.Err
 	}
@@ -414,7 +420,7 @@ func (c *BWClient) EditItem(session, itemID string, item *Item) (Item, error) {
 }
 
 func (c *BWClient) ListOrganizations(session string) ([]Organization, error) {
-	res := c.run(session, []string{"list", "organizations"}, nil)
+	res := c.run(session, []string{cmdList, "organizations"}, nil)
 	if res.Err != nil {
 		return nil, res.Err
 	}
@@ -424,7 +430,7 @@ func (c *BWClient) ListOrganizations(session string) ([]Organization, error) {
 }
 
 func (c *BWClient) ListCollections(session, organizationID string) ([]Collection, error) {
-	args := []string{"list", "collections"}
+	args := []string{cmdList, "collections"}
 	if organizationID != "" {
 		args = append(args, "--organizationid", organizationID)
 	}
@@ -510,7 +516,7 @@ func (c *BWClient) run(session string, args []string, env map[string]string, opt
 	// This can happen even on exit 0 when multiple bw processes share a BW_DATA_PATH.
 	// Skip for "unlock" itself — it naturally displays the prompt on stderr while
 	// reading the password from stdin.
-	isUnlockCmd := len(args) > 0 && args[0] == "unlock"
+	isUnlockCmd := len(args) > 0 && args[0] == cmdUnlock
 	if !isUnlockCmd && strings.Contains(strings.ToLower(string(res.StdErr)), "master password") {
 		res.Err = ErrLocked
 		return res

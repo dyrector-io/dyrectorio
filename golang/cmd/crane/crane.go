@@ -18,11 +18,13 @@ import (
 	cli "github.com/urfave/cli/v2"
 )
 
+const appName = "crane"
+
 func main() {
 	app := &cli.App{
-		Name:     "crane",
+		Name:     appName,
 		Version:  version.BuildVersion(),
-		HelpName: "crane",
+		HelpName: appName,
 		Usage:    "cli tool for serving a k8s agent of dyrector.io",
 		Action:   serve,
 

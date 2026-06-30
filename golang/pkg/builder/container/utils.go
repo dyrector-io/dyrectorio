@@ -23,7 +23,8 @@ func registryAuthBase64(user, password string) string {
 		Username: user,
 		Password: password,
 	}
-	encodedJSON, err := json.Marshal(authConfig)
+	// Docker's registry auth payload requires marshaling the password field.
+	encodedJSON, err := json.Marshal(authConfig) //nolint:gosec // G117: intentional auth payload
 	if err != nil {
 		log.Error().Err(err).Msg("Failed to encode json")
 		return ""

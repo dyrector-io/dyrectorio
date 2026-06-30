@@ -81,15 +81,7 @@ func (d *Deployment) DeployDeployment(p *DeploymentParams) error {
 	}
 	maps.Copy(labels, p.labels)
 
-	podSpec := corev1.PodSpec().WithContainers(containerConfig).
-		WithInitContainers(getInitContainers(p, d.appConfig)...).
-		WithVolumes(getVolumesFromMap(p.volumes, d.appConfig)...).
-		WithNodeSelector(p.containerConfig.Experimental.NodeSelector).
-		WithTolerations(p.containerConfig.Experimental.Tolerations...)
-
-	if p.pullSecretName != "" {
-		podSpec.WithImagePullSecrets(corev1.LocalObjectReference().WithName(p.pullSecretName))
-	}
+	podSpec := buildPodSpec(containerConfig, p, d.appConfig)
 
 	deployment := appsv1.Deployment(name, p.namespace).
 		WithSpec(
@@ -336,6 +328,27 @@ func buildContainer(p *DeploymentParams,
 	}
 
 	return container, nil
+}
+
+// buildPodSpec assembles the pod spec shared by Deployments and KEDA ScaledJobs:
+// the main container, init containers, volumes, node selector, tolerations and the
+// image pull secret. The container is built separately so callers can reuse it.
+func buildPodSpec(
+	container *corev1.ContainerApplyConfiguration,
+	p *DeploymentParams,
+	cfg *config.Configuration,
+) *corev1.PodSpecApplyConfiguration {
+	podSpec := corev1.PodSpec().WithContainers(container).
+		WithInitContainers(getInitContainers(p, cfg)...).
+		WithVolumes(getVolumesFromMap(p.volumes, cfg)...).
+		WithNodeSelector(p.containerConfig.Experimental.NodeSelector).
+		WithTolerations(p.containerConfig.Experimental.Tolerations...)
+
+	if p.pullSecretName != "" {
+		podSpec.WithImagePullSecrets(corev1.LocalObjectReference().WithName(p.pullSecretName))
+	}
+
+	return podSpec
 }
 
 func getResourceManagement(resourceConfig v1.ResourceConfig,

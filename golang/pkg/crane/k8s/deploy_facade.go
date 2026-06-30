@@ -26,6 +26,7 @@ type DeployFacade struct {
 	configmap      *configmap
 	ingress        *ingress
 	gateway        *gateway
+	job            *job
 	params         *DeployFacadeParams
 	pvc            *PVC
 	ServiceMonitor *ServiceMonitor
@@ -52,6 +53,14 @@ func NewDeployFacade(params *DeployFacadeParams, cfg *config.Configuration) *Dep
 		log.Warn().Err(err).Msgf("service client could not be created")
 	}
 
+	var scaledJob *job
+	if params.ContainerConfig.Experimental.Job != nil {
+		scaledJob, err = newScaledJob(params.Ctx, k8sClient)
+		if err != nil {
+			log.Warn().Err(err).Msgf("scaled job client could not be created")
+		}
+	}
+
 	return &DeployFacade{
 		ctx:            params.Ctx,
 		params:         params,
@@ -63,6 +72,7 @@ func NewDeployFacade(params *DeployFacadeParams, cfg *config.Configuration) *Dep
 		service:        NewService(params.Ctx, k8sClient),
 		ingress:        newIngress(params.Ctx, k8sClient),
 		gateway:        newGateway(params.Ctx, k8sClient),
+		job:            scaledJob,
 		secret:         NewSecret(params.Ctx, k8sClient),
 		pvc:            NewPVC(params.Ctx, k8sClient),
 		ServiceMonitor: serviceMonitor,
@@ -165,6 +175,23 @@ func (d *DeployFacade) Deploy() error {
 	if d.params.ContainerConfig.Ports != nil {
 		portList = append(portList, d.params.ContainerConfig.Ports...)
 	}
+
+	imagePullSecretName, err := d.applyImagePullSecret()
+	if err != nil {
+		return err
+	}
+
+	if d.params.ContainerConfig.Experimental.Job != nil {
+		if d.job == nil {
+			return fmt.Errorf("scaled job requested but the KEDA ScaledJob CRD is unavailable")
+		}
+		if err := d.job.deployScaledJob(d.buildDeploymentParams(portList, imagePullSecretName)); err != nil {
+			log.Error().Err(err).Stack().Msg("Error with scaled job")
+			return err
+		}
+		return nil
+	}
+
 	if err := d.service.DeployService(
 		&ServiceParams{
 			namespace:     d.params.InstanceConfig.ContainerPreName,
@@ -182,20 +209,38 @@ func (d *DeployFacade) Deploy() error {
 		return err
 	}
 
-	imagePullSecretName := ""
-
-	if d.params.imagePullSecrets != nil {
-		imagePullSecretName = fmt.Sprintf("%s-reg", d.params.ContainerConfig.Container)
-		if err := d.secret.ApplyRegistryAuthSecret(d.ctx,
-			d.params.InstanceConfig.ContainerPreName,
-			imagePullSecretName,
-			d.params.imagePullSecrets,
-			d.appConfig); err != nil {
-			return err
-		}
+	if err := d.deployment.DeployDeployment(d.buildDeploymentParams(portList, imagePullSecretName)); err != nil {
+		log.Error().Err(err).Stack().Msg("Error with deployment")
+		return err
 	}
 
-	if err := d.deployment.DeployDeployment(&DeploymentParams{
+	if d.params.ContainerConfig.Expose {
+		d.deployExpose()
+	}
+	return nil
+}
+
+// applyImagePullSecret for registrySecrets
+func (d *DeployFacade) applyImagePullSecret() (string, error) {
+	if d.params.imagePullSecrets == nil {
+		return "", nil
+	}
+
+	imagePullSecretName := fmt.Sprintf("%s-reg", d.params.ContainerConfig.Container)
+	if err := d.secret.ApplyRegistryAuthSecret(d.ctx,
+		d.params.InstanceConfig.ContainerPreName,
+		imagePullSecretName,
+		d.params.imagePullSecrets,
+		d.appConfig); err != nil {
+		return "", err
+	}
+
+	return imagePullSecretName, nil
+}
+
+// buildDeploymentParams wrapper for all workload config
+func (d *DeployFacade) buildDeploymentParams(portList []builder.PortBinding, pullSecretName string) *DeploymentParams {
+	return &DeploymentParams{
 		image:           d.params.Image,
 		namespace:       d.params.InstanceConfig.ContainerPreName,
 		containerConfig: &d.params.ContainerConfig,
@@ -208,16 +253,8 @@ func (d *DeployFacade) Deploy() error {
 		issuer:          d.params.Issuer,
 		annotations:     d.params.ContainerConfig.Annotations.Deployment,
 		labels:          d.params.ContainerConfig.Labels.Deployment,
-		pullSecretName:  imagePullSecretName,
-	}); err != nil {
-		log.Error().Err(err).Stack().Msg("Error with deployment")
-		return err
+		pullSecretName:  pullSecretName,
 	}
-
-	if d.params.ContainerConfig.Expose {
-		d.deployExpose()
-	}
-	return nil
 }
 
 func (d *DeployFacade) deployExpose() {
