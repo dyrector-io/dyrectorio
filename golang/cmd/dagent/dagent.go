@@ -16,6 +16,8 @@ import (
 	cli "github.com/urfave/cli/v2"
 )
 
+const appName = "dagent"
+
 func serve(_ *cli.Context) error {
 	cfg := config.Configuration{}
 
@@ -60,9 +62,9 @@ func getHealth(_ *cli.Context) error {
 
 func main() {
 	app := &cli.App{
-		Name:     "dagent",
+		Name:     appName,
 		Version:  version.BuildVersion(),
-		HelpName: "dagent",
+		HelpName: appName,
 		Usage:    "cli tool for serving a Docker agent of dyrector.io",
 		Action:   serve,
 

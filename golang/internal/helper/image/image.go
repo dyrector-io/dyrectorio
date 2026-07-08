@@ -28,6 +28,8 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
+const filterKeyReference = "reference"
+
 // PullResponse is not explicit
 type PullResponse struct {
 	ID             string `json:"id"`
@@ -81,7 +83,7 @@ func GetRegistryURLProto(reg *string, registryAuth *agent.RegistryAuth) string {
 
 func GetImageByReference(ctx context.Context, cli client.APIClient, ref string) (*image.Summary, error) {
 	images, err := cli.ImageList(ctx, image.ListOptions{
-		Filters: filters.NewArgs(filters.KeyValuePair{Key: "reference", Value: ref}),
+		Filters: filters.NewArgs(filters.KeyValuePair{Key: filterKeyReference, Value: ref}),
 	})
 	if err != nil {
 		return nil, err
@@ -104,7 +106,7 @@ func Exists(
 ) (*ExistResult, error) {
 	exists := ExistResult{}
 	images, err := cli.ImageList(ctx, image.ListOptions{
-		Filters: filters.NewArgs(filters.KeyValuePair{Key: "reference", Value: expandedImageName}),
+		Filters: filters.NewArgs(filters.KeyValuePair{Key: filterKeyReference, Value: expandedImageName}),
 	})
 	if err != nil {
 		if logger != nil {

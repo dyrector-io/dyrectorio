@@ -113,6 +113,12 @@ linters:
           - revive
         path: (internal/common|internal/util|pkg/dagent/utils)/
         text: "avoid meaningless package names"
+      - linters:
+          - goconst
+        path: pkg/crane/k8s/
+      - linters:
+          - goconst
+        path: pkg/cli/container_defaults\.go
     paths:
       - internal/cache
       - third_party$
