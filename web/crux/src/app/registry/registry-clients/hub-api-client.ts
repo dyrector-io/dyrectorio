@@ -78,6 +78,9 @@ export default abstract class HubApiClient {
           })
 
         rateTry += 1
+      } else if (res.status === 403) {
+        // we can't list more than 100 public images in docker hub anymore
+        break
       } else {
         throw getRegistryApiException(res, endpoint)
       }

@@ -1,5 +1,6 @@
 import { DyoInput } from '@app/elements/dyo-input'
 import { DyoLabel } from '@app/elements/dyo-label'
+import DyoMessage from '@app/elements/dyo-message'
 import DyoPassword from '@app/elements/dyo-password'
 import DyoToggle from '@app/elements/dyo-toggle'
 import { EditableHubRegistryDetails } from '@app/models'
@@ -17,6 +18,10 @@ const HubRegistryFields = (props: EditRegistryTypeProps<EditableHubRegistryDetai
   return (
     <>
       <DyoLabel className="text-light mt-2">{t('tips.hub')}</DyoLabel>
+
+      {values.public && (
+        <DyoMessage className="text-xs italic" message={t('publicHubRegistryLimit')} messageType="info" />
+      )}
 
       <DyoInput
         className="max-w-lg"
