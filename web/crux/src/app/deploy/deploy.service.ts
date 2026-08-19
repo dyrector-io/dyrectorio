@@ -73,6 +73,7 @@ import {
 
 type InstanceConfigTemplate = {
   versionName?: string
+  containerName?: string
 }
 
 @Injectable()
@@ -1253,6 +1254,11 @@ export default class DeployService {
   }
 
   private applyInstanceConfigTemplate(config: ConcreteContainerConfigData, template: InstanceConfigTemplate) {
+    template = {
+      ...template,
+      containerName: config.name,
+    }
+
     if (config.environment) {
       applyUniqueKeyValueTemplate(config.environment, template)
     }
