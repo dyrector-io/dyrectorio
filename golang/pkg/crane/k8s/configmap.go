@@ -51,7 +51,8 @@ func (cm *configmap) deployConfigMapData(namespace, name string, envList map[str
 		return err
 	}
 
-	result, err := client.Apply(cm.ctx,
+	result, err := client.Apply(
+		cm.ctx,
 		corev1.ConfigMap(name, namespace).
 			WithData(envList),
 		metaV1.ApplyOptions{FieldManager: cm.appConfig.FieldManagerName, Force: cm.appConfig.ForceOnConflicts},
@@ -95,8 +96,10 @@ func (cm *configmap) deployIngressProxyHeaders(namespace, containerName string, 
 		headerMap[item] = ""
 	}
 
-	_, err = client.Apply(cm.ctx,
-		corev1.ConfigMap(containerName, namespace).
+	ingressConfigMapName := util.JoinV("-", containerName, ProxyHeadersConfigMapSuffix)
+	_, err = client.Apply(
+		cm.ctx,
+		corev1.ConfigMap(ingressConfigMapName, namespace).
 			WithData(headerMap),
 		metaV1.ApplyOptions{FieldManager: cm.appConfig.FieldManagerName, Force: cm.appConfig.ForceOnConflicts},
 	)

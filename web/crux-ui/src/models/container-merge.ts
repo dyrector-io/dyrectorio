@@ -12,6 +12,8 @@ import {
 } from './container'
 import { rangesOverlap } from './container-conflict'
 
+const deepCopy = <T extends object>(obj: T | null): T | null => JSON.parse(JSON.stringify(obj))
+
 export const mergeNumber = (strong: number, weak: number): number => {
   if (typeof strong === 'number') {
     return strong
@@ -269,62 +271,72 @@ export const mergeConfigsWithConcreteConfig = (
 
   const baseConfig = squashConfigs(concrete, squashed)
 
-  return {
+  const result = {
     ...baseConfig,
     secrets: mergeSecrets(concrete.secrets, squashed.secrets),
   }
+
+  return deepCopy(result)
 }
 
 export const mergeInstanceConfigWithImageConfig = (
   instance: ConcreteContainerConfigData,
   image: ContainerConfigData,
-): ConcreteContainerConfigData => ({
-  ...squashConfigs(instance, image),
-  secrets: mergeSecrets(instance.secrets, image.secrets),
-})
+): ConcreteContainerConfigData => {
+  const result = {
+    ...squashConfigs(instance, image),
+    secrets: mergeSecrets(instance.secrets, image.secrets),
+  }
+
+  return deepCopy(result)
+}
 
 export const mergeInstanceConfigWithDeploymentConfig = (
   instance: ConcreteContainerConfigData,
   deployment: ConcreteContainerConfigData,
-): ConcreteContainerConfigData => ({
-  // common
-  name: instance.name ?? deployment.name ?? null,
-  environment: mergeUniqueKeyValues(instance.environment, deployment.environment),
-  user: mergeNumber(instance.user, deployment.user),
-  workingDirectory: instance.workingDirectory ?? deployment.workingDirectory ?? null,
-  tty: mergeBoolean(instance.tty, deployment.tty),
-  ports: mergePorts(instance.ports, deployment.ports),
-  portRanges: mergePortRanges(instance.portRanges, deployment.portRanges),
-  args: mergeUniqueKeys(instance.args, deployment.args),
-  commands: mergeUniqueKeys(instance.commands, deployment.commands),
-  expose: instance.expose ?? deployment.expose ?? null,
-  configContainer: instance.configContainer ?? deployment.configContainer ?? null,
-  routing: instance.routing ?? deployment.routing ?? null,
-  volumes: mergeVolumes(instance.volumes, deployment.volumes),
-  initContainers: instance.initContainers ?? deployment.initContainers ?? null, // TODO (@m8vago): merge them correctly after the init container rework
-  capabilities: [], // TODO (@m8vago, @nandor-magyar): capabilities feature is still missing
-  storage: instance.storage ?? deployment.storage,
+): ConcreteContainerConfigData => {
+  const result = {
+    // common
+    name: instance.name ?? deployment.name ?? null,
+    environment: mergeUniqueKeyValues(instance.environment, deployment.environment),
+    user: mergeNumber(instance.user, deployment.user),
+    workingDirectory: instance.workingDirectory ?? deployment.workingDirectory ?? null,
+    tty: mergeBoolean(instance.tty, deployment.tty),
+    ports: mergePorts(instance.ports, deployment.ports),
+    portRanges: mergePortRanges(instance.portRanges, deployment.portRanges),
+    args: mergeUniqueKeys(instance.args, deployment.args),
+    commands: mergeUniqueKeys(instance.commands, deployment.commands),
+    expose: instance.expose ?? deployment.expose ?? null,
+    configContainer: instance.configContainer ?? deployment.configContainer ?? null,
+    routing: instance.routing ?? deployment.routing ?? null,
+    volumes: mergeVolumes(instance.volumes, deployment.volumes),
+    initContainers: instance.initContainers ?? deployment.initContainers ?? null, // TODO (@m8vago): merge them correctly after the init container rework
+    capabilities: [], // TODO (@m8vago, @nandor-magyar): capabilities feature is still missing
+    storage: instance.storage ?? deployment.storage,
 
-  // crane
-  corsHeaders: mergeUniqueKeys(instance.corsHeaders, deployment.corsHeaders),
-  proxyBuffering: mergeBoolean(instance.proxyBuffering, deployment.proxyBuffering),
-  proxyHeaders: mergeUniqueKeys(instance.proxyHeaders, deployment.proxyHeaders),
-  extraLBAnnotations: mergeUniqueKeyValues(instance.extraLBAnnotations, deployment.extraLBAnnotations),
-  healthCheckConfig: instance.healthCheckConfig ?? deployment.healthCheckConfig ?? null,
-  resourceConfig: instance.resourceConfig ?? deployment.resourceConfig ?? null,
-  useLoadBalancer: mergeBoolean(instance.useLoadBalancer, deployment.useLoadBalancer),
-  deploymentStrategy: instance.deploymentStrategy ?? deployment.deploymentStrategy ?? null,
-  labels: mergeMarkers(instance.labels, deployment.labels),
-  annotations: mergeMarkers(instance.annotations, deployment.annotations),
-  metrics: instance.metrics ?? deployment.metrics ?? null,
+    // crane
+    corsHeaders: mergeUniqueKeys(instance.corsHeaders, deployment.corsHeaders),
+    proxyBuffering: mergeBoolean(instance.proxyBuffering, deployment.proxyBuffering),
+    proxyHeaders: mergeUniqueKeys(instance.proxyHeaders, deployment.proxyHeaders),
+    extraLBAnnotations: mergeUniqueKeyValues(instance.extraLBAnnotations, deployment.extraLBAnnotations),
+    healthCheckConfig: instance.healthCheckConfig ?? deployment.healthCheckConfig ?? null,
+    resourceConfig: instance.resourceConfig ?? deployment.resourceConfig ?? null,
+    useLoadBalancer: mergeBoolean(instance.useLoadBalancer, deployment.useLoadBalancer),
+    deploymentStrategy: instance.deploymentStrategy ?? deployment.deploymentStrategy ?? null,
+    labels: mergeMarkers(instance.labels, deployment.labels),
+    annotations: mergeMarkers(instance.annotations, deployment.annotations),
+    metrics: instance.metrics ?? deployment.metrics ?? null,
 
-  // dagent
-  logConfig: instance.logConfig ?? deployment.logConfig ?? null,
-  networkMode: instance.networkMode ?? deployment.networkMode ?? null,
-  restartPolicy: instance.restartPolicy ?? deployment.restartPolicy ?? null,
-  networks: mergeUniqueKeys(instance.networks, deployment.networks),
-  dockerLabels: mergeUniqueKeyValues(instance.dockerLabels, deployment.dockerLabels),
-  expectedState: instance.expectedState ?? deployment.expectedState ?? null,
-  experimental: mergeObject(instance.experimental, deployment.experimental),
-  secrets: mergeUniqueKeyValues(instance.secrets, deployment.secrets),
-})
+    // dagent
+    logConfig: instance.logConfig ?? deployment.logConfig ?? null,
+    networkMode: instance.networkMode ?? deployment.networkMode ?? null,
+    restartPolicy: instance.restartPolicy ?? deployment.restartPolicy ?? null,
+    networks: mergeUniqueKeys(instance.networks, deployment.networks),
+    dockerLabels: mergeUniqueKeyValues(instance.dockerLabels, deployment.dockerLabels),
+    expectedState: instance.expectedState ?? deployment.expectedState ?? null,
+    experimental: mergeObject(instance.experimental, deployment.experimental),
+    secrets: mergeUniqueKeyValues(instance.secrets, deployment.secrets),
+  }
+
+  return deepCopy(result)
+}
