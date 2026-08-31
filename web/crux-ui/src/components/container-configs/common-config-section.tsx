@@ -1039,6 +1039,10 @@ const CommonConfigSection = (props: CommonConfigSectionProps) => {
                       qaLabel={chipsQALabelFromValue}
                     />
                   </div>
+
+                  {item.type === 'secret' && (
+                    <DyoMessage grow messageType="info" message={t('common.secretVolumeTypeTips')} />
+                  )}
                 </div>
 
                 {(conflictErrors?.volumes ?? {})[item.path] && (
