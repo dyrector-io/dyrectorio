@@ -91,26 +91,16 @@ func (cm *configmap) deployIngressProxyHeaders(namespace, containerName string, 
 		return err
 	}
 
-	configMapName := util.JoinV("-", namespace, containerName)
-	configMap, err := client.Get(cm.ctx, configMapName, metaV1.GetOptions{})
-
-	var configMapData map[string]string
-	if err != nil {
-		log.Info().Str("namespace", namespace).Str("configmap", configMapName).Msg("configmap could not be loaded")
-
-		configMapData = make(map[string]string)
-	} else {
-		configMapData = configMap.Data
-	}
-
+	headerMap := make(map[string]string)
 	for _, item := range headers {
-		configMapData[item] = ""
+		headerMap[item] = ""
 	}
 
+	ingressConfigMapName := util.JoinV("-", containerName, ProxyHeadersConfigMapSuffix)
 	_, err = client.Apply(
 		cm.ctx,
-		corev1.ConfigMap(containerName, namespace).
-			WithData(configMapData),
+		corev1.ConfigMap(ingressConfigMapName, namespace).
+			WithData(headerMap),
 		metaV1.ApplyOptions{FieldManager: cm.appConfig.FieldManagerName, Force: cm.appConfig.ForceOnConflicts},
 	)
 

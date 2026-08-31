@@ -19,6 +19,10 @@ import (
 	"github.com/dyrector-io/dyrectorio/golang/pkg/crane/config"
 )
 
+const (
+	ProxyHeadersConfigMapSuffix = "proxy-headers"
+)
+
 // facade object for ingress management
 type ingress struct {
 	ctx       context.Context
@@ -81,7 +85,8 @@ func (ing *ingress) deployIngress(options *DeployIngressOptions) error {
 			ContainerName:  options.containerName,
 			Prefix:         options.namespace,
 			DomainFallback: ing.appConfig.RootDomain,
-		})
+		},
+	)
 
 	ingressPath := "/"
 	if routing.ingressPath != "" {
@@ -110,7 +115,8 @@ func (ing *ingress) deployIngress(options *DeployIngressOptions) error {
 									WithPort(netv1.ServiceBackendPort().WithNumber(int32(routedPort))),
 							),
 						),
-				)))
+				)),
+		)
 	tlsConf := getTLSConfig(ingressDomain, options.containerName, options.routing.tls)
 	if tlsConf != nil {
 		spec.WithTLS(tlsConf)
@@ -180,7 +186,7 @@ func getIngressAnnotations(namespace, name string, opts *routingOptions) map[str
 	}
 
 	if len(opts.proxyHeaders) > 0 {
-		annotations["nginx.ingress.kubernetes.io/proxy-set-headers"] = util.JoinV("/", namespace, name)
+		annotations["nginx.ingress.kubernetes.io/proxy-set-headers"] = util.JoinV("/", namespace, name, ProxyHeadersConfigMapSuffix)
 	}
 
 	if opts.uploadLimit != "" {
