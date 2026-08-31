@@ -40,6 +40,7 @@ import {
   NodeDto,
   NodeGenerateScriptDto,
   NodeInstallDto,
+  NodePrefixesDto,
   UpdateNodeDto,
 } from './node.dto'
 import NodeService from './node.service'
@@ -71,6 +72,26 @@ export default class NodeHttpController {
   @ApiForbiddenResponse({ description: 'Unauthorized request for nodes.' })
   async getNodes(@TeamSlug() teamSlug: string): Promise<NodeDto[]> {
     return this.service.getNodes(teamSlug)
+  }
+
+  @Get('prefixes')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({
+    description:
+      "Fetch available node prefixes. Request must include `teamSlug` in URL. Response should include an array with the node's `type`, `id`, and `name`.",
+    summary: 'Get available prefixes of all nodes that belong to your team.',
+  })
+  @ApiOkResponse({
+    type: NodePrefixesDto,
+    isArray: true,
+    description: 'Data of node prefixes.',
+  })
+  @ApiForbiddenResponse({ description: 'Unauthorized request for node prefixes.' })
+  async getNodePrefixes(
+    @TeamSlug() teamSlug: string,
+    @IdentityFromRequest() identity: Identity,
+  ): Promise<NodePrefixesDto[]> {
+    return this.service.getPrefixes(teamSlug, identity)
   }
 
   @Get(ROUTE_NODE_ID)

@@ -814,17 +814,18 @@ export default class DeployService {
       }
     }
 
+    if (query.prefix) {
+      where = {
+        ...where,
+        prefix: query.prefix,
+      }
+    }
+
     if (query.filter) {
       const { filter: filterKeyword } = query
       where = {
         ...where,
         OR: [
-          {
-            prefix: {
-              contains: filterKeyword,
-              mode: 'insensitive',
-            },
-          },
           {
             node: {
               name: {
@@ -852,6 +853,15 @@ export default class DeployService {
             },
           },
         ],
+      }
+
+      if (!query.prefix) {
+        where.OR.push({
+          prefix: {
+            contains: filterKeyword,
+            mode: 'insensitive',
+          },
+        })
       }
     }
 

@@ -18,6 +18,7 @@ import {
   WS_TYPE_DELETE_CONTAINER,
   WS_TYPE_WATCH_CONTAINERS_STATE,
   WatchContainerStatusMessage,
+  containerPortsToString,
   containerPrefixNameOf,
 } from '@app/models'
 import { ANCHOR_EDIT } from '@app/routes'
@@ -129,6 +130,7 @@ const useNodeDetailsState = (options: NodeDetailsStateOptions): [NodeDetailsStat
         it.reason,
         it.imageName,
         it.imageTag,
+        containerPortsToString(it.ports, it.ports.length),
         utcDateToLocale(it.createdAt),
       ]),
       containerShowAllFilter,

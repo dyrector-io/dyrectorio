@@ -28,7 +28,7 @@ import { BasicNodeDto, BasicNodeWithStatus } from '../node/node.dto'
 import { BasicProjectDto } from '../project/project.dto'
 import { BasicVersionDto } from '../version/version.dto'
 
-export const DEPLOYMENT_STATUS_VALUES = ['preparing', 'in-progress', 'successful', 'failed', 'obsolete'] as const
+export const DEPLOYMENT_STATUS_VALUES = ['preparing', 'in-progress', 'successful', 'failed', 'obsolete', 'downgraded'] as const
 export type DeploymentStatusDto = (typeof DEPLOYMENT_STATUS_VALUES)[number]
 
 export type EnvironmentToConfigBundleNameMap = Record<string, string>
@@ -56,6 +56,10 @@ export class DeploymentQueryDto extends PaginationQuery {
   @Type(() => String)
   @ApiProperty()
   readonly configBundleId?: string
+
+  @IsOptional()
+  @IsString()
+  readonly prefix?: string
 }
 
 export class BasicDeploymentDto {
@@ -171,7 +175,7 @@ export class DeploymentWithConfigDto extends DeploymentDto {
   @ValidateNested()
   config: ConcreteContainerConfigDto
 
-  @IsString({ each: true })
+  @ValidateNested({ each: true })
   @IsOptional()
   configBundles: ConfigBundleDetailsDto[]
 }
