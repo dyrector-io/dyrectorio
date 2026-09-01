@@ -89,6 +89,8 @@ test('Deleting a deployment should refresh deployment list', async ({ page }) =>
   await page.goto(TEAM_ROUTES.deployment.list())
   await page.waitForSelector('h2:text-is("Deployments")')
 
+  await page.getByRole('button', { name: 'All' }).click()
+
   await page.getByPlaceholder('Search').fill(projectName)
   await expect(page.locator('table.w-full >> tbody >> tr')).toHaveCount(2)
 
