@@ -205,7 +205,7 @@ test('Stopping the underlying container of a log stream should not affect the co
   page,
   browser,
 }) => {
-  const prefix = 'log'
+  const prefix = 'pw-log'
   const image = 'nginx'
   const containerName = `pw-${prefix}-${image}`
 

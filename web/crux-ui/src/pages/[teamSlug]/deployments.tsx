@@ -14,8 +14,11 @@ import DyoFilterChips from '@app/elements/dyo-filter-chips'
 import { DyoHeading } from '@app/elements/dyo-heading'
 import DyoIcon from '@app/elements/dyo-icon'
 import { DyoInput } from '@app/elements/dyo-input'
+import { DyoLabel } from '@app/elements/dyo-label'
 import DyoLink from '@app/elements/dyo-link'
+import DyoMessage from '@app/elements/dyo-message'
 import DyoModal, { DyoConfirmationModal } from '@app/elements/dyo-modal'
+import DyoSelect from '@app/elements/dyo-select'
 import DyoTable, { DyoColumn, sortDate, sortEnum, sortString } from '@app/elements/dyo-table'
 import { defaultApiErrorHandler } from '@app/errors'
 import useConfirmation from '@app/hooks/use-confirmation'
@@ -28,17 +31,19 @@ import {
   DeploymentQuery,
   DeploymentStatus,
   DyoNode,
+  NodePrefixes,
   PaginatedList,
   PaginationQuery,
   deploymentIsCopiable,
   deploymentIsDeletable,
 } from '@app/models'
-import { auditToLocaleDate } from '@app/utils'
+import { auditToLocaleDate, fetcher } from '@app/utils'
 import clsx from 'clsx'
 import useTranslation from 'next-translate/useTranslation'
 import { useRouter } from 'next/router'
 import { QA_DIALOG_LABEL_DELETE_DEPLOYMENT, QA_MODAL_LABEL_DEPLOYMENT_NOTE } from 'quality-assurance'
 import { useCallback, useEffect, useState } from 'react'
+import useSWR from 'swr'
 
 const defaultPagination: PaginationSettings = { pageNumber: 0, pageSize: 10 }
 
@@ -46,6 +51,7 @@ type FilterState = {
   filter: string
   status: DeploymentStatus | null
   node: DyoNode | null
+  prefix: string | null
 }
 
 const DeploymentsPage = () => {
@@ -57,9 +63,27 @@ const DeploymentsPage = () => {
 
   const [filter, setFilter] = useState<FilterState>({
     filter: '',
-    status: null,
+    status: 'successful',
     node: null,
+    prefix: null,
   })
+
+  const [prefixes, setPrefixes] = useState<string[]>([])
+
+  const { data: nodePrefixes, error: prefixFetchError } = useSWR<NodePrefixes[]>(routes.node.api.prefixes(), fetcher)
+
+  useEffect(() => {
+    if (!nodePrefixes) {
+      setPrefixes([])
+    } else {
+      let pfxes = nodePrefixes
+      if (filter.node) {
+        pfxes = nodePrefixes.filter(it => it.id === filter.node.id)
+      }
+
+      setPrefixes(['', ...new Set(pfxes.flatMap(it => it.prefixes)).keys()])
+    }
+  }, [nodePrefixes, filter.node])
 
   const [creating, setCreating] = useState(false)
 
@@ -73,13 +97,14 @@ const DeploymentsPage = () => {
 
   const fetchData = useCallback(
     async (paginationQuery: PaginationQuery): Promise<PaginatedList<Deployment>> => {
-      const { filter: keywordFilter, node, status } = filter
+      const { filter: keywordFilter, node, status, prefix } = filter
 
       const query: DeploymentQuery = {
         ...paginationQuery,
         filter: !keywordFilter || keywordFilter.trim() === '' ? null : keywordFilter,
         nodeId: node?.id ?? null,
         status,
+        prefix,
       }
 
       const res = await fetch(routes.deployment.api.list(query))
@@ -171,19 +196,23 @@ const DeploymentsPage = () => {
         />
       )}
 
-      <DyoCard className="flex flex-row p-8">
-        <div className="w-6/12 flex-col">
-          <DyoHeading element="h3" className="text-xl text-bright">
-            {t('common:filters')}
-          </DyoHeading>
+      <DyoCard className="flex flex-col p-8">
+        <div className="flex flex-row gap-4 mt-4">
+          <div className="flex flex-col gap-4">
+            <DyoHeading element="h3" className="text-xl text-bright">
+              {t('common:filters')}
+            </DyoHeading>
 
-          <div className="flex flex-row mt-4">
             <DyoInput
               className="grow"
               placeholder={t('common:search')}
               onChange={e => setFilter({ ...filter, filter: e.target.value })}
               grow
             />
+          </div>
+
+          <div className="flex flex-col gap-2">
+            <DyoLabel>{t('common:status')}</DyoLabel>
 
             <DyoFilterChips
               className="pl-6"
@@ -202,18 +231,35 @@ const DeploymentsPage = () => {
           </div>
         </div>
 
-        <div className="w-6/12 flex-col">
-          <DyoHeading element="h3" className="text-xl text-bright">
-            {t('common:nodes')}
-          </DyoHeading>
+        <div className="flex flex-row mt-8">
+          <div className="flex flex-col w-6/12">
+            <DyoLabel>{t('common:nodes')}</DyoLabel>
 
-          <SelectNodeChips
-            className="mt-4"
-            name="nodes"
-            allowNull
-            onSelectionChange={async it => setFilter({ ...filter, node: it })}
-            selection={filter.node}
-          />
+            <SelectNodeChips
+              className="mt-4"
+              name="nodes"
+              allowNull
+              onSelectionChange={async it => setFilter({ ...filter, node: it })}
+              selection={filter.node}
+            />
+          </div>
+
+          <div className="flex flex-col w-6/12">
+            <div className="flex flex-row gap-4 items-center mx-4">
+              <DyoLabel>{t('common:prefix')}</DyoLabel>
+
+              {prefixFetchError ? (
+                <DyoMessage message={t('fetchFailed', { type: t('prefix') })} />
+              ) : (
+                <DyoSelect
+                  className="w-40"
+                  options={prefixes}
+                  selected={filter.prefix ? prefixes.indexOf(filter.prefix) : 0}
+                  onChange={index => setFilter({ ...filter, prefix: index === 0 ? null : prefixes[index] })}
+                />
+              )}
+            </div>
+          </div>
         </div>
       </DyoCard>
 

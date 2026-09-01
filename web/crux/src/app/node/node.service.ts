@@ -28,6 +28,7 @@ import {
   NodeDto,
   NodeGenerateScriptDto,
   NodeInstallDto,
+  NodePrefixesDto,
   UpdateNodeDto,
 } from './node.dto'
 import NodeMapper from './node.mapper'
@@ -81,6 +82,33 @@ export default class NodeService {
     })
 
     return nodes.map(it => this.mapper.toDto(it))
+  }
+
+  async getPrefixes(teamSlug: string, identity: Identity): Promise<NodePrefixesDto[]> {
+    const nodes = await this.prisma.node.findMany({
+      where: {
+        team: {
+          slug: teamSlug,
+          users: {
+            some: {
+              userId: identity.id,
+            },
+          },
+        },
+      },
+      select: {
+        id: true,
+        name: true,
+        type: true,
+        deployments: {
+          select: {
+            prefix: true,
+          },
+        },
+      },
+    })
+
+    return nodes.map(it => this.mapper.toPrefixesDto(it))
   }
 
   async getNodeDetails(id: string): Promise<NodeDetailsDto> {

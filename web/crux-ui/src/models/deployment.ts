@@ -35,6 +35,7 @@ export type DeploymentQuery = PaginationQuery & {
   filter?: string
   status?: DeploymentStatus
   configBundleId?: string
+  prefix?: string
 }
 
 export type DeploymentList = PaginatedList<Deployment>

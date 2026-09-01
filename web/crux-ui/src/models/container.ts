@@ -86,7 +86,7 @@ export type ContainerDeploymentStrategyType = (typeof CONTAINER_DEPLOYMENT_STRAT
 export const CONTAINER_EXPOSE_STRATEGY_VALUES = ['none', 'expose', 'exposeWithTls'] as const
 export type ContainerConfigExposeStrategy = (typeof CONTAINER_EXPOSE_STRATEGY_VALUES)[number]
 
-export const CONTAINER_VOLUME_TYPE_VALUES = ['ro', 'rwo', 'rwx', 'mem', 'tmp'] as const
+export const CONTAINER_VOLUME_TYPE_VALUES = ['ro', 'rwo', 'rwx', 'mem', 'tmp', 'secret'] as const
 export type VolumeType = (typeof CONTAINER_VOLUME_TYPE_VALUES)[number]
 
 export const CONTAINER_PROBE_TYPE_VALUES = ['none', 'http', 'grpc', 'exec'] as const

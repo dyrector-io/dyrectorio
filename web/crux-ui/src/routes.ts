@@ -232,6 +232,8 @@ class NodeApi {
 
   list = () => this.root
 
+  prefixes = () => `${this.root}/prefixes`
+
   details = (id: string) => `${this.root}/${id}`
 
   script = (id: string) => `${this.details(id)}/script`

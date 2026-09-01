@@ -25,6 +25,7 @@ import {
   NodeDetailsDto,
   NodeDto,
   NodeInstallDto,
+  NodePrefixesDto,
   NodeType,
 } from './node.dto'
 import { ContainersStateListMessage } from './node.message'
@@ -58,6 +59,13 @@ export default class NodeMapper {
       name: it.name,
       type: it.type,
       status,
+    }
+  }
+
+  toPrefixesDto(node: NodePrefixes): NodePrefixesDto {
+    return {
+      ...this.toBasicDto(node),
+      prefixes: node.deployments.map(it => it.prefix),
     }
   }
 
@@ -146,6 +154,12 @@ export default class NodeMapper {
       inspection: it.data,
     }
   }
+}
+
+type NodePrefixes = Pick<Node, BasicProperties> & {
+  deployments: {
+    prefix: string
+  }[]
 }
 
 type NodeDetails = NodeWithToken & {

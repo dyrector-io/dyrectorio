@@ -29,13 +29,21 @@ export type NodeConnection = {
   version?: string
 }
 
-export type DyoNode = NodeConnection & {
+type BasicNode = {
   id: string
   name: string
-  description?: string
-  icon?: string
   type: NodeType
 }
+
+export type NodePrefixes = BasicNode & {
+  prefixes: string[]
+}
+
+export type DyoNode = BasicNode &
+  NodeConnection & {
+    description?: string
+    icon?: string
+  }
 
 export type NodeInstall = {
   command: string

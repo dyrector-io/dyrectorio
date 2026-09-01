@@ -60,6 +60,11 @@ export class BasicNodeWithStatus extends BasicNodeDto {
   status?: NodeConnectionStatus
 }
 
+export class NodePrefixesDto extends BasicNodeDto {
+  @IsString({ each: true })
+  prefixes: string[]
+}
+
 export class NodeDto extends BasicNodeDto {
   @IsString()
   @IsOptional()
