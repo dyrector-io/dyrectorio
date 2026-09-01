@@ -156,7 +156,7 @@ export default class NodeMapper {
   }
 }
 
-type NodePrefixes =  Pick<Node, BasicProperties> & {
+type NodePrefixes = Pick<Node, BasicProperties> & {
   deployments: {
     prefix: string
   }[]

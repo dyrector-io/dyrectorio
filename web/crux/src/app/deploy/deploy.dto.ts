@@ -28,7 +28,14 @@ import { BasicNodeDto, BasicNodeWithStatus } from '../node/node.dto'
 import { BasicProjectDto } from '../project/project.dto'
 import { BasicVersionDto } from '../version/version.dto'
 
-export const DEPLOYMENT_STATUS_VALUES = ['preparing', 'in-progress', 'successful', 'failed', 'obsolete', 'downgraded'] as const
+export const DEPLOYMENT_STATUS_VALUES = [
+  'preparing',
+  'in-progress',
+  'successful',
+  'failed',
+  'obsolete',
+  'downgraded',
+] as const
 export type DeploymentStatusDto = (typeof DEPLOYMENT_STATUS_VALUES)[number]
 
 export type EnvironmentToConfigBundleNameMap = Record<string, string>

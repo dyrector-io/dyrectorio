@@ -86,7 +86,7 @@ export default class NodeService {
 
   async getPrefixes(teamSlug: string, identity: Identity): Promise<NodePrefixesDto[]> {
     const nodes = await this.prisma.node.findMany({
-       where: {
+      where: {
         team: {
           slug: teamSlug,
           users: {
@@ -103,9 +103,9 @@ export default class NodeService {
         deployments: {
           select: {
             prefix: true,
-          }
-        }
-      }
+          },
+        },
+      },
     })
 
     return nodes.map(it => this.mapper.toPrefixesDto(it))
