@@ -1,5 +1,6 @@
 import { defaultApiErrorHandler } from '@app/errors'
 import {
+  containerNameOfInstance,
   DeploymentDetails,
   deploymentShouldBeConfirmed,
   DyoApiError,
@@ -77,10 +78,7 @@ export const useDeploy = (opts: UseDeployOptions): UseDeployAction => {
       toast.error(
         tContainer('errors:validationFailedForInstanceMessage', {
           ...translatedError,
-          path:
-            intanceIndex !== null
-              ? (selectedInstances[intanceIndex].config.name ?? selectedInstances[intanceIndex].image.config.name)
-              : translatedError.path,
+          path: intanceIndex !== null ? containerNameOfInstance(selectedInstances[intanceIndex]) : translatedError.path,
         }),
         {
           className: toastClassName,

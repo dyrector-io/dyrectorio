@@ -404,8 +404,8 @@ const createMetricsPortRule = (ports: ContainerPort[]) => {
   }
 
   return portNumberRule
-    .test('metric-port', 'container:validation.missingExternalPort', value =>
-      value && ports.length > 0 ? ports.some(it => it.external === value) : true,
+    .test('metric-port', 'container:validation.missingInternalPort', value =>
+      value && ports.length > 0 ? ports.some(it => it.internal === value) : true,
     )
     .label('container:crane.metricsPort')
 }

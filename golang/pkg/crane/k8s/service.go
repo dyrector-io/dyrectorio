@@ -125,11 +125,16 @@ func getServicePorts(portBindings []builder.PortBinding, portRanges []builder.Po
 	ports := []*acorev1.ServicePortApplyConfiguration{}
 
 	for i := range portBindings {
-		ports = append(ports,
-			acorev1.ServicePort().
-				WithName(fmt.Sprintf("tcp-%v", portBindings[i].ExposedPort)).
-				WithProtocol(corev1.ProtocolTCP).
-				WithPort(int32(portBindings[i].ExposedPort)))
+		p := acorev1.ServicePort().
+			WithName(fmt.Sprintf("tcp-%v", portBindings[i].ExposedPort)).
+			WithProtocol(corev1.ProtocolTCP).
+			WithPort(int32(portBindings[i].ExposedPort))
+
+		if portBindings[i].PortBinding != nil {
+			p.WithTargetPort(intstr.FromInt(int(*portBindings[i].PortBinding)))
+		}
+
+		ports = append(ports, p)
 	}
 
 	for i := range portRanges {
