@@ -210,6 +210,7 @@ type Experimental struct {
 type Job struct {
 	Triggers                   []JobTriggers `json:"triggers"`
 	PollingInterval            uint16        `json:"pollingInterval"`
+	MinReplicaCount            uint16        `json:"minReplicaCount"`
 	MaxReplicaCount            uint16        `json:"maxReplicaCount"`
 	SuccessfulJobsHistoryLimit uint16        `json:"successfulJobsHistoryLimit"`
 	FailedJobsHistoryLimit     uint16        `json:"failedJobsHistoryLimit"`

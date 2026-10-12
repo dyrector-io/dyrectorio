@@ -136,6 +136,7 @@ func buildScaledJob(p *DeploymentParams, jobConfig *v1.Job, cfg *config.Configur
 		"triggers":     buildTriggers(jobConfig.Triggers),
 	}
 	setPositive(spec, "pollingInterval", jobConfig.PollingInterval)
+	setPositive(spec, "minReplicaCount", jobConfig.MinReplicaCount)
 	setPositive(spec, "maxReplicaCount", jobConfig.MaxReplicaCount)
 	setPositive(spec, "successfulJobsHistoryLimit", jobConfig.SuccessfulJobsHistoryLimit)
 	setPositive(spec, "failedJobsHistoryLimit", jobConfig.FailedJobsHistoryLimit)
