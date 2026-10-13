@@ -217,6 +217,7 @@ type Job struct {
 	Parallelism                uint16        `json:"parallelism"`
 	Completions                uint16        `json:"completions"`
 	BackoffLimit               uint16        `json:"backoffLimit"`
+	GradualRollout             bool          `json:"gradualRollout"`
 }
 
 type JobTriggers struct {
