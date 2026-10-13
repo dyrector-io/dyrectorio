@@ -140,6 +140,9 @@ func buildScaledJob(p *DeploymentParams, jobConfig *v1.Job, cfg *config.Configur
 	setPositive(spec, "maxReplicaCount", jobConfig.MaxReplicaCount)
 	setPositive(spec, "successfulJobsHistoryLimit", jobConfig.SuccessfulJobsHistoryLimit)
 	setPositive(spec, "failedJobsHistoryLimit", jobConfig.FailedJobsHistoryLimit)
+	if jobConfig.GradualRollout {
+		spec["rollout"] = map[string]interface{}{"strategy": "gradual"}
+	}
 
 	return &unstructured.Unstructured{Object: map[string]interface{}{
 		"apiVersion": ScaledJobVersion,
